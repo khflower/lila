@@ -1,26 +1,19 @@
 package lila.round
 
 import lila.core.id.GameId
+import lila.game.OmokGameSidecar
 import lila.omok.{ CoordinateNotation, Game as OmokGame, Move as OmokMove, Replay, RuleSet }
-
-final case class OmokStoredState(
-    _id: GameId,
-    ruleSet: String,
-    moves: Vector[String]
-):
-  def toRoundState: Either[String, OmokRoundState] =
-    OmokStoredState.toRoundState(this)
 
 object OmokStoredState:
 
-  def fromState(gameId: GameId, state: OmokRoundState): OmokStoredState =
-    OmokStoredState(
+  def fromState(gameId: GameId, state: OmokRoundState): OmokGameSidecar =
+    OmokGameSidecar(
       _id = gameId,
       ruleSet = renderRuleSet(state.ruleSet),
       moves = state.moves.map(_.pos.key)
     )
 
-  def toRoundState(stored: OmokStoredState): Either[String, OmokRoundState] =
+  def toRoundState(stored: OmokGameSidecar): Either[String, OmokRoundState] =
     for
       ruleSet <- parseRuleSet(stored.ruleSet)
       parsedMoves <- stored.moves.zipWithIndex.foldLeft(Right(Vector.empty): Either[String, Vector[OmokMove]]):

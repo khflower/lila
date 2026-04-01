@@ -1,11 +1,25 @@
 package lila.round
 
 import lila.core.id.GameId
-import lila.omok.{ CoordinateNotation, Game as OmokGame, Move as OmokMove, Replay, RuleSet }
+import lila.game.OmokGameSidecar
+import lila.omok.{ Color, CoordinateNotation, Game as OmokGame, Move as OmokMove, Pos, Replay, RuleSet, Status }
 
 class OmokStoredStateTest extends munit.FunSuite:
 
   private def move(key: String) = OmokMove(CoordinateNotation.parse(key).get)
+  private def pos(row: Int, col: Int) = Pos.unsafe(row, col)
+
+  private val winningMoves = Vector(
+    pos(7, 7),
+    pos(0, 0),
+    pos(7, 8),
+    pos(0, 1),
+    pos(7, 9),
+    pos(0, 2),
+    pos(7, 10),
+    pos(0, 3),
+    pos(7, 11)
+  )
 
   test("stored state round-trips canonical rule set and moves"):
     val moves = Vector("H8", "A1", "I8").map(move)
@@ -17,24 +31,61 @@ class OmokStoredStateTest extends munit.FunSuite:
     assertEquals(stored.ruleSet, "freestyle")
     assertEquals(stored.moves, Vector("H8", "A1", "I8"))
 
-    val hydrated = stored.toRoundState.toOption.get
+    val hydrated = OmokStoredState.toRoundState(stored).toOption.get
     assertEquals(hydrated.ruleSet, RuleSet.Freestyle)
     assertEquals(hydrated.moves.map(_.pos.key), Vector("H8", "A1", "I8"))
     assertEquals(hydrated.position.ply, 3)
 
   test("stored state rejects invalid rule sets and coordinates"):
     assertEquals(
-      OmokStoredState(GameId("demo1234"), "bad-rules", Vector.empty).toRoundState,
+      OmokStoredState.toRoundState(OmokGameSidecar(GameId("demo1234"), "bad-rules", Vector.empty)),
       Left("invalid stored omok rule set 'bad-rules'")
     )
     assertEquals(
-      OmokStoredState(GameId("demo1234"), "renju", Vector("Z99")).toRoundState,
+      OmokStoredState.toRoundState(OmokGameSidecar(GameId("demo1234"), "renju", Vector("Z99"))),
       Left("invalid stored omok move 'Z99'")
     )
 
   test("stored state rejects illegal move sequences"):
-    val stored = OmokStoredState(GameId("demo1234"), "renju", Vector("H8", "H8"))
-    val result = stored.toRoundState
+    val stored = OmokGameSidecar(GameId("demo1234"), "renju", Vector("H8", "H8"))
+    val result = OmokStoredState.toRoundState(stored)
 
     assert(result.isLeft)
     assert(result.left.exists(_.contains("invalid stored omok sequence at move 2 H8")))
+
+  test("stored state round-trips terminal omok state through repo helpers"):
+    val sourceRepo = OmokRoundRepo()
+    val sourceGameId = GameId("source01")
+    val player = OmokMovePlayer(sourceRepo)
+
+    winningMoves.foreach: move =>
+      player.place(PlaceRequest(sourceGameId, move)).toOption.get
+
+    val original = sourceRepo.get(sourceGameId).get
+    val stored = sourceRepo.getStored(sourceGameId).get
+    val restoredRepo = OmokRoundRepo()
+    val restoredGameId = GameId("restore1")
+
+    val restored = restoredRepo.putStored(restoredGameId, stored).toOption.get
+
+    assertEquals(stored.ruleSet, "renju")
+    assertEquals(stored.moves, Vector("H8", "A1", "I8", "B1", "J8", "C1", "K8", "D1", "L8"))
+    assertEquals(restored, original)
+    assertEquals(restored.terminalStatus, Some(Status.Win(Color.Black)))
+    assertEquals(restoredRepo.get(restoredGameId), Some(original))
+    assertEquals(restoredRepo.getStored(restoredGameId), Some(stored))
+
+  test("putStored rejects invalid durable state without mutating the repo"):
+    val repo = OmokRoundRepo()
+    val gameId = GameId("invalid01")
+    val stored = OmokGameSidecar(
+      _id = gameId,
+      ruleSet = "freestyle",
+      moves = Vector("H8", "H8")
+    )
+
+    val result = repo.putStored(stored)
+
+    assertEquals(result, Left("invalid stored omok sequence at move 2 H8: occupied"))
+    assertEquals(repo.get(gameId), None)
+    assertEquals(repo.getStored(gameId), None)

@@ -12,6 +12,7 @@ final case class OmokRoundState(
 ):
   def boardSize: Int = Pos.Size
   def ruleSet: RuleSet = position.ruleSet
+  def stored: OmokStoredState = OmokStoredState.fromState(this)
   def analyseDto: OmokAnalyseDto =
     terminalStatus.fold(OmokAnalyseDto.fromPosition(position)): status =>
       OmokAnalyseDto(
@@ -54,12 +55,17 @@ final class OmokRoundRepo:
 
   def get(gameId: GameId): Option[OmokRoundState] = states.get(gameId)
 
+  def getStored(gameId: GameId): Option[OmokStoredState] = get(gameId).map(_.stored)
+
   def getOrInit(gameId: GameId, ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     states.getOrElseUpdate(gameId, OmokRoundState.initial(ruleSet))
 
   def put(gameId: GameId, state: OmokRoundState): OmokRoundState =
     states.put(gameId, state)
     state
+
+  def putStored(gameId: GameId, stored: OmokStoredState): Either[String, OmokRoundState] =
+    stored.toRoundState.map(put(gameId, _))
 
   def remove(gameId: GameId): Option[OmokRoundState] = states.remove(gameId)
 
