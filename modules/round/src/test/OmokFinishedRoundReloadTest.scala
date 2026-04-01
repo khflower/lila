@@ -27,12 +27,14 @@ class OmokFinishedRoundReloadTest extends munit.FunSuite:
     val finished = winningMoves.map(pos => player.place(PlaceRequest(gameId, pos)).toOption.get).last
     val retained = repo.get(gameId).get
     val reloadedPlayer = OmokMovePlayer(repo)
+    val bootReader = OmokMovePlayer(repo)
 
     val rejected = reloadedPlayer.place(PlaceRequest(gameId, pos(0, 4))).left.toOption.get
 
     assertEquals(finished.terminalStatus, Some(Status.Win(Color.Black)))
     assertEquals(retained, finished.state)
     assertEquals(reloadedPlayer.get(gameId), Some(retained))
+    assertEquals(bootReader.get(gameId), Some(retained))
     assertEquals(retained.position.ply, winningMoves.size)
     assertEquals(retained.position.lastMove.map(_.pos.key), Some("L8"))
     assertEquals(
@@ -42,6 +44,10 @@ class OmokFinishedRoundReloadTest extends munit.FunSuite:
     assertEquals(rejected.message, s"[omok] $gameId cannot place E1: game already over")
     assertEquals(rejected.state, retained)
     assertEquals(repo.get(gameId), Some(retained))
+    assertEquals(reloadedPlayer.remove(gameId), Some(retained))
+    assertEquals(repo.get(gameId), None)
+    assertEquals(player.get(gameId), None)
+    assertEquals(bootReader.get(gameId), None)
 
   test("finished omok state survives reload until cleanup clears it for a fresh restart"):
     val repo = OmokRoundRepo()

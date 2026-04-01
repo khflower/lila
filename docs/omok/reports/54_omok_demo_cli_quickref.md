@@ -1,138 +1,54 @@
-# Omok Demo CLI Quickref
+# Omok Demo Helper Quickref
 
-## Scope
+## Current Reality
 
-This is the shortest operator note for the omok demo helper on `omok/mvp`.
+On `omok/mvp`, the helper exists as code:
+- `lila.round.OmokDemoSeed`
 
-It is based on the actual CLI wiring in the running lila process:
+It supports three operations conceptually:
+- `seed <gameId> [renju|freestyle] [move ...]`
+- `show <gameId>`
+- `clear <gameId>`
 
-- `omok seed <gameId> [renju|freestyle] [move ...]`
-- `omok show <gameId>`
-- `omok clear <gameId>`
+But **there is not yet a real operator-facing entrypoint wired into the running lila server process**.
 
-Run it from the existing internal CLI surface in the live server JVM, not from a separate `sbt` shell:
+That means:
+- there is no confirmed `/dev/cli` or `/run/cli` path on this branch for omok seeding;
+- a separate `sbt` JVM or ad-hoc compile does **not** mutate the live server's in-memory `OmokRoundRepo`;
+- today this helper is best treated as a developer/internal helper and test-time utility, not a production-ready live command.
 
-- `/dev/cli`
-- `POST /run/cli`
+## What The Helper Does
 
-`OmokRoundRepo` is in-memory, so a server restart removes the seeded state.
+The helper?s behavior is still useful and stable:
 
-## Fastest Live Flow
+- default ruleset is `renju`
+- moves can be space-separated or comma-separated
+- move notation is normal omok coordinates like `H8`, `A1`, `O15`
+- re-seeding the same `GameId` overwrites prior cached omok state for that id
+- `clear` removes cached state so the same `GameId` can restart fresh
 
-Use one known round id and keep reseeding that same id.
-
-Empty-board seed:
-
-```text
-omok seed demo1234
-```
-
-Expected output:
+Representative outputs from the helper logic:
 
 ```text
 seeded omok round demo1234: ruleSet=renju ply=0 turn=black lastMove=- moves=-
-```
-
-Verify before opening tabs:
-
-```text
-omok show demo1234
-```
-
-Expected output:
-
-```text
-omok round demo1234: ruleSet=renju ply=0 turn=black lastMove=- moves=-
-```
-
-Preplayed seed:
-
-```text
-omok seed demo1234 renju H8 A1 I8
-```
-
-Expected output on first seed:
-
-```text
-seeded omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-```
-
-Expected output if you run another seed for the same id:
-
-```text
 reseeded omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-```
-
-Notes:
-
-- if the ruleset is omitted, the helper defaults to `renju`
-- moves can be space-separated or comma-separated
-- move notation is the normal omok coordinate format, for example `H8`, `A1`, `O15`
-
-## Reset And Recovery
-
-The easiest reset during a live session is usually:
-
-```text
-omok seed demo1234
-```
-
-That overwrites any existing omok state for `demo1234` with a fresh empty renju board. After that, hard refresh the player and watcher tabs.
-
-If you want to prove the repo was cleared first:
-
-```text
-omok clear demo1234
-```
-
-Expected output when state exists:
-
-```text
-cleared omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-```
-
-Expected output when nothing is cached:
-
-```text
-no omok round state to clear for demo1234
-```
-
-Then reseed:
-
-```text
-omok seed demo1234
-```
-
-If a page opens without the omok board/state, the usual cause is that the page was opened before the seed existed in the running server process. Rerun `omok seed <gameId>` and refresh the tabs.
-
-## Quick Checks
-
-Show current state:
-
-```text
-omok show demo1234
-```
-
-Expected output when present:
-
-```text
 omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-```
-
-Expected output when missing:
-
-```text
-no omok round state for demo1234
-```
-
-Typical bad input:
-
-```text
-omok seed bad H8
-```
-
-Expected output:
-
-```text
+cleared omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
 ERROR invalid game id 'bad'; expected 8 characters matching [A-Za-z0-9_-]
 ```
+
+## Honest Operator Guidance
+
+For a live internal demo, the missing piece is still an entrypoint that can run **inside the live server process**.
+
+Until that exists, the safest guidance is:
+
+1. treat `OmokDemoSeed` as a code-level helper;
+2. use `OmokDemoSeedTest` as the canonical usage examples;
+3. if a live demo absolutely needs deterministic seeding, add a tiny dev-only server-process hook rather than relying on a separate `sbt` shell.
+
+## Fastest Next Step
+
+The smallest remaining usability improvement here is not the helper logic itself ? that already exists.
+
+The real gap is a thin, dev-only operator entrypoint that invokes `OmokDemoSeed` in the running process.
