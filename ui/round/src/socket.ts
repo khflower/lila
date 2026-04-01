@@ -8,7 +8,7 @@ import { wsSign, wsVersion } from 'lib/socket';
 import { domDialog } from 'lib/view';
 
 import type RoundController from './ctrl';
-import type { RoundSocketSend, EventsWithoutPayload } from './interfaces';
+import type { ApiOmokMove, RoundSocketSend, EventsWithoutPayload } from './interfaces';
 import { reload as xhrReload } from './xhr';
 
 export interface RoundSocket {
@@ -28,6 +28,10 @@ interface Incoming {
 }
 
 type Callback = (...args: any[]) => void;
+
+interface OmokMoveAwareController {
+  apiOmokMove?: (o: ApiOmokMove) => void;
+}
 
 function backoff(delay: number, factor: number, callback: Callback): Callback {
   let timer: number | undefined;
@@ -53,6 +57,7 @@ function backoff(delay: number, factor: number, callback: Callback): Callback {
 
 export function make(send: RoundSocketSend, ctrl: RoundController): RoundSocket {
   wsSign(ctrl.sign);
+  const omokCtrl = ctrl as RoundController & OmokMoveAwareController;
 
   const reload = (o?: Incoming, isRetry?: boolean) => {
     // avoid reload if possible!
@@ -79,6 +84,9 @@ export function make(send: RoundSocketSend, ctrl: RoundController): RoundSocket 
       ctrl.redraw();
     },
     move: ctrl.apiMove,
+    omokMove(o: ApiOmokMove) {
+      omokCtrl.apiOmokMove?.(o);
+    },
     drop: ctrl.apiMove,
     reload,
     redirect: ctrl.setRedirecting,

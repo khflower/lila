@@ -102,6 +102,8 @@ final class RoundSocket(
   private val roundHandler: SocketHandler =
     case Protocol.In.PlayerMove(fullId, uci, blur, lag) if !stopping =>
       rounds.tell(fullId.gameId, HumanPlay(fullId.playerId, uci, blur, lag, none))
+    case Protocol.In.PlayerPlace(fullId, pos) if !stopping =>
+      rounds.tell(fullId.gameId, HumanPlace(fullId.playerId, pos, none))
     case Protocol.In.PlayerDo(fullId, tpe) if !stopping =>
       def forward(f: GamePlayerId => Any) = rounds.tell(fullId.gameId, f(fullId.playerId))
       tpe match
@@ -322,6 +324,7 @@ object RoundSocket:
       case class PlayerOnlines(onlines: Iterable[(GameId, Option[RoomCrowd])]) extends P.In
       case class PlayerDo(fullId: GameFullId, tpe: String) extends P.In
       case class PlayerMove(fullId: GameFullId, uci: Uci, blur: Boolean, lag: MoveMetrics) extends P.In
+      case class PlayerPlace(fullId: GameFullId, pos: lila.omok.Pos) extends P.In
       case class PlayerChatSay(gameId: GameId, userIdOrColor: Either[UserId, Color], msg: String) extends P.In
       case class WatcherChatSay(gameId: GameId, userId: UserId, msg: String) extends P.In
       case class Bye(fullId: GameFullId) extends P.In
@@ -362,6 +365,11 @@ object RoundSocket:
                 P.In.boolean(blurS),
                 MoveMetrics(centis(lagS), centis(mtS), centis(fraS))
               )
+          }
+        case P.RawMsg("r/place", raw) =>
+          raw.get(2) { case Array(fullId, posS) =>
+            lila.omok.CoordinateNotation.parse(posS).map:
+              PlayerPlace(GameFullId(fullId), _)
           }
         case P.RawMsg("chat/say", raw) =>
           raw.get(3) { case Array(roomId, author, msg) =>

@@ -12,6 +12,11 @@ private case class HumanPlay(
     moveMetrics: chess.MoveMetrics = chess.MoveMetrics(),
     promise: Option[Promise[Unit]] = None
 )
+private case class HumanPlace(
+    playerId: GamePlayerId,
+    pos: lila.omok.Pos,
+    promise: Option[Promise[Unit]] = None
+)
 private case class ByePlayer(playerId: GamePlayerId)
 private case class GetSocketStatus(promise: Promise[SocketStatus])
 private case class GetGameAndSocketStatus(promise: Promise[GameAndSocketStatus])
