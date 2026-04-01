@@ -35,6 +35,9 @@ final case class PlaceAccepted(
 
 final class OmokMovePlayer(omokRoundRepo: OmokRoundRepo):
 
+  def get(gameId: GameId): Option[OmokRoundState] =
+    omokRoundRepo.get(gameId)
+
   def ensure(gameId: GameId, ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     omokRoundRepo.getOrInit(gameId, ruleSet)
 

@@ -1,3 +1,243 @@
+.round__app__board__omok-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.round__app__board__omok-placeholder__shell {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) 1.5rem;
+  grid-template-rows: 1.5rem minmax(0, 1fr) 1.5rem;
+  width: min(100%, 100vh - 12rem);
+  aspect-ratio: 1;
+  gap: 0.35rem;
+}
+
+.round__app__board__omok-placeholder__coords {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  color: $c-font-dim;
+  font-size: 0.72rem;
+  user-select: none;
+}
+
+.round__app__board__omok-placeholder__coords--top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.round__app__board__omok-placeholder__coords--left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.round__app__board__omok-placeholder__coords--right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.round__app__board__omok-placeholder__coords--bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.round__app__board__omok-placeholder__board {
+  @extend %box-shadow;
+
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  background: linear-gradient(180deg, mix($c-brag, $c-bg-box, 18%), mix($c-brag, $c-bg-box, 30%));
+  border: $border;
+  border-radius: $box-radius-size;
+  overflow: hidden;
+}
+
+.round__app__board__omok-placeholder__cell {
+  position: relative;
+  border-right: 1px solid rgba(0, 0, 0, 0.14);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    background: rgba(0, 0, 0, 0.22);
+    transform: translate(-50%, -50%);
+  }
+
+  &::before {
+    width: 70%;
+    height: 1px;
+  }
+
+  &::after {
+    width: 1px;
+    height: 70%;
+  }
+
+  &.is-last-move {
+    background: rgba(255, 255, 255, 0.16);
+  }
+}
+
+.round__app__board__omok-placeholder__stone {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  z-index: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.round__app__board__omok-placeholder__cell.is-black .round__app__board__omok-placeholder__stone {
+  background: #111;
+}
+
+.round__app__board__omok-placeholder__cell.is-white .round__app__board__omok-placeholder__stone {
+  background: #f5f5f5;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.round__app[data-board-game='omok'] {
+  .main-board .cg-wrap {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.round__app__board__omok-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  padding: clamp(0.55rem, 2.5%, 1rem);
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__shell {
+  --omok-frame-size: clamp(1.2rem, 4.2%, 1.8rem);
+
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--omok-frame-size) minmax(0, 1fr) var(--omok-frame-size);
+  grid-template-rows: var(--omok-frame-size) minmax(0, 1fr) var(--omok-frame-size);
+  align-items: stretch;
+  gap: clamp(0.2rem, 0.8%, 0.4rem);
+  padding: clamp(0.3rem, 1.25%, 0.55rem);
+  border-radius: $box-radius-size;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 36%),
+    linear-gradient(145deg, #ddc48f 0%, #cfa567 52%, #bc884c 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(87, 55, 20, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 12px 28px rgba(38, 21, 3, 0.12);
+}
+
+.round__app__board__omok-placeholder__coords {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  font-size: clamp(0.58rem, 1.6vw, 0.74rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(82, 49, 14, 0.88);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.round__app__board__omok-placeholder__coords--top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.round__app__board__omok-placeholder__coords--bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.round__app__board__omok-placeholder__coords--left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.round__app__board__omok-placeholder__coords--right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.round__app__board__omok-placeholder__coord {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.round__app__board__omok-placeholder__board {
+  position: relative;
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(#{$box-radius-size} - 0.15rem);
+  background: linear-gradient(180deg, #e7cd95 0%, #d5af6d 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(87, 55, 20, 0.2),
+    inset 1px 1px 0 rgba(87, 55, 20, 0.34),
+    0 10px 22px rgba(38, 21, 3, 0.12);
+}
+
+.round__app__board__omok-placeholder__cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: inset -1px -1px 0 rgba(87, 55, 20, 0.34);
+}
+
+.round__app__board__omok-placeholder__cell.is-last-move {
+  background: radial-gradient(circle, rgba(248, 236, 183, 0.62) 0%, rgba(248, 236, 183, 0.2) 62%, transparent 100%);
+}
+
+.round__app__board__omok-placeholder__stone {
+  width: 66%;
+  height: 66%;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.round__app__board__omok-placeholder__cell.is-black .round__app__board__omok-placeholder__stone {
+  background: radial-gradient(circle at 35% 30%, #737373 0%, #2f2f2f 44%, #111 100%);
+}
+
+.round__app__board__omok-placeholder__cell.is-white .round__app__board__omok-placeholder__stone {
+  background: radial-gradient(circle at 35% 30%, #fff 0%, #f4efe4 56%, #d8cdbb 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.round__app__board__omok-placeholder__cell.is-last-move .round__app__board__omok-placeholder__stone {
+  box-shadow:
+    0 0 0 2px rgba(158, 87, 12, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
 .round__app__board__omok-state {
   @extend %box-shadow;
 
