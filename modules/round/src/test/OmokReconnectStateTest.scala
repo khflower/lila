@@ -3,7 +3,7 @@ package lila.round
 import play.api.libs.json.JsObject
 
 import lila.core.id.GameId
-import lila.omok.{ OmokAnalyseDto, Pos }
+import lila.omok.Pos
 
 class OmokReconnectStateTest extends munit.FunSuite:
 
@@ -19,7 +19,7 @@ class OmokReconnectStateTest extends munit.FunSuite:
     val third = player.place(PlaceRequest(gameId, Pos.unsafe(7, 8))).toOption.get
 
     val current = repo.get(gameId).get
-    val reconnectJson = OmokAnalyseDto.fromPosition(current.position).asJson
+    val reconnectJson = current.analyseDto.asJson
 
     assertEquals(rejected.message, s"[omok] $gameId cannot place A1: occupied")
     assertEquals(rejected.state, second.state)

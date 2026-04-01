@@ -230,7 +230,7 @@ final private[api] class RoundApi(
 
   private def withOmok(pov: Pov)(json: JsObject) =
     omokRoundRepo.get(pov.gameId).fold(json): state =>
-      json + ("omok" -> OmokAnalyseDto.fromPosition(state.position).asJson)
+      json + ("omok" -> state.analyseDto.asJson)
 
   // Reserve a stable namespace for future omok analyse boot data.
   private def withOmokAnalyse(json: JsObject) =

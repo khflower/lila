@@ -216,7 +216,6 @@ final class RoundSocket(
 
   Bus.sub[lila.core.game.FinishGame]:
     case lila.core.game.FinishGame(game, _) =>
-      cleanupOmokRound(game.id)
       game.userIds.nonEmptyOption.filter(_ => game.hasClock).foreach: usersPlaying =>
         sendForGameId(game.id).exec(Protocol.Out.finishGame(game.id, game.winnerColor, usersPlaying))
 

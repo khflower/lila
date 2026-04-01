@@ -1,7 +1,7 @@
 package lila.round
 
 import lila.core.id.GameId
-import lila.omok.{ Color as OmokColor, Game as OmokGame, Move as OmokMove, MoveError as OmokMoveError, Pos, PositionSnapshot, Replay, RuleSet, Status as OmokStatus }
+import lila.omok.{ Color as OmokColor, Game as OmokGame, Move as OmokMove, MoveError as OmokMoveError, Pos, Replay, RuleSet, Status as OmokStatus }
 
 final case class PlaceRequest(
     gameId: GameId,
@@ -65,7 +65,7 @@ object OmokMovePlayer:
 
     currentGame(previous).play(move).left.map(PlaceError(request, previous, _)).map: nextGame =>
       val moves = previous.moves :+ move
-      val state = OmokRoundState(PositionSnapshot.fromGame(nextGame, moves), moves)
+      val state = OmokRoundState.fromGame(nextGame, moves)
       val payload = OmokEvent.MovePayload(move, state.position)
       PlaceAccepted(
         previous = previous,
@@ -73,12 +73,8 @@ object OmokMovePlayer:
         move = move,
         payload = payload,
         event = OmokEvent.Move(gameId, move, state.position),
-        terminalStatus = terminalStatus(nextGame)
+        terminalStatus = state.terminalStatus
       )
 
   private def currentGame(state: OmokRoundState): OmokGame =
     Replay(OmokGame.initial(state.ruleSet), state.moves).toOption.getOrElse(OmokGame.initial(state.ruleSet))
-
-  private def terminalStatus(game: OmokGame): Option[OmokStatus] = game.status match
-    case OmokStatus.Ongoing => None
-    case status             => Some(status)
