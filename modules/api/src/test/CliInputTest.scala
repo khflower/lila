@@ -14,3 +14,9 @@ class CliInputTest extends munit.FunSuite:
       List("omok", "show", "demo1234")
     )
     assertEquals(CliInput.parse(" \n\t "), Nil)
+
+  test("parse preserves comma-separated omok move fragments"):
+    assertEquals(
+      CliInput.parse("omok seed demo1234 freestyle H8, A1 , I8"),
+      List("omok", "seed", "demo1234", "freestyle", "H8,", "A1", ",", "I8")
+    )
