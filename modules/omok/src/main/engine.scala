@@ -17,25 +17,52 @@ final case class PositionSnapshot(
     board: Board,
     turn: Color,
     ruleSet: RuleSet,
+    ply: Int = 0,
+    lastMove: Option[Move] = None,
     moves: Vector[Move] = Vector.empty
-)
+):
+  require(ply >= 0, "ply must be >= 0")
 
 object PositionSnapshot:
+  def fromSituation(
+      situation: Situation,
+      ply: Int = 0,
+      lastMove: Option[Move] = None,
+      moves: Vector[Move] = Vector.empty
+  ): PositionSnapshot =
+    PositionSnapshot(
+      board = situation.board,
+      turn = situation.turn,
+      ruleSet = situation.ruleSet,
+      ply = ply,
+      lastMove = lastMove,
+      moves = moves
+    )
+
   def fromGame(game: Game, moves: Vector[Move] = Vector.empty): PositionSnapshot =
     PositionSnapshot(
       board = game.situation.board,
       turn = game.situation.turn,
       ruleSet = game.situation.ruleSet,
+      ply = game.ply,
+      lastMove = game.lastMove,
       moves = moves
     )
 
 type EnginePosition = PositionSnapshot
 object EnginePosition:
+  def fromSituation(
+      situation: Situation,
+      ply: Int = 0,
+      lastMove: Option[Move] = None,
+      moves: Vector[Move] = Vector.empty
+  ): EnginePosition = PositionSnapshot.fromSituation(situation, ply, lastMove, moves)
+
   def fromGame(game: Game, moves: Vector[Move] = Vector.empty): EnginePosition =
     PositionSnapshot.fromGame(game, moves)
 
 enum ScoreKind:
-  case Centipawn, Mate
+  case Relative, WinRate, ForcedWin, ForcedLoss
 
 final case class EngineScore(kind: ScoreKind, value: Int)
 
@@ -46,7 +73,10 @@ final case class EngineLine(
     nodes: Option[Long] = None,
     depth: Option[Int] = None
 ):
+  require(moves.nonEmpty, "moves cannot be empty")
   require(rank > 0, "rank must be > 0")
+
+  def bestMove: Move = moves.head
 
 object EngineLine:
   def normalized(lines: Vector[EngineLine]): Vector[EngineLine] = lines.sortBy(_.rank)
@@ -74,6 +104,7 @@ final case class EngineMoveResponse(
     else bestMove +: principalVariation
 
   def line: EngineLine = EngineLine(normalizedPrincipalVariation, rank = 1, score = score)
+  def metadata: Map[String, String] = raw
 
 object EngineMoveResult:
   def apply(
@@ -88,16 +119,49 @@ final case class EngineAnalysisResponse(
     raw: Map[String, String] = Map.empty
 ):
   def primaryVariation: Option[EngineLine] = EngineLine.normalized(variations).headOption
-  def bestMove: Option[Move] = primaryVariation.flatMap(_.moves.headOption)
+  def bestMove: Option[Move] = primaryVariation.map(_.bestMove)
+  def metadata: Map[String, String] = raw
 
 object EngineAnalysisResponse:
-  def normalized(lines: Vector[EngineLine], raw: Map[String, String] = Map.empty): EngineAnalysisResponse =
-    EngineAnalysisResponse(EngineLine.normalized(lines), raw)
+  def normalized(
+      lines: Iterable[EngineLine],
+      raw: Map[String, String] = Map.empty
+  ): EngineAnalysisResponse =
+    EngineAnalysisResponse(EngineLine.normalized(lines.toVector), raw)
+
+  def fromMoveResponse(response: EngineMoveResponse): EngineAnalysisResponse =
+    normalized(Vector(response.line), response.raw)
 
 object EngineAnalysisResult:
-  def apply(lines: Vector[EngineLine], raw: Map[String, String] = Map.empty): EngineAnalysisResponse =
+  def apply(lines: Iterable[EngineLine], raw: Map[String, String] = Map.empty): EngineAnalysisResponse =
     EngineAnalysisResponse.normalized(lines, raw)
+
+enum EngineHealth:
+  case Ready
+  case Degraded(reason: String)
+  case Failed(reason: String)
+
+enum EngineError:
+  case Timeout(message: String)
+  case Unavailable(message: String)
+  case InvalidRequest(message: String)
+  case Protocol(message: String)
+  case Unexpected(message: String)
+
+trait OmokEngineFacade:
+  def play(request: EngineMoveRequest): Fu[Either[EngineError, EngineMoveResponse]]
+  def analyse(request: EngineAnalysisRequest): Fu[Either[EngineError, EngineAnalysisResponse]]
+  def health: Fu[EngineHealth]
+
+object OmokEngineFacade:
+  def from(client: EngineClient): OmokEngineFacade = new OmokEngineFacade:
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    def play(request: EngineMoveRequest) = client.bestMove(request).map(Right(_))
+    def analyse(request: EngineAnalysisRequest) = client.analyse(request).map(Right(_))
+    def health = client.health
 
 trait EngineClient:
   def bestMove(request: EngineMoveRequest): Fu[EngineMoveResponse]
   def analyse(request: EngineAnalysisRequest): Fu[EngineAnalysisResponse]
+  def health: Fu[EngineHealth] = Future.successful(EngineHealth.Ready)

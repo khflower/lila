@@ -8,13 +8,16 @@ class EngineContractTest extends munit.FunSuite:
   private def pos(row: Int, col: Int) = Pos.unsafe(row, col)
 
   test("position snapshot reflects a game"):
-    val game = Game.initial(RuleSet.Renju).play(Move(pos(7, 7))).toOption.get
-    val snapshot = PositionSnapshot.fromGame(game, Vector(Move(pos(7, 7))))
+    val firstMove = Move(pos(7, 7))
+    val game = Game.initial(RuleSet.Renju).play(firstMove).toOption.get
+    val snapshot = PositionSnapshot.fromGame(game, Vector(firstMove))
 
     assertEquals(snapshot.turn, Color.White)
     assertEquals(snapshot.ruleSet, RuleSet.Renju)
+    assertEquals(snapshot.ply, 1)
+    assertEquals(snapshot.lastMove, Some(firstMove))
     assertEquals(snapshot.board(pos(7, 7)), Some(Color.Black))
-    assertEquals(snapshot.moves, Vector(Move(pos(7, 7))))
+    assertEquals(snapshot.moves, Vector(firstMove))
 
   test("engine limits and response payloads keep optional fields lightweight"):
     val request = EngineMoveRequest(
@@ -25,16 +28,21 @@ class EngineContractTest extends munit.FunSuite:
     assertEquals(request.limits.moveTime, Some(2.seconds))
     assertEquals(request.limits.multiPv, 2)
 
-  test("engine client facade stays adapter-friendly"):
+  test("engine facade stays adapter-friendly"):
     val client = new EngineClient:
       def bestMove(request: EngineMoveRequest) =
-        Future.successful(EngineMoveResponse(Move(pos(7, 7)), score = Some(EngineScore(ScoreKind.Centipawn, 32))))
+        Future.successful(EngineMoveResponse(Move(pos(7, 7)), score = Some(EngineScore(ScoreKind.Relative, 32))))
       def analyse(request: EngineAnalysisRequest) =
         Future.successful(EngineAnalysisResponse.normalized(Vector(EngineLine(Vector(Move(pos(7, 7)))))))
 
-    val moveResult = Await.result(client.bestMove(EngineMoveRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
-    val analysis = Await.result(client.analyse(EngineAnalysisRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
+    val facade = OmokEngineFacade.from(client)
+    val moveResult =
+      Await.result(facade.play(EngineMoveRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
+    val analysis =
+      Await.result(facade.analyse(EngineAnalysisRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
+    val health = Await.result(facade.health, 2.seconds)
 
-    assertEquals(moveResult.bestMove, Move(pos(7, 7)))
-    assertEquals(moveResult.score, Some(EngineScore(ScoreKind.Centipawn, 32)))
-    assertEquals(analysis.variations.map(_.moves.head), Vector(Move(pos(7, 7))))
+    assertEquals(moveResult.map(_.bestMove), Right(Move(pos(7, 7))))
+    assertEquals(moveResult.map(_.score), Right(Some(EngineScore(ScoreKind.Relative, 32))))
+    assertEquals(analysis.map(_.variations.map(_.bestMove)), Right(Vector(Move(pos(7, 7)))))
+    assertEquals(health, EngineHealth.Ready)
