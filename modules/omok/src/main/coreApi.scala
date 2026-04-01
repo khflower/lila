@@ -5,6 +5,18 @@ import lila.core.omok as coreomok
 
 object CoreApi:
 
+  extension (status: Status)
+    def toCore: coreomok.Status = status match
+      case Status.Ongoing    => coreomok.Status.Ongoing
+      case Status.Win(color) => coreomok.Status.Win(color.toCore)
+      case Status.Draw       => coreomok.Status.Draw
+
+  extension (status: coreomok.Status)
+    def toLocal: Status = status match
+      case coreomok.Status.Ongoing    => Status.Ongoing
+      case coreomok.Status.Win(color) => Status.Win(color.toLocal)
+      case coreomok.Status.Draw       => Status.Draw
+
   extension (color: Color)
     def toCore: coreomok.Color = color match
       case Color.Black => coreomok.Color.Black
@@ -50,6 +62,7 @@ object CoreApi:
         boardSize = Pos.Size,
         turn = snapshot.turn.toCore,
         ruleSet = snapshot.ruleSet.toCore,
+        status = snapshot.status.toCore,
         stones = stones.toVector,
         ply = snapshot.ply,
         lastMove = snapshot.lastMove.map(_.toCore),
@@ -64,6 +77,7 @@ object CoreApi:
         board = board,
         turn = snapshot.turn.toLocal,
         ruleSet = snapshot.ruleSet.toLocal,
+        status = snapshot.status.toLocal,
         ply = snapshot.ply,
         lastMove = snapshot.lastMove.map(_.toLocal),
         moves = snapshot.moves.map(_.toLocal)

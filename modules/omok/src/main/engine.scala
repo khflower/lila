@@ -17,6 +17,7 @@ final case class PositionSnapshot(
     board: Board,
     turn: Color,
     ruleSet: RuleSet,
+    status: Status = Status.Ongoing,
     ply: Int = 0,
     lastMove: Option[Move] = None,
     moves: Vector[Move] = Vector.empty
@@ -34,6 +35,7 @@ object PositionSnapshot:
       board = situation.board,
       turn = situation.turn,
       ruleSet = situation.ruleSet,
+      status = Status.Ongoing,
       ply = ply,
       lastMove = lastMove,
       moves = moves
@@ -44,6 +46,7 @@ object PositionSnapshot:
       board = game.situation.board,
       turn = game.situation.turn,
       ruleSet = game.situation.ruleSet,
+      status = game.status,
       ply = game.ply,
       lastMove = game.lastMove,
       moves = moves

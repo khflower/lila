@@ -8,6 +8,7 @@ class OmokApiTest extends munit.FunSuite:
   test("position snapshot stays portable but validates board bounds"):
     val center = Pos(7, 7)
     val snapshot = PositionSnapshot.initial().copy(
+      status = Status.Draw,
       stones = Vector(Stone(center, Color.Black)),
       ply = 1,
       lastMove = Some(Move(center)),
@@ -16,6 +17,7 @@ class OmokApiTest extends munit.FunSuite:
 
     assertEquals(snapshot.boardSize, PositionSnapshot.defaultBoardSize)
     assertEquals(snapshot.turn, Color.Black)
+    assertEquals(snapshot.status, Status.Draw)
     assertEquals(snapshot.stones.map(_.pos), Vector(center))
 
     intercept[IllegalArgumentException]:
@@ -31,6 +33,13 @@ class OmokApiTest extends munit.FunSuite:
         ruleSet = RuleSet.Freestyle,
         stones = Vector(Stone(Pos(15, 0), Color.Black))
       )
+
+  test("position snapshots default to ongoing but can expose a winner explicitly"):
+    val initial = PositionSnapshot.initial()
+    val won = initial.copy(status = Status.Win(Color.White))
+
+    assertEquals(initial.status, Status.Ongoing)
+    assertEquals(won.status, Status.Win(Color.White))
 
   test("engine payloads normalize candidate ordering and validate budgets"):
     val best = Move(Pos(7, 7))

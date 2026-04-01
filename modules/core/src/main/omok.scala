@@ -13,6 +13,11 @@ enum Color:
 enum RuleSet:
   case Freestyle, Renju
 
+enum Status:
+  case Ongoing
+  case Win(color: Color)
+  case Draw
+
 final case class Pos(row: Int, col: Int):
   require(row >= 0, "row must be >= 0")
   require(col >= 0, "col must be >= 0")
@@ -22,11 +27,13 @@ final case class Move(pos: Pos)
 final case class Stone(pos: Pos, color: Color)
 
 // Stable omok snapshot for cross-module APIs. It carries both occupied stones
-// and optional move history so adapters can choose the cheapest encoding.
+// and explicit game status plus optional move history so adapters can choose
+// the cheapest encoding without hidden terminal state.
 final case class PositionSnapshot(
     boardSize: Int = PositionSnapshot.defaultBoardSize,
     turn: Color,
     ruleSet: RuleSet,
+    status: Status = Status.Ongoing,
     stones: Vector[Stone] = Vector.empty,
     ply: Int = 0,
     lastMove: Option[Move] = None,
