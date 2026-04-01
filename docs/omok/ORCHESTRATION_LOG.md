@@ -148,3 +148,12 @@ Primary doc landing points:
 
 ### Coordinator note
 This does not migrate omok to a real DB yet. It deliberately creates the smallest useful storage record shape so a later persistence wave can wire a real collection/repo without re-deciding the stored move format.
+
+## 2026-04-01 rolling-dispatch change
+
+User requested a rolling worker model: do not wait for a full wave to finish before assigning the next slice.
+
+Coordinator policy is now:
+- when an idle worker branch is available, assign the next narrow task immediately
+- keep reporting short in chat, keep detailed state in the repo/server logs
+- prefer smaller continuously-fed slices over synchronized waves
