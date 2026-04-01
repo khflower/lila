@@ -89,3 +89,26 @@ Primary doc landing points:
 - `docs/omok/reports/49_post_95_gap_list.md`
 - `docs/omok/reports/53_internal_demo_runbook.md`
 - `docs/omok/reports/58_seed_to_round_demo_path.md`
+
+## 2026-04-01 wave-2 merge checkpoint
+
+### Merged implementation slices
+- `c41474ef0d` round lifecycle cleanup now owns `OmokRoundRepo` removal on terminal bus events
+- `1c5c5a76f2` frontend turn/click gating now prefers omok state over mirrored generic round state
+- `9061496674` portable omok snapshots now carry terminal status
+- `2d2c7febfb` Rapfi sessions now reset on boundary changes instead of leaking state across mismatched contexts
+- `9928fa81ca` internal omok start scaffold added
+- `c96d8e4460` localized scaffold helper parsing/rendering so the scaffold compiles cleanly on current mainline
+- `9a84f5cfac` synthesized start-flow + persistence docs into main omok docs
+
+### Validation after merge
+- `./lila.sh compile`
+- `round/testOnly lila.round.OmokStartScaffoldTest lila.round.OmokCliTest lila.round.OmokRoundCleanupTest`
+- `api/testOnly lila.api.OmokCliRoutingTest`
+- `omok/testOnly lila.omok.CoreApiTest`
+- Result: all targeted checks passed.
+
+### Current branch status
+- `omok/mvp` now contains wave-1 plus wave-2 merged slices.
+- Branch is ahead of `origin/omok/mvp` and not yet pushed.
+- Next useful work should prefer runtime validation, persistence scaffolding, and further narrowing of the internal start path toward a stronger demo and pre-service cut.
