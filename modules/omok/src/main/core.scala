@@ -25,7 +25,7 @@ enum Status:
 final case class Pos private (index: Int) extends AnyVal:
   def row: Int = index / Pos.Size
   def col: Int = index % Pos.Size
-  def key: String = s"${('A'.toInt + col).toChar}${row + 1}"
+  def key: String = CoordinateNotation.format(this)
 
 object Pos:
   val Size = 15
