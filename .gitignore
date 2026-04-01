@@ -66,3 +66,7 @@ instance.lock
 
 # deploy bearer
 .lila-cli
+
+# Omok worker prompt scratch files; keep the curated 01-14 prompt set tracked.
+/docs/omok/prompts/[2-9][0-9]_*.prompt.md
+/docs/omok/prompts/[1-9][0-9][0-9]_*.prompt.md
