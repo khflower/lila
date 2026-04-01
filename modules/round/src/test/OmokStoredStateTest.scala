@@ -73,7 +73,7 @@ class OmokStoredStateTest extends munit.FunSuite:
     assertEquals(restored, original)
     assertEquals(restored.terminalStatus, Some(Status.Win(Color.Black)))
     assertEquals(restoredRepo.get(restoredGameId), Some(original))
-    assertEquals(restoredRepo.getStored(restoredGameId), Some(stored))
+    assertEquals(restoredRepo.getStored(restoredGameId), Some(stored.copy(_id = restoredGameId)))
 
   test("putStored rejects invalid durable state without mutating the repo"):
     val repo = OmokRoundRepo()
