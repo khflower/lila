@@ -44,7 +44,9 @@ final class RoundSocket(
       .getOrMake(gameId)
       .getGame
       .addEffect: g =>
-        if g.isEmpty then finishRound(gameId)
+        if g.isEmpty then
+          cleanupOmokRound(gameId)
+          finishRound(gameId)
 
   def getGames(gameIds: List[GameId]): Fu[List[(GameId, Option[Game])]] =
     gameIds.parallel: id =>
@@ -168,6 +170,9 @@ final class RoundSocket(
   private def finishRound(gameId: GameId): Unit =
     rounds.terminate(gameId, _ ! RoundAsyncActor.Stop)
 
+  private def cleanupOmokRound(gameId: GameId): Unit =
+    roundDependencies.omokMovePlayer.remove(gameId)
+
   private val send: ParallelSocketSend = socketKit.send("r-out", 16)
 
   private val sendForGameId: GameId => SocketSend = gameId =>
@@ -210,12 +215,15 @@ final class RoundSocket(
         sendForGameId(game.id).exec(Protocol.Out.startGame(usersPlaying))
 
   Bus.sub[lila.core.game.FinishGame]:
-    case lila.core.game.FinishGame(game, _) if game.hasClock =>
-      game.userIds.nonEmptyOption.foreach: usersPlaying =>
+    case lila.core.game.FinishGame(game, _) =>
+      cleanupOmokRound(game.id)
+      game.userIds.nonEmptyOption.filter(_ => game.hasClock).foreach: usersPlaying =>
         sendForGameId(game.id).exec(Protocol.Out.finishGame(game.id, game.winnerColor, usersPlaying))
 
   Bus.sub[lila.core.round.DeleteUnplayed]:
-    case lila.core.round.DeleteUnplayed(gameId) => finishRound(gameId)
+    case lila.core.round.DeleteUnplayed(gameId) =>
+      cleanupOmokRound(gameId)
+      finishRound(gameId)
 
   Bus.subscribeFunDyn(BusChan.round.chan, BusChan.global.chan):
     case lila.core.chat.ChatLine(id, l, json) =>

@@ -1,11 +1,12 @@
 package lila.round
 
 import lila.core.id.GameId
-import lila.omok.{ Game as OmokGame, Move as OmokMove, MoveError as OmokMoveError, Pos, PositionSnapshot, Replay, RuleSet }
+import lila.omok.{ Color as OmokColor, Game as OmokGame, Move as OmokMove, MoveError as OmokMoveError, Pos, PositionSnapshot, Replay, RuleSet }
 
 final case class PlaceRequest(
     gameId: GameId,
     pos: Pos,
+    expectedTurn: Option[OmokColor] = None,
     ruleSet: RuleSet = RuleSet.Renju
 )
 
@@ -43,14 +44,19 @@ final class OmokMovePlayer(omokRoundRepo: OmokRoundRepo):
 
   def place(request: PlaceRequest): Either[PlaceError, PlaceAccepted] =
     val previous = omokRoundRepo.getOrInit(request.gameId, request.ruleSet)
-    OmokMovePlayer.preview(request.gameId, previous, request.pos).map: accepted =>
-      omokRoundRepo.put(request.gameId, accepted.state)
-      accepted
+    request.expectedTurn
+      .filterNot(_ == previous.position.turn)
+      .map(_ => PlaceError(request, previous, OmokMoveError.WrongTurn))
+      .toLeft(())
+      .flatMap: _ =>
+        OmokMovePlayer.preview(request.gameId, previous, request.pos).map: accepted =>
+          omokRoundRepo.put(request.gameId, accepted.state)
+          accepted
 
 object OmokMovePlayer:
 
   def preview(gameId: GameId, previous: OmokRoundState, pos: Pos): Either[PlaceError, PlaceAccepted] =
-    val request = PlaceRequest(gameId, pos, previous.ruleSet)
+    val request = PlaceRequest(gameId, pos, ruleSet = previous.ruleSet)
     val move = OmokMove(pos)
 
     currentGame(previous).play(move).left.map(PlaceError(request, previous, _)).map: nextGame =>

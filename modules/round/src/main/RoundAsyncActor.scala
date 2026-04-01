@@ -191,19 +191,18 @@ final private class RoundAsyncActor(
               socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
               Nil
           case Some(current) =>
-            val povMatchesTurn =
-              (pov.color.white && current.position.turn == lila.omok.Color.White) ||
-              (pov.color.black && current.position.turn == lila.omok.Color.Black)
+            val expectedTurn = assumedOmokTurnFor(pov.color)
+            val povMatchesTurn = current.position.turn == expectedTurn
 
             if !povMatchesTurn then
               fuccess:
                 logger.debug(
-                  s"[omok] rejecting out-of-turn place for ${pov.gameId}/${pov.color.name} at ${p.pos.key}"
+                  s"[omok] rejecting place for ${pov.gameId}/${pov.color.name} at ${p.pos.key}; expected turn ${expectedTurn.toString.toLowerCase}, found ${current.position.turn.toString.toLowerCase}"
                 )
                 socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
                 Nil
             else
-              omokMovePlayer.place(PlaceRequest(gameId, p.pos)) match
+              omokMovePlayer.place(PlaceRequest(gameId, p.pos, expectedTurn = Some(expectedTurn))) match
                 case Left(err) =>
                   fuccess:
                     logger.debug(err.message)
@@ -404,6 +403,9 @@ final private class RoundAsyncActor(
     case Stop => for _ <- proxy.terminate() yield socketSend.exec(RP.Out.stop(roomId))
 
   private def getPlayer(color: Color): Player = color.fold(whitePlayer, blackPlayer)
+
+  private def assumedOmokTurnFor(color: Color): lila.omok.Color =
+    if color.white then lila.omok.Color.White else lila.omok.Color.Black
 
   private def getSocketStatus: Fu[SocketStatus] =
     whitePlayer.isLongGone

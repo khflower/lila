@@ -37,3 +37,21 @@ class OmokMovePlayerTest extends munit.FunSuite:
     val error = player.place(request).left.toOption.get
 
     assertEquals(error.message, s"[omok] $gameId cannot place H8: occupied")
+
+  test("place rejects a mismatched expected turn without mutating cached state"):
+    val repo = OmokRoundRepo()
+    val player = OmokMovePlayer(repo)
+    val gameId = GameId("qrstuvwx")
+    val first = player.place(PlaceRequest(gameId, Pos.unsafe(7, 7))).toOption.get
+    val stateBeforeRejected = repo.get(gameId).get
+
+    val rejected = player
+      .place(PlaceRequest(gameId, Pos.unsafe(7, 8), expectedTurn = Some(Color.Black)))
+      .left
+      .toOption
+      .get
+    val stateAfterRejected = repo.get(gameId).get
+
+    assertEquals(rejected.message, s"[omok] $gameId cannot place I8: wrong turn")
+    assertEquals(rejected.state, first.state)
+    assertEquals(stateAfterRejected, stateBeforeRejected)
