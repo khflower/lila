@@ -12,14 +12,26 @@ Current `omok/mvp` command flow from the shell wrapper to the real server-side h
    - `POST /run/cli controllers.Dev.command`
 4. `app/controllers/Dev.scala`
    - `Dev.command` reads the raw text body and calls `runCommand(ctx.body.body)`
-   - `runCommand` forwards to `env.api.cli.run(command.split(" ").toList)`
+   - `runCommand` now forwards the raw command string to `env.api.cli.run(command)`
 5. `modules/api/src/main/Cli.scala`
-   - `Cli.run` publishes `CliCommand(args, ...)` on the shared CLI bus with `Bus.ask(...)`
-6. `modules/round/src/main/Env.scala`
-   - the round module registers the actual omok handler through `lila.common.Cli.handle`
-   - current cases are:
-     - `omok seed <gameId> ...` -> `omokDemoSeed.seed(gameId, rest)`
-     - `omok show <gameId>` -> `omokDemoSeed.show(gameId)`
-     - `omok clear <gameId>` -> `omokDemoSeed.clear(gameId)`
+   - `Cli.run(command: String)` parses the raw string with `CliInput.parse(...)`
+   - then `Cli.run(args: List[String])` publishes `CliCommand(args, ...)` on the shared CLI bus with `Bus.ask(...)`
+6. `modules/round/src/main/OmokCli.scala`
+   - the round module exposes `OmokCli.handler(omokDemoSeed)` as the actual `omok` command router
+7. `modules/round/src/main/Env.scala`
+   - registers that router through `lila.common.Cli.handle(OmokCli.handler(omokDemoSeed))`
 
-So on this branch there is no separate `OmokCli` class or direct controller wiring for `omok`. The real server-side command handler is the `lila.common.Cli.handle` subscription inside `modules/round/src/main/Env.scala`, and that subscription delegates to `OmokDemoSeed`.
+So the current server-side `omok` command path is:
+
+`bin/omok-demo` ? `bin/cli` ? `/run/cli` ? `controllers.Dev.command` ? `lila.api.Cli.run(command)` ? `CliInput.parse(...)` ? `CliCommand(args, ...)` ? `OmokCli.handler(...)` ? `OmokDemoSeed`
+
+Supported routed shapes on this branch are:
+- `omok seed <gameId> ...`
+- `omok show <gameId>`
+- `omok clear <gameId>`
+
+This means the branch now has:
+- a shell wrapper (`bin/omok-demo`)
+- a raw command-string parser (`CliInput`)
+- a dedicated round-level command router (`OmokCli`)
+- the existing shared dev CLI transport (`/run/cli`)
