@@ -184,13 +184,7 @@ final class Env(
 
   lazy val omokMovePlayer = wire[OmokMovePlayer]
 
-  lila.common.Cli.handle:
-    case "omok" :: "seed" :: gameId :: rest =>
-      fuccess(omokDemoSeed.seed(gameId, rest))
-    case "omok" :: "show" :: gameId :: Nil =>
-      fuccess(omokDemoSeed.show(gameId))
-    case "omok" :: "clear" :: gameId :: Nil =>
-      fuccess(omokDemoSeed.clear(gameId))
+  lila.common.Cli.handle(OmokCli.handler(omokDemoSeed))
 
   private lazy val takebacker = wire[Takebacker]
 
