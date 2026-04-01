@@ -1,0 +1,33 @@
+#!/bin/sh -e
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+CLI_BIN=${LILA_OMOK_CLI_BIN:-"$SCRIPT_DIR/cli"}
+
+usage() {
+  echo "usage: $(basename "$0") <seed|show|clear> <gameId> [renju|freestyle] [move ...]" >&2
+}
+
+case "${1-}" in
+  seed)
+    [ $# -ge 2 ] || {
+      usage
+      exit 1
+    }
+    ;;
+  show | clear)
+    [ $# -eq 2 ] || {
+      usage
+      exit 1
+    }
+    ;;
+  -h | --help | help)
+    usage
+    exit 0
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac
+
+exec "$CLI_BIN" omok "$@"
