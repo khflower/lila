@@ -7,7 +7,8 @@ Current `omok/mvp` demo path is still a sidecar on top of an existing lila round
 - Local server is running and exposing `http://localhost:9663/run/cli`.
 - `LILA_CLI_TOKEN_DEV` is set in the shell.
 - `bin/omok-demo` / `bin/omok-start` can reach an executable CLI helper (`bin/cli` by default, or `LILA_OMOK_CLI_BIN`).
-- You already have a real started 8-character `GameId` plus at least one real player `fullId` for that round.
+- You already have a real started 8-character `GameId` plus at least one real 12-character player `fullId` for that round.
+- That `fullId` starts with the `gameId`, so `demo1234abcd` maps back to `demo1234`.
 - `OmokRoundRepo` is in-memory, so any server restart wipes seeded omok state.
 
 Wrapper-only smoke checks:

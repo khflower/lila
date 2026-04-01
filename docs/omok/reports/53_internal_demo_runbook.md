@@ -25,6 +25,8 @@ bin/omok-demo doctor
 bin/omok-start demo1234abcd freestyle
 ```
 
+The `fullId` is 12 characters. The matching `gameId` for watcher URLs and `bin/omok-demo show|clear|seed` is the first 8 (`demo1234` in this example).
+
 3. If you want a deterministic non-empty board instead, reseed the matching game id:
 
 ```text

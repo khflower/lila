@@ -8,7 +8,10 @@ DOCTOR_FAILED=0
 DOCTOR_REPORT=
 
 usage() {
-  printf '%s\n' "usage: $PROG <seed|start|show|clear> <id> [renju|freestyle] [move ...]" >&2
+  printf '%s\n' "usage: $PROG seed <gameId> [renju|freestyle] [move ...]" >&2
+  printf '%s\n' "       $PROG start <fullId> [renju|freestyle]" >&2
+  printf '%s\n' "       $PROG show <gameId>" >&2
+  printf '%s\n' "       $PROG clear <gameId>" >&2
   printf '%s\n' "       $PROG doctor" >&2
 }
 
@@ -32,6 +35,30 @@ $LINE"
 doctor_pass() { doctor_line "PASS" "$1"; }
 doctor_fail() { DOCTOR_FAILED=1; doctor_line "FAIL" "$1"; }
 doctor_info() { doctor_line "INFO" "$1"; }
+
+is_wordish_id() {
+  case "$1" in
+    '')
+      return 1
+      ;;
+    *[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-]*)
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+ensure_full_id() {
+  FULL_ID=$1
+  if [ ${#FULL_ID} -eq 12 ] && is_wordish_id "$FULL_ID"; then
+    return 0
+  fi
+  printf '%s\n' "omok-demo: invalid fullId '$FULL_ID'; expected 12 characters matching [A-Za-z0-9_-]" >&2
+  printf '%s\n' "The matching gameId is the first 8 characters of the fullId." >&2
+  exit 1
+}
 
 doctor_default_cli_runtime() {
   if command -v curl >/dev/null 2>&1; then
@@ -100,6 +127,7 @@ case "${1-}" in
     ;;
   start)
     [ $# -ge 2 ] && [ $# -le 3 ] || { usage; exit 1; }
+    ensure_full_id "$2"
     ensure_cli_bin
     exec "$CLI_BIN" omok "$@"
     ;;

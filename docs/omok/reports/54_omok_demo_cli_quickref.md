@@ -11,6 +11,7 @@ bin/omok-start
 
 - `bin/omok-demo` handles `seed`, `start`, `show`, `clear`, and `doctor`.
 - `bin/omok-start` is the narrow convenience alias for `omok start <fullId> [renju|freestyle]`.
+- `fullId` means the 12-character player id; the matching 8-character `gameId` is its first 8 characters.
 
 Both are thin wrappers over the existing internal CLI transport:
 - `bin/cli`
@@ -45,6 +46,8 @@ bin/omok-demo clear <gameId>
 bin/omok-demo doctor
 bin/omok-start <fullId> [renju|freestyle]
 ```
+
+`bin/omok-demo start` and `bin/omok-start` fail locally if the `fullId` is not 12 characters matching `[A-Za-z0-9_-]`, so the operator gets a wrapper error before the call reaches `bin/cli`.
 
 Examples:
 

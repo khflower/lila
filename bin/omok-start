@@ -5,6 +5,7 @@ PROG=$(basename "$0")
 
 usage() {
   printf '%s\n' "usage: $PROG <fullId> [renju|freestyle]" >&2
+  printf '%s\n' "       fullId must be 12 characters; the gameId is its first 8." >&2
 }
 
 case "${1-}" in

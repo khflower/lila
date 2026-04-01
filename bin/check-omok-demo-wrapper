@@ -27,7 +27,10 @@ assert_eq() {
 }
 
 assert_usage() {
-  assert_eq "$1" "usage: omok-demo <seed|start|show|clear> <id> [renju|freestyle] [move ...]
+  assert_eq "$1" "usage: omok-demo seed <gameId> [renju|freestyle] [move ...]
+       omok-demo start <fullId> [renju|freestyle]
+       omok-demo show <gameId>
+       omok-demo clear <gameId>
        omok-demo doctor"
 }
 
@@ -80,6 +83,12 @@ run_wrapper start demo1234abcd freestyle
 assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" ""
 assert_eq "$(cat "$STUB_LOG")" "omok start demo1234abcd freestyle"
+
+run_wrapper start bad-full-id
+assert_eq "$STATUS" "1"
+assert_eq "$OUTPUT" "omok-demo: invalid fullId 'bad-full-id'; expected 12 characters matching [A-Za-z0-9_-]
+The matching gameId is the first 8 characters of the fullId."
+assert_not_called
 
 run_wrapper doctor
 assert_eq "$STATUS" "0"
