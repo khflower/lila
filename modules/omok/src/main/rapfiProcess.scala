@@ -56,19 +56,37 @@ object RapfiParsers:
 class RapfiProcessAdapter(config: RapfiProcessConfig, factory: RapfiProcessFactory) extends EngineClient:
 
   @volatile private var currentHandle: Option[RapfiProcessHandle] = None
+  @volatile private var syncedMoves: Option[Vector[Move]] = None
 
   private def ensureHandle(): RapfiProcessHandle = synchronized {
     currentHandle.filter(_.isAlive).getOrElse {
       val handle = factory.start(config.command)
       RapfiAdapter.openingHandshake(config.boardSize).foreach(handle.writeLine)
       currentHandle = Some(handle)
+      syncedMoves = Some(Vector.empty)
       handle
     }
   }
 
+  private def currentSyncedMoves(handle: RapfiProcessHandle): Option[Vector[Move]] = synchronized {
+    Option.when(currentHandle.contains(handle))(syncedMoves).flatten
+  }
+
+  private def rememberSyncedMoves(handle: RapfiProcessHandle, moves: Vector[Move]): Unit =
+    synchronized {
+      if currentHandle.contains(handle) then syncedMoves = Some(moves)
+    }
+
+  private def markUnsynced(handle: RapfiProcessHandle): Unit =
+    synchronized {
+      if currentHandle.contains(handle) then syncedMoves = None
+    }
+
   private def invalidateHandle(handle: RapfiProcessHandle): Unit =
     synchronized {
-      if currentHandle.contains(handle) then currentHandle = None
+      if currentHandle.contains(handle) then
+        currentHandle = None
+        syncedMoves = None
     }
     handle.close()
 
@@ -82,11 +100,17 @@ class RapfiProcessAdapter(config: RapfiProcessConfig, factory: RapfiProcessFacto
 
   def bestMove(request: EngineMoveRequest): Fu[EngineMoveResponse] = Future {
     withHandle { handle =>
-      val batch = RapfiCommandBatch.move(request)
+      val batch =
+        RapfiCommandBatch(
+          RapfiAdapter.incrementalMoveRequest(request.position, request.limits, currentSyncedMoves(handle)),
+          RapfiResponseBoundary.BestMove
+        )
       batch.lines.foreach(handle.writeLine)
       val response = collectMoveResponse(handle)
       response match
-        case Right(move) => move
+        case Right(move) =>
+          rememberSyncedMoves(handle, request.position.moves :+ move.bestMove)
+          move
         case Left(err)   => throw new RuntimeException(err)
     }
   }
@@ -96,7 +120,9 @@ class RapfiProcessAdapter(config: RapfiProcessConfig, factory: RapfiProcessFacto
       val batch = RapfiCommandBatch.analysis(request)
       batch.lines.foreach(handle.writeLine)
       collectMoveResponse(handle) match
-        case Right(move) => EngineAnalysisResponse.fromMoveResponse(move)
+        case Right(move) =>
+          markUnsynced(handle)
+          EngineAnalysisResponse.fromMoveResponse(move)
         case Left(_) =>
           invalidateHandle(handle)
           EngineAnalysisResponse.normalized(Vector.empty, Map("status" -> "phase1-scaffold"))

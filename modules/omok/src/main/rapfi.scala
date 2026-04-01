@@ -47,7 +47,27 @@ object RapfiAdapter:
     Vector(RapfiProtocol.start(size), "INFO rule 0")
 
   def moveRequest(position: EnginePosition, limits: EngineLimits = EngineLimits()): Vector[String] =
-    RapfiProtocol.info(limits) ++ position.moves.lastOption.fold(Vector(RapfiProtocol.begin))(last => Vector(RapfiProtocol.turn(last.pos)))
+    RapfiProtocol.info(limits) ++ fullSyncMove(position)
+
+  def incrementalMoveRequest(
+      position: EnginePosition,
+      limits: EngineLimits = EngineLimits(),
+      syncedMoves: Option[Vector[Move]] = Some(Vector.empty)
+  ): Vector[String] =
+    RapfiProtocol.info(limits) ++ incrementalMove(position, syncedMoves)
 
   def analysisRequest(position: EnginePosition, limits: EngineLimits = EngineLimits()): Vector[String] =
     RapfiProtocol.info(limits) ++ RapfiProtocol.board(position)
+
+  private def fullSyncMove(position: EnginePosition): Vector[String] =
+    if position.moves.isEmpty then Vector(RapfiProtocol.begin)
+    else RapfiProtocol.board(position)
+
+  private def incrementalMove(position: EnginePosition, syncedMoves: Option[Vector[Move]]): Vector[String] =
+    if position.moves.isEmpty then Vector(RapfiProtocol.begin)
+    else
+      syncedMoves
+        .collect:
+          case knownMoves if position.moves.length == knownMoves.length + 1 && position.moves.startsWith(knownMoves) =>
+            Vector(RapfiProtocol.turn(position.moves.last.pos))
+        .getOrElse(RapfiProtocol.board(position))

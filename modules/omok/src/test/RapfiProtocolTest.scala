@@ -26,14 +26,39 @@ class RapfiProtocolTest extends munit.FunSuite:
     assert(lines.contains("7,7,1"))
     assert(lines.contains("8,7,2"))
 
-  test("adapter emits BEGIN for empty position and TURN for incremental move requests"):
+  test("adapter emits BEGIN for empty positions and BOARD for fresh non-empty move requests"):
     val initial = PositionSnapshot.fromGame(Game.initial())
     val afterOne = PositionSnapshot.fromGame(
       Game.initial().play(Move(pos(7, 7))).toOption.get,
       Vector(Move(pos(7, 7)))
     )
     assertEquals(RapfiAdapter.moveRequest(initial), Vector("BEGIN"))
-    assertEquals(RapfiAdapter.moveRequest(afterOne), Vector("TURN 7,7"))
+    assertEquals(RapfiAdapter.moveRequest(afterOne), Vector("BOARD", "7,7,1", "DONE"))
+
+  test("incremental adapter requests use TURN only when the engine state is already synchronized"):
+    val firstMove = Move(pos(7, 7))
+    val secondMove = Move(pos(7, 8))
+    val afterOne = PositionSnapshot.fromGame(
+      Game.initial().play(firstMove).toOption.get,
+      Vector(firstMove)
+    )
+    val afterTwo = PositionSnapshot.fromGame(
+      Replay(Game.initial(), Vector(firstMove, secondMove)).toOption.get,
+      Vector(firstMove, secondMove)
+    )
+
+    assertEquals(
+      RapfiAdapter.incrementalMoveRequest(afterOne, syncedMoves = Some(Vector.empty)),
+      Vector("TURN 7,7")
+    )
+    assertEquals(
+      RapfiAdapter.incrementalMoveRequest(afterTwo, syncedMoves = Some(Vector(firstMove))),
+      Vector("TURN 8,7")
+    )
+    assertEquals(
+      RapfiAdapter.incrementalMoveRequest(afterTwo, syncedMoves = None),
+      Vector("BOARD", "7,7,1", "8,7,2", "DONE")
+    )
 
   test("analysis request includes budget hints before BOARD payload"):
     val snapshot = PositionSnapshot.fromGame(Game.initial())

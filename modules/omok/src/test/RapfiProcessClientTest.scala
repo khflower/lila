@@ -48,6 +48,26 @@ class RapfiProcessClientTest extends munit.FunSuite:
     assertEquals(handleRef.writes.take(3).toVector, Vector("START 15", "INFO rule 0", "BEGIN"))
     assert(handleRef.closed)
 
+  test("client full-syncs non-empty positions with BOARD on a fresh process"):
+    var handleRef: FakeHandle = null
+    val factory = new RapfiProcessFactory:
+      def start(command: List[String]) =
+        handleRef = new FakeHandle(List("8,7"))
+        handleRef
+
+    val firstMove = Move(pos(7, 7))
+    val game = Game.initial().play(firstMove).toOption.get
+    val client = RapfiProcessClient(factory, RapfiProcessConfig(List("rapfi")))
+    val request = EngineMoveRequest(PositionSnapshot.fromGame(game, Vector(firstMove)))
+    val result = Await.result(client.bestMove(request), 2.seconds)
+
+    assertEquals(result.bestMove, Move(pos(7, 8)))
+    assertEquals(
+      handleRef.writes.toVector,
+      Vector("START 15", "INFO rule 0", "BOARD", "7,7,1", "DONE")
+    )
+    assert(handleRef.closed)
+
   test("analysis scaffold emits board payload and returns empty normalized analysis"):
     var handleRef: FakeHandle = null
     val factory = new RapfiProcessFactory:

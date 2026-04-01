@@ -52,11 +52,12 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
     val first = Await.result(adapter.bestMove(EngineMoveRequest(initial)), 2.seconds)
 
     val firstMove = Move(pos(7, 7))
-    val afterOne = PositionSnapshot.fromGame(
-      Game.initial().play(firstMove).toOption.get,
-      Vector(firstMove)
+    val replyMove = Move(pos(7, 8))
+    val afterReply = PositionSnapshot.fromGame(
+      Replay(Game.initial(), Vector(firstMove, replyMove)).toOption.get,
+      Vector(firstMove, replyMove)
     )
-    val second = Await.result(adapter.bestMove(EngineMoveRequest(afterOne)), 2.seconds)
+    val second = Await.result(adapter.bestMove(EngineMoveRequest(afterReply)), 2.seconds)
 
     assertEquals(first.bestMove, firstMove)
     assertEquals(second.bestMove, Move(pos(7, 8)))
@@ -67,16 +68,19 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
         "START 15",
         "INFO rule 0",
         "BEGIN",
-        "TURN 7,7"
+        "TURN 8,7"
       )
     )
 
-  test("process adapter closes and replaces a stale handle after a failed move response"):
+  test("process adapter closes and replaces a stale handle with a full board sync for midgame requests"):
     val failedHandle = new FakeHandle(Vector("MESSAGE thinking"))
-    val recoveredHandle = new FakeHandle(Vector("BESTMOVE 8,7"))
+    val recoveredHandle = new FakeHandle(Vector("BESTMOVE 9,9"))
     val factory = new FakeFactory(Vector(failedHandle, recoveredHandle))
     val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
-    val request = EngineMoveRequest(PositionSnapshot.fromGame(Game.initial()))
+    val firstMove = Move(pos(7, 7))
+    val secondMove = Move(pos(7, 8))
+    val game = Replay(Game.initial(), Vector(firstMove, secondMove)).toOption.get
+    val request = EngineMoveRequest(PositionSnapshot.fromGame(game, Vector(firstMove, secondMove)))
 
     intercept[RuntimeException]:
       Await.result(adapter.bestMove(request), 2.seconds)
@@ -84,14 +88,17 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
     val recovered = Await.result(adapter.bestMove(request), 2.seconds)
 
     assert(failedHandle.closed)
-    assertEquals(recovered.bestMove, Move(pos(7, 8)))
+    assertEquals(recovered.bestMove, Move(pos(9, 9)))
     assertEquals(factory.starts, 2)
     assertEquals(
       recoveredHandle.writes.toVector,
       Vector(
         "START 15",
         "INFO rule 0",
-        "BEGIN"
+        "BOARD",
+        "7,7,1",
+        "8,7,2",
+        "DONE"
       )
     )
 
@@ -121,6 +128,34 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
     assert(failedHandle.closed)
     assertEquals(move.bestMove, Move(pos(9, 9)))
     assertEquals(factory.starts, 2)
+
+  test("successful analysis leaves the adapter unsynced so the next move request replays the board"):
+    val handle = new FakeHandle(Vector("BESTMOVE 9,9", "BESTMOVE 8,7"))
+    val factory = new FakeFactory(Vector(handle))
+    val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
+    val firstMove = Move(pos(7, 7))
+    val game = Game.initial().play(firstMove).toOption.get
+    val position = PositionSnapshot.fromGame(game, Vector(firstMove))
+
+    val analysis = Await.result(adapter.analyse(EngineAnalysisRequest(position)), 2.seconds)
+    val move = Await.result(adapter.bestMove(EngineMoveRequest(position)), 2.seconds)
+
+    assertEquals(analysis.bestMove, Some(Move(pos(9, 9))))
+    assertEquals(move.bestMove, Move(pos(7, 8)))
+    assertEquals(factory.starts, 1)
+    assertEquals(
+      handle.writes.toVector,
+      Vector(
+        "START 15",
+        "INFO rule 0",
+        "BOARD",
+        "7,7,1",
+        "DONE",
+        "BOARD",
+        "7,7,1",
+        "DONE"
+      )
+    )
 
   private final class FakeFactory(handles: Vector[FakeHandle]) extends RapfiProcessFactory:
     var starts = 0
