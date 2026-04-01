@@ -48,6 +48,21 @@ class OmokDemoSeedTest extends munit.FunSuite:
     assertEquals(state.position.lastMove.map(_.pos.key), Some("I8"))
     assertEquals(state.moves.map(_.pos.key), Vector("H8", "A1", "I8"))
 
+  test("seed accepts comma-separated moves across args and ignores empty segments"):
+    val repo = OmokRoundRepo()
+    val helper = OmokDemoSeed(repo)
+
+    val result = helper.seed("demo1234", List("freestyle", "H8, A1", " , I8,,", "J10"))
+    val state = repo.get(lila.core.id.GameId("demo1234")).get
+
+    assertEquals(
+      result,
+      "seeded omok round demo1234: ruleSet=freestyle ply=4 turn=black lastMove=J10 moves=H8,A1,I8,J10"
+    )
+    assertEquals(state.position.ply, 4)
+    assertEquals(state.position.lastMove.map(_.pos.key), Some("J10"))
+    assertEquals(state.moves.map(_.pos.key), Vector("H8", "A1", "I8", "J10"))
+
   test("seed rejects invalid game ids and leaves the repo untouched"):
     val repo = OmokRoundRepo()
     val helper = OmokDemoSeed(repo)

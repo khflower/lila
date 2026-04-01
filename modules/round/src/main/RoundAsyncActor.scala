@@ -1,7 +1,7 @@
 package lila.round
 
 import alleycats.Zero
-import chess.{ Black, Centis, Color, White }
+import chess.{ Black, Centis, Color, Status, White }
 import play.api.libs.json.*
 import scalalib.actor.AsyncActor
 
@@ -209,10 +209,19 @@ final private class RoundAsyncActor(
                     socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
                     Nil
                 case Right(applied) =>
-                  fuccess:
-                    version = version.map(_ + 1)
-                    socketSend.exec(Protocol.Out.omokMove(version, applied.event))
-                    Nil
+                  applied.terminalStatus match
+                    case Some(terminalStatus) =>
+                      for
+                        _ <- fuccess:
+                          version = version.map(_ + 1)
+                          socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+                        events <- finishOmokTerminal(pov.game, terminalStatus)
+                      yield events
+                    case None =>
+                      fuccess:
+                        version = version.map(_ + 1)
+                        socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+                        Nil
       .addEffect(_ => p.promise.foreach(_.success {}))
 
     case p: RoundBus.BotPlay =>
@@ -406,6 +415,17 @@ final private class RoundAsyncActor(
 
   private def assumedOmokTurnFor(color: Color): lila.omok.Color =
     if color.white then lila.omok.Color.White else lila.omok.Color.Black
+
+  private def colorFromOmok(color: lila.omok.Color): Color =
+    color match
+      case lila.omok.Color.White => White
+      case lila.omok.Color.Black => Black
+
+  private def finishOmokTerminal(game: Game, terminalStatus: lila.omok.Status)(using GameProxy): Fu[Events] =
+    terminalStatus match
+      case lila.omok.Status.Win(color) => finisher.other(game, _.VariantEnd, Some(colorFromOmok(color)))
+      case lila.omok.Status.Draw       => finisher.other(game, _ => Status.Draw, None)
+      case lila.omok.Status.Ongoing    => fuccess(Nil)
 
   private def getSocketStatus: Fu[SocketStatus] =
     whitePlayer.isLongGone
