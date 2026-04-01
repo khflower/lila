@@ -1,12 +1,10 @@
 package lila.omok
 
 import scala.collection.mutable
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 class RapfiProcessAdapterTest extends munit.FunSuite:
-
-  private given ExecutionContext = ExecutionContext.global
 
   private def pos(row: Int, col: Int) = Pos.unsafe(row, col)
 
@@ -47,7 +45,7 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
         "BESTMOVE 8,7"
       )
     )
-    val factory = new FakeFactory(handle)
+    val factory = new FakeFactory(Vector(handle))
     val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
 
     val initial = PositionSnapshot.fromGame(Game.initial())
@@ -73,10 +71,34 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
       )
     )
 
+  test("process adapter closes and replaces a stale handle after a failed move response"):
+    val failedHandle = new FakeHandle(Vector("MESSAGE thinking"))
+    val recoveredHandle = new FakeHandle(Vector("BESTMOVE 8,7"))
+    val factory = new FakeFactory(Vector(failedHandle, recoveredHandle))
+    val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
+    val request = EngineMoveRequest(PositionSnapshot.fromGame(Game.initial()))
+
+    intercept[RuntimeException]:
+      Await.result(adapter.bestMove(request), 2.seconds)
+
+    val recovered = Await.result(adapter.bestMove(request), 2.seconds)
+
+    assert(failedHandle.closed)
+    assertEquals(recovered.bestMove, Move(pos(7, 8)))
+    assertEquals(factory.starts, 2)
+    assertEquals(
+      recoveredHandle.writes.toVector,
+      Vector(
+        "START 15",
+        "INFO rule 0",
+        "BEGIN"
+      )
+    )
+
   test("analysis falls back to a single primary variation from best-move output"):
     val handle = new FakeHandle(Vector("BESTMOVE 9,9"))
     val adapter =
-      new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), new FakeFactory(handle))
+      new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), new FakeFactory(Vector(handle)))
 
     val analysis =
       Await.result(adapter.analyse(EngineAnalysisRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
@@ -84,12 +106,29 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
     assertEquals(analysis.bestMove, Some(Move(pos(9, 9))))
     assertEquals(analysis.variations.map(_.rank), Vector(1))
 
-  private final class FakeFactory(handle: FakeHandle) extends RapfiProcessFactory:
+  test("analysis fallback clears the cached handle so the next request restarts cleanly"):
+    val failedHandle = new FakeHandle(Vector.empty)
+    val recoveredHandle = new FakeHandle(Vector("BESTMOVE 9,9"))
+    val factory = new FakeFactory(Vector(failedHandle, recoveredHandle))
+    val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
+
+    val analysis =
+      Await.result(adapter.analyse(EngineAnalysisRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
+    val move = Await.result(adapter.bestMove(EngineMoveRequest(PositionSnapshot.fromGame(Game.initial()))), 2.seconds)
+
+    assertEquals(analysis.variations, Vector.empty)
+    assertEquals(analysis.metadata.get("status"), Some("phase1-scaffold"))
+    assert(failedHandle.closed)
+    assertEquals(move.bestMove, Move(pos(9, 9)))
+    assertEquals(factory.starts, 2)
+
+  private final class FakeFactory(handles: Vector[FakeHandle]) extends RapfiProcessFactory:
     var starts = 0
+    private val remaining = mutable.Queue.from(handles)
 
     def start(command: List[String]): RapfiProcessHandle =
       starts += 1
-      handle
+      remaining.dequeue()
 
   private final class FakeHandle(initialOutput: Vector[String]) extends RapfiProcessHandle:
     val writes = mutable.ArrayBuffer.empty[String]
@@ -106,3 +145,4 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
 
     def close(): Unit =
       alive = false
+    def closed: Boolean = !alive

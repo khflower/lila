@@ -2,6 +2,7 @@ package lila.omok
 
 import lila.core.lilaism.Core.*
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.control.NonFatal
 
 trait RapfiProcessHandle:
   def isAlive: Boolean = true
@@ -65,23 +66,41 @@ class RapfiProcessAdapter(config: RapfiProcessConfig, factory: RapfiProcessFacto
     }
   }
 
-  def bestMove(request: EngineMoveRequest): Fu[EngineMoveResponse] = Future {
+  private def invalidateHandle(handle: RapfiProcessHandle): Unit =
+    synchronized {
+      if currentHandle.contains(handle) then currentHandle = None
+    }
+    handle.close()
+
+  private def withHandle[A](use: RapfiProcessHandle => A): A =
     val handle = ensureHandle()
-    val batch = RapfiCommandBatch.move(request)
-    batch.lines.foreach(handle.writeLine)
-    val response = collectMoveResponse(handle)
-    response match
-      case Right(move) => move
-      case Left(err)   => throw new RuntimeException(err)
+    try use(handle)
+    catch
+      case NonFatal(err) =>
+        invalidateHandle(handle)
+        throw err
+
+  def bestMove(request: EngineMoveRequest): Fu[EngineMoveResponse] = Future {
+    withHandle { handle =>
+      val batch = RapfiCommandBatch.move(request)
+      batch.lines.foreach(handle.writeLine)
+      val response = collectMoveResponse(handle)
+      response match
+        case Right(move) => move
+        case Left(err)   => throw new RuntimeException(err)
+    }
   }
 
   def analyse(request: EngineAnalysisRequest): Fu[EngineAnalysisResponse] = Future {
-    val handle = ensureHandle()
-    val batch = RapfiCommandBatch.analysis(request)
-    batch.lines.foreach(handle.writeLine)
-    collectMoveResponse(handle) match
-      case Right(move) => EngineAnalysisResponse.fromMoveResponse(move)
-      case Left(_)     => EngineAnalysisResponse.normalized(Vector.empty, Map("status" -> "phase1-scaffold"))
+    withHandle { handle =>
+      val batch = RapfiCommandBatch.analysis(request)
+      batch.lines.foreach(handle.writeLine)
+      collectMoveResponse(handle) match
+        case Right(move) => EngineAnalysisResponse.fromMoveResponse(move)
+        case Left(_) =>
+          invalidateHandle(handle)
+          EngineAnalysisResponse.normalized(Vector.empty, Map("status" -> "phase1-scaffold"))
+    }
   }
 
   override def health: Fu[EngineHealth] = Future.successful {
