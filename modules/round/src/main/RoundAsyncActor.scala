@@ -182,6 +182,14 @@ final private class RoundAsyncActor(
           MoveLatMonitor.recordMicros(lap.micros)
       )
 
+    case p: HumanPlace =>
+      handle(p.playerId): pov =>
+        fuccess:
+          logger.debug(s"Ignoring HumanPlace for ${pov.gameId}/${pov.color.name} at ${p.pos.key}")
+          socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+          Nil
+      .addEffect(_ => p.promise.foreach(_.success {}))
+
     case p: RoundBus.BotPlay =>
       val res = proxy
         .withPov(p.playerId):
