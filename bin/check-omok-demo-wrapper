@@ -44,16 +44,22 @@ assert_not_called() {
   fi
 }
 
-run_wrapper() {
+run_wrapper_with_cli() {
+  CLI_BIN=$1
+  shift
   rm -f "$STUB_LOG"
   set +e
   OUTPUT=$(
-    LILA_OMOK_CLI_BIN="$STUB" \
+    LILA_OMOK_CLI_BIN="$CLI_BIN" \
       OMOK_DEMO_STUB_LOG="$STUB_LOG" \
       "$WRAPPER" "$@" 2>&1
   )
   STATUS=$?
   set -e
+}
+
+run_wrapper() {
+  run_wrapper_with_cli "$STUB" "$@"
 }
 
 run_wrapper --help
@@ -80,6 +86,13 @@ run_wrapper clear demo1234
 assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" ""
 assert_eq "$(cat "$STUB_LOG")" "omok clear demo1234"
+
+MISSING_CLI="$TMPDIR/missing-cli"
+run_wrapper_with_cli "$MISSING_CLI" show demo1234
+assert_eq "$STATUS" "1"
+assert_eq "$OUTPUT" "omok-demo: CLI helper is missing or not executable: $MISSING_CLI
+Set LILA_OMOK_CLI_BIN to a working bin/cli-style helper or restore $ROOT/bin/cli."
+assert_not_called
 
 run_wrapper seed
 assert_eq "$STATUS" "1"

@@ -7,6 +7,13 @@ usage() {
   echo "usage: $(basename "$0") <seed|show|clear> <gameId> [renju|freestyle] [move ...]" >&2
 }
 
+ensure_cli_bin() {
+  [ -x "$CLI_BIN" ] && return 0
+  printf '%s\n' "omok-demo: CLI helper is missing or not executable: $CLI_BIN" >&2
+  printf '%s\n' "Set LILA_OMOK_CLI_BIN to a working bin/cli-style helper or restore $SCRIPT_DIR/cli." >&2
+  exit 1
+}
+
 case "${1-}" in
   seed)
     [ $# -ge 2 ] || {
@@ -30,4 +37,5 @@ case "${1-}" in
     ;;
 esac
 
+ensure_cli_bin
 exec "$CLI_BIN" omok "$@"

@@ -24,7 +24,10 @@ For a wrapper-only smoke check that does not require the server, run:
 bin/check-omok-demo-wrapper
 ```
 
-That script stubs `LILA_OMOK_CLI_BIN` and only verifies `bin/omok-demo` usage gating plus forwarded argv shape.
+That script stubs `LILA_OMOK_CLI_BIN` and verifies three things:
+- `bin/omok-demo` usage gating;
+- forwarded argv shape for `seed`, `show`, and `clear`;
+- fast failure when the delegated CLI helper path is missing or not executable.
 
 ## Supported Commands
 
@@ -92,3 +95,5 @@ bin/omok-demo seed demo1234
 ## Important Caveat
 
 If `bin/cli` cannot reach `localhost:9663/run/cli`, the wrapper will fail even though the omok helper code exists. In that case, the missing piece is environment/runtime wiring, not omok seed logic itself.
+
+If the wrapper prints `omok-demo: CLI helper is missing or not executable: ...`, fix `LILA_OMOK_CLI_BIN` or restore the executable bit on `bin/cli` before debugging the server path.

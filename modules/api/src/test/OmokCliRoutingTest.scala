@@ -40,3 +40,4 @@ class OmokCliRoutingTest extends munit.FunSuite:
       "cleared omok round demo1234: ruleSet=freestyle ply=2 turn=black lastMove=A1 moves=H8,A1"
     )
     assertEquals(runRaw(omokHandler, "omok show demo1234"), "no omok round state for demo1234")
+    assertEquals(runRaw(omokHandler, "omok clear demo1234"), "no omok round state to clear for demo1234")
