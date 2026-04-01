@@ -66,3 +66,26 @@ Prioritize narrow, mergeable slices that reduce demo risk or unlock the first om
 4. engine session reset keyed by game/ruleset
 5. first omok-native start flow scaffold
 6. persistence bridge scaffolding or merged planning doc cut
+
+## 2026-04-01 docs synthesis checkpoint
+
+Deferred planning output from `worker/start-flow` and `worker/persistence` has now been folded into the main omok docs.
+
+Canonical coordinator takeaways:
+
+- smallest next patch: native internal omok start flow that creates a real game and seeds initial omok state together
+- next serious infrastructure wave: durable `GameId`-keyed omok sidecar persistence with canonical coordinate move storage
+- keep the existing round contract stable:
+  - `data.omok`
+  - `place`
+  - `omokMove`
+- do not bundle start-flow, persistence, and broader round/result cleanup into one rewrite
+
+Primary doc landing points:
+
+- `docs/omok/reports/12_impl_roadmap.md`
+- `docs/omok/reports/13_first_patch_plan.md`
+- `docs/omok/reports/03_api_db_notation.md`
+- `docs/omok/reports/49_post_95_gap_list.md`
+- `docs/omok/reports/53_internal_demo_runbook.md`
+- `docs/omok/reports/58_seed_to_round_demo_path.md`

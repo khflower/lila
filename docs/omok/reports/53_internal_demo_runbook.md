@@ -9,6 +9,8 @@ Show the current `omok/mvp` branch as a believable internal prototype:
 - reach a finished state if desired
 - show that reload/reconnect preserves the same finished omok snapshot
 
+This is the current demo path, not the planned native start-flow path.
+
 ## Pre-Demo Setup
 
 1. Pick one real active player `fullId` for the round you want to use.
@@ -42,6 +44,13 @@ bin/omok-demo show demo1234
 - black player page
 - white player page
 - watcher page
+
+Current runtime assumptions:
+
+- `bin/cli` is reachable by the wrapper
+- local server exposes `http://localhost:9663/run/cli`
+- `LILA_CLI_TOKEN_DEV` is set
+- `OmokRoundRepo` is still in-memory, so a server restart clears the seeded state
 
 ## Safest Demo Script
 
@@ -111,9 +120,27 @@ Then refresh the tabs.
 
 ## Best Short Demo Version
 
-If you only have 2?3 minutes:
-1. open `/dev/omok/start/<fullId>?ruleSet=renju`
-2. open a watcher tab for the same game
+If you only have 2-3 minutes:
+1. `bin/omok-demo seed demo1234 renju H8 A1 I8`
+2. open player + watcher tabs
 3. make one legal move
 4. show finished/reload behavior if available
-5. explain that the remaining work is productized challenge/lobby integration, not the core live loop
+5. explain that the remaining work is native start flow, durable persistence, and broader site integration, not the core live loop
+
+## Planned Replacement After The First Native Start-Flow Patch
+
+Forward-looking only. Not the current branch behavior.
+
+Once the first start-flow patch lands, the top of this runbook should change to:
+
+1. open `GET /omok/start`
+2. choose the ruleset
+3. submit to create a fresh omok round
+4. open the returned black, white, and watcher links
+5. continue with the same live move / finish / reload script already documented above
+
+That change removes the normal demo dependency on:
+
+- a pre-existing `GameId`
+- `bin/omok-demo`
+- CLI token/runtime setup for ordinary operator flow

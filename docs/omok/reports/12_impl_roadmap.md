@@ -1,203 +1,135 @@
-```md
 # Omok Implementation Roadmap
 
-## MVP Scope
+## Current Checkpoint
 
-The MVP should deliver a complete two-player Omok game loop with deterministic rules, a playable UI, and a minimal game session service. The target is a stable internal release rather than a feature-rich public launch.
+`omok/mvp` is past the original rules-engine and live-play bootstrap stage.
 
-Included in MVP:
+Already working:
 
-- 15x15 board rendering and interaction
-- Turn-based two-player play
-- Legal move validation on the server-side game engine
-- Win detection for five in a row
-- Basic game session lifecycle: create game, join game, start, play, finish
-- Turn synchronization between clients
-- Basic reconnect/resume for active games
-- Minimal match history metadata for debugging and QA
-- Clear game-end states: win, resign, disconnect timeout if already part of current platform norms
-- Focused QA coverage around rule correctness and turn ordering
+- `data.omok` round boot
+- omok board/state rendering on player and watcher pages
+- live `place -> omokMove` move flow
+- terminal omok status in the live path
+- finished-state retention across reload
+- CLI seeding through `bin/omok-demo`
 
-MVP explicitly assumes:
+The remaining work is no longer "make omok playable at all". It is now about replacing demo-only seams with coordinator-safe product seams.
 
-- Human vs human first
-- Single ruleset first
-- Internal or lightweight identity model only
-- Basic UI polish only
+## Recommended Phase Order
 
-## Current Branch Scaffold
+### Phase 0: Prove The Current Demo Path On Real Runtime
 
-The current branch now has a narrow internal scaffold for Phase 2 start semantics without taking on full product pairing:
+Before changing architecture again, prove the seeded flow on the actual host/runtime:
 
-- a real lila round can be explicitly switched into omok mode through `omok start <fullId>` or `/dev/omok/start/<fullId>`
-- that scaffold seeds `OmokRoundRepo` from an explicit write path, not from preload/socket reads
-- it redirects straight into the existing round player page, where the omok boot/live loop already runs
-
-This is not the final create/join/start product flow. It is the first practical bridge from an existing real round to an omok-native round boot, and it deliberately avoids challenge/lobby complexity until the generic session contract is clearer.
-
-## Exact Phase Ordering
-
-The implementation should follow this order and should not parallelize phases until the dependency boundary is clear.
-
-### Phase 0: Contract and Boundaries
-
-- Freeze the MVP ruleset and service boundaries
-- Define canonical game state shape
-- Define move event payloads and game-end payloads
-- Define non-goals for MVP so downstream work does not expand scope
+- `bin/omok-demo` reaches the internal CLI path
+- seed -> round boot -> move -> finish -> reload works once end to end
+- runtime prerequisites are documented clearly
 
 Exit criteria:
 
-- One agreed state model
-- One agreed ruleset
-- One agreed API/event contract
+- one reliable internal demo path
+- operator failures are separated from code failures
 
-### Phase 1: Core Rule Engine
+### Phase 1: Add A Native Internal Start Flow
 
-- Implement board model
-- Implement move application
-- Implement legal move checks
-- Implement turn ownership
-- Implement five-in-a-row detection
-- Add exhaustive unit tests for edge cases and regression cases
+This is the smallest next patch.
 
-Exit criteria:
+Build a narrow omok-specific create/start path that:
 
-- Pure deterministic engine passes full rule test suite
-- No UI or transport dependency in the engine
+- creates a real lila `Game`
+- seeds initial omok state for that same `GameId`
+- returns black, white, and watcher links
+- lands on the already-working omok round runtime
 
-### Phase 2: Game Session Service
+Recommended shape:
 
-- Wrap the rule engine in a game/session domain service
-- Add create/join/start/play/resign/reconnect flows
-- Add persistence for active session state if required by platform architecture
-- Enforce server-authoritative move ordering
-- Add integration tests for race conditions and invalid actions
+- internal direct-create flow
+- anonymous seats first
+- one ruleset selector at most
+
+Do not start with lobby or challenge integration.
 
 Exit criteria:
 
-- One backend path can host a full game from start to finish
-- Session service rejects illegal or out-of-order moves
+- no pre-existing `GameId` required
+- first load of returned player links already boots omok mode
 
-Current checkpoint on this branch:
+### Phase 2: Add Durable Omok Sidecar Persistence
 
-- `play`, `resign`, reconnect, and live redraw already exist on the omok sidecar path
-- the newly landed internal start scaffold covers only the `start existing round in omok mode` slice
-- `create`, `join`, lobby seek publication, and challenge acceptance remain intentionally out of scope for this wave
+This is the next serious integration wave, not part of the first start-flow patch.
 
-### Phase 3: Playable Client
+Add a durable omok record keyed by `GameId` with canonical coordinate move storage, then use it to support:
 
-- Implement board UI and stone placement interactions
-- Bind client to session state and move events
-- Render turn state, win state, and reconnect state
-- Prevent local invalid actions before sending requests
-- Add basic loading/error states
+- cache-cold boot
+- restart survival
+- cleaner follow-on start flow and result integration
 
 Exit criteria:
 
-- Two players can complete a full game through the real client
-- UI state stays in sync with server state
+- live move and seed paths write durable omok state
+- `RoundApi.withOmok(...)` can boot from durable state when cache is cold
 
-### Phase 4: Hardening and Ship Readiness
+### Phase 3: Broader Round / Result Cleanup
 
-- Add reconnection verification
-- Add telemetry/logging needed for QA and triage
-- Add smoke tests for the full game path
-- Close UX gaps that block normal play
-- Run focused bug bash on duplicate moves, stale state, disconnects, and endgame behavior
+After start flow and persistence both exist, choose one narrow follow-up:
+
+- broader round-status/result integration
+- creator-bound or challenge-oriented start flow
+- wider platform surfacing
 
 Exit criteria:
 
-- Internal QA can repeatedly finish games without state corruption
-- Top operational failure cases are observable and debuggable
+- the next slice is smaller than "make the whole site omok-aware"
+
+## Coordination Rule
+
+Do not combine Phase 1 and Phase 2 into one patch unless there is a hard blocker.
+
+The clean split is:
+
+- Phase 1 removes the seed-first operator dependency
+- Phase 2 replaces the cache-only storage seam under the same live-round contract
+
+That keeps each change reviewable and avoids reopening chess-shaped setup and notation code at the same time.
 
 ## What To Defer
 
-These items should be deferred until after the MVP is stable:
+Still defer these until after native start flow and durable sidecar persistence exist:
 
+- lobby integration
+- challenge taxonomy changes
+- rating / perf support
 - AI opponent
-- Matchmaking beyond simple invite/direct join
-- Ranked play, MMR, seasons, or ladders
-- Spectators
-- Chat and social features
-- Rich replay viewer
-- Variant rule support beyond the initial selected ruleset
-- Tournament structures
-- Cosmetics, themes, sound, and animation-heavy polish
-- Advanced anti-cheat beyond basic server authority and validation
-- Deep analytics and progression systems
-- Cross-device long-term history UX beyond minimal internal debugging needs
+- study / analysis / tree parity
+- PGN / import-export work
+- tournament / swiss / pool support
+- deeper search / profile / moderation integration
 
-## First 3 Coding Milestones
+## First 3 Coding Milestones From Here
 
-### Milestone 1: Rule Engine Complete
+### Milestone 1: Internal Demo Proof
 
-Deliverables:
+- prove `bin/omok-demo` on the real runtime
+- finish the seed -> move -> finish -> reload script once
 
-- `GameState` model
-- Board coordinate model
-- Move validation
-- Turn progression
-- Win detection
-- Unit test matrix for core rules
+### Milestone 2: Omok Starter Service
 
-Why first:
+- create a real `Game`
+- seed initial omok state for the same `GameId`
+- return player and watcher links
 
-- Everything else depends on deterministic rule behavior
+### Milestone 3: Durable Omok Sidecar Repo
 
-### Milestone 2: Server-Authoritative Session Flow
-
-Deliverables:
-
-- Session aggregate/service around the rule engine
-- Endpoints or event handlers for create/join/play/resign/reconnect
-- Integration tests for move ordering and invalid action rejection
-
-Why second:
-
-- It turns the pure engine into a real playable game path and fixes backend semantics before UI work spreads assumptions
-
-### Milestone 3: End-to-End Playable Client
-
-Deliverables:
-
-- Interactive board UI
-- Real-time or request/response session sync
-- Turn/game-over/reconnect UX
-- Smoke test proving two-player completion path
-
-Why third:
-
-- This is the earliest milestone that proves the MVP is actually shippable to internal testers
-
-## Recommended Branch Strategy For Parallel Implementation
-
-Use one protected integration branch for the MVP plus short-lived workstream branches with clear ownership.
-
-Recommended structure:
-
-- `omok/mvp` as the integration branch for all MVP work
-- `omok/rules-engine` for Phase 1 domain logic and tests
-- `omok/session-service` for Phase 2 backend orchestration
-- `omok/client-board` for Phase 3 board UI and client state handling
-- `omok/hardening` for Phase 4 telemetry, reconnect fixes, and QA issues after the first playable path exists
-
-Recommended merge order:
-
-1. `omok/rules-engine` merges first
-2. `omok/session-service` rebases on `omok/mvp` after the rule engine lands
-3. `omok/client-board` can begin against mocked contracts, then rebase once the session service contract is stable
-4. `omok/hardening` starts only after the end-to-end path exists
-
-Parallel implementation guidance:
-
-- Keep the rule engine isolated and dependency-free so other branches can mock it cleanly
-- Freeze payload contracts before parallel backend/client work
-- Avoid long-lived feature divergence; rebase frequently onto `omok/mvp`
-- Route bug fixes to the owning branch first, then merge forward into `omok/mvp`
-- Cut release candidates only from `omok/mvp`, not from workstream branches
+- persist canonical coordinate moves keyed by `GameId`
+- fall back to durable state on cache-cold boot
 
 ## Recommended Execution Summary
 
-The shortest path to a reliable Omok MVP is: freeze the ruleset, build the deterministic engine, wrap it in a server-authoritative session service, then ship the thinnest client that can complete a real game. Everything that does not directly improve correctness, session integrity, or basic playability should be deferred until after internal validation.
-```
+Default order:
+
+1. prove the current seeded demo path
+2. land the small native start-flow patch
+3. land durable `GameId`-keyed omok persistence
+4. only then choose the next broader integration seam
+
+If the goal shifts from demo momentum to storage durability, swap steps 2 and 3. Do not try to do both at once.

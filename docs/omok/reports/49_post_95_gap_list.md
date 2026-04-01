@@ -40,15 +40,25 @@ Why it matters:
 - this is fine for internal demos;
 - it is not yet the final product shape for all round/status/result surfaces across the site.
 
-### 3. Game creation / seeding is still dev-oriented, not productized
+### 3. Game creation is still seed-first, not native
 
-We can now seed and demo a known round id, but there is still no normal user-facing omok game creation/start flow.
+We can now seed and demo a known round id, but there is still no narrow omok-native way to create a fresh round and land in omok mode on first load.
 
 Why it matters:
-- internal demos are realistic;
-- product readiness still needs a real create/start path.
+- this is the smallest user-visible missing seam;
+- it is the cleanest way to retire the seed-first demo dependency.
 
-### 4. Wider site integration is still intentionally incomplete
+### 4. Omok persistence and notation are still cache-only
+
+Current omok state still lives primarily in `OmokRoundRepo`, an in-memory `TrieMap[GameId, OmokRoundState]`.
+
+Why it matters:
+
+- server restart still wipes omok state;
+- cache-cold boot still has no durable fallback;
+- start flow and later site integration still lack a real omok storage model.
+
+### 5. Wider site integration is still intentionally incomplete
 
 The branch still does not fully integrate omok into:
 - tree / study / analysis ecosystem beyond the current narrow seams;
@@ -63,12 +73,12 @@ Why it matters:
 
 1. prove the demo environment path with `bin/omok-demo` on the actual host/server runtime;
 2. run the full internal live demo once with seed -> move -> finish -> reload;
-3. only after that, decide whether the next cut is:
-   - productized omok game creation, or
-   - deeper finish/result integration across the generic round model.
+3. land the small native start-flow patch;
+4. land durable `GameId`-keyed omok persistence;
+5. only after that, choose the next broader round/result/site integration seam.
 
 ## Bottom Line
 
-The branch is now past the old ?can it work at all?? stage.
+The branch is now past the old "can it work at all?" stage.
 
-The biggest remaining gaps are no longer core gameplay seams ? they are demo operability, productized start flow, and broader platform integration.
+The biggest remaining gaps are no longer core gameplay seams. They are **demo operability, native start flow, durable persistence, and broader platform integration**.

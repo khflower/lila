@@ -1,47 +1,133 @@
-# First Omok Start Scaffold Plan
+# First Omok Start-Flow Patch Plan
 
-## Narrow Seam
+## Recommendation
 
-The narrowest mergeable seam on this branch is no longer in `setup`, `challenge`, or `lobby`.
+The first omok-native creation patch should not start in lobby, challenge, or setup taxonomy code.
 
-Those paths would immediately drag in broader pairing and product rules. The repo already has a workable live omok sidecar path once a real round id exists:
+The smallest viable slice is an internal direct-create flow:
 
-- `OmokRoundRepo` can hold authoritative in-memory omok round state
-- `RoundApi` already exposes `data.omok` when that state exists
-- round pages already boot the omok shell from that preload
-- `RoundSocket` and `OmokMovePlayer` already support live `place` -> `omokMove`
+1. create a real lila `Game`
+2. seed initial omok state for that same `GameId`
+3. return black, white, and watcher links
+4. reuse the existing omok round page and socket flow unchanged
 
-The missing piece is the first practical bridge from "real round exists" to "operator can start omok on that round without separate ad hoc seeding steps".
+This removes the current `bin/omok-demo seed <gameId>` dependency without reopening the larger chess-centric setup stack.
 
-## First Patch
+## Scope Boundary
 
-This patch lands a deliberately internal scaffold instead of a full product flow:
+This patch is about native creation, not durable persistence.
 
-- add `OmokStartScaffold` in `modules/round`
-- add CLI support for `omok start <fullId> [renju|freestyle]`
-- add protected `GET /dev/omok/start/:fullId?ruleSet=...`
-- seed a blank omok root state against the real `GameId` derived from that `fullId`
-- redirect directly to the real player page for that same round
+Keep the current `OmokRoundRepo` path for the first patch. The durable `GameId`-keyed sidecar repo is the next wave after this lands.
 
-That gives the branch one operator-facing start entry that is closer to an omok-native round boot, while staying out of challenge creation and lobby seeks.
+Do not combine:
 
-## Guardrails
+- direct-create start flow
+- durable persistence
+- lobby / challenge integration
 
-The scaffold intentionally does not:
+into one patch.
 
-- create games
-- accept challenges
-- publish seeks
-- persist long-term omok state
-- infer omok state from preload/read paths
+## Proposed User Flow
 
-It only seeds active real rounds explicitly and keeps the source of truth on the write path.
+1. open `GET /omok/start`
+2. choose `renju` or `freestyle`
+3. submit
+4. server creates a fresh started game with two anonymous human seats
+5. server seeds omok state for that same `GameId`
+6. result page shows black, white, and watcher URLs
+7. opening either player URL boots omok mode on first load
 
-## Exit Condition
+Why anonymous seats first:
 
-After this patch, a developer or operator with dev CLI permission can take a real active round and start an omok shell with one step:
+- avoids challenge acceptance and invite state
+- still produces real player `fullId` links
+- is enough for internal demos and end-to-end start-flow proof
 
-- CLI: `omok start <fullId>`
-- browser: `/dev/omok/start/<fullId>`
+## Backend Shape
 
-That is still an internal scaffold, but it is a concrete first start flow rather than a raw repo-only seed helper.
+Add a small orchestration service in `modules/round`, for example:
+
+- `modules/round/src/main/OmokStarter.scala`
+
+Responsibility:
+
+- create a fresh lila `Game`
+- insert it through `gameRepo`
+- trigger `onStart`
+- seed initial omok state for the same `GameId`
+- return the created game plus player/watcher links
+
+Critical ordering:
+
+- do not return links until game creation, `onStart`, and initial omok seeding have all completed
+
+Otherwise the first page load can race and boot as chess.
+
+## HTTP Surface
+
+Recommended minimal surface:
+
+- `GET /omok/start`
+- `POST /omok/start`
+
+Likely controller home:
+
+- `app/controllers/Setup.scala`
+
+Reason:
+
+- it already owns game-start entrypoints and rate-limit patterns
+- it keeps the first patch smaller than adding a whole new controller stack
+
+The `POST` action can stay very small:
+
+- parse `ruleSet`
+- call `env.round.omokStarter.create(...)`
+- render a tiny result page with the three URLs
+
+## Concrete File List
+
+Must touch:
+
+- `conf/routes`
+- `app/controllers/Setup.scala`
+- `modules/round/src/main/Env.scala`
+- `modules/round/src/main/OmokStarter.scala`
+- `modules/round/src/test/OmokStarterTest.scala`
+
+Optional small UI:
+
+- `app/views/omok/start.scala`
+
+Should stay untouched:
+
+- `modules/setup/src/main/SetupForm.scala`
+- `modules/challenge/src/main/Challenge.scala`
+- `modules/challenge/src/main/ChallengeJoiner.scala`
+- `ui/lobby/**`
+- `ui/challenge/**`
+
+## Acceptance Criteria
+
+The patch is good enough when:
+
+- an operator can create a new omok round without knowing an existing `GameId`
+- no CLI seeding is required
+- first load of the returned player URL already boots omok mode
+- black and white can both place moves through the existing round socket path
+- watcher URL shows the same omok state
+- finished-state reload still works exactly as it does in the seeded flow today
+
+## Explicit Non-Goals
+
+Do not include these in the first patch:
+
+- durable omok storage
+- lobby modal integration
+- challenge page integration
+- rating / perf support
+- broader result/export cleanup
+
+## Bottom Line
+
+The first patch should solve exactly one missing seam: create a real game and initial omok state together, then hand off to the already-working round runtime.

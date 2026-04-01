@@ -1,5 +1,22 @@
 # Omok Round / Live-Play Integration Plan
 
+## Current Checkpoint
+
+Most of the live-play plan below has now landed on `omok/mvp`.
+
+Treat this document as the record of the round-side architecture that is already in use:
+
+- `data.omok` for boot
+- `place` for client -> server input
+- `omokMove` for server -> client updates
+- a parallel omok round controller instead of threading omok through chess-only round code
+
+Coordinator note for follow-up work:
+
+- native start-flow patches should reuse this contract unchanged
+- persistence work should move storage below this contract, not replace it
+- do not reopen chess `move` / `drop`, SAN/FEN, or `Chessground` paths unless there is a hard blocker
+
 ## Recommendation
 
 Do not try to force the first omok live-play slice through the existing UCI/FEN/SAN and `Chessground` path.
@@ -291,6 +308,15 @@ Keep unchanged in this wave:
   - chess move/drop only.
 
 This split avoids coupling the omok move path to chess `MoveOrDrop`.
+
+## Post-Landing Follow-Up Rule
+
+The next waves should preserve the working round boundary:
+
+- start-flow work creates a real game and seeds omok state before first load
+- persistence work adds a durable `GameId`-keyed omok store under the same boot/socket contract
+
+If a follow-up requires changing `data.omok`, `place`, or `omokMove`, treat that as a higher-risk design review, not as routine incremental work.
 
 ## Frontend Patch Plan
 

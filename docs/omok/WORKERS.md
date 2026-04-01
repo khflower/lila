@@ -11,6 +11,17 @@
 - `worker/round-result` -> broader round finish/result/status integration analysis and actionable patch list
 - `worker/persistence` -> storage/notation/persistence seams and next integration slice
 
+## Canonical planning docs
+- Start-flow synthesis now lives in:
+  - `docs/omok/reports/12_impl_roadmap.md`
+  - `docs/omok/reports/13_first_patch_plan.md`
+- Persistence synthesis now lives in:
+  - `docs/omok/reports/03_api_db_notation.md`
+  - `docs/omok/reports/49_post_95_gap_list.md`
+- Shared coordinator checkpoints:
+  - `docs/omok/reports/53_internal_demo_runbook.md`
+  - `docs/omok/reports/58_seed_to_round_demo_path.md`
+
 ## Log locations
 - Root orchestration dir: `/kh_code/codex-orch`
 - Per-worker prompt: `/kh_code/codex-orch/prompts/<worker>.md`

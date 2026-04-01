@@ -52,6 +52,20 @@ bin/omok-demo seed <gameId>
 - Reload returns to the same finished omok snapshot because finished omok state is retained until explicit cleanup.
 - If the tab was opened before seeding, or the id does not map to a real round, you do not get the omok path until you seed the real round id and refresh.
 
+## What This Path Proves
+
+This path proves:
+
+- round boot from `data.omok`
+- live `place -> omokMove`
+- finish and reload behavior on the current sidecar architecture
+
+This path does not yet prove:
+
+- native omok game creation
+- durable storage across restart
+- cache-cold boot from a DB-backed omok record
+
 ## Fast Fallback / Reset
 
 Fastest recovery:
@@ -70,3 +84,14 @@ bin/omok-demo seed <gameId> renju H8 A1 I8
 ```
 
 If the helper cannot reach `localhost:9663/run/cli`, the problem is runtime wiring, not the omok seed path on this branch.
+
+## Planned Upgrade Order
+
+Keep this operator flow shape, but change the seams beneath it in two separate steps:
+
+1. native start flow:
+   create a real game and initial omok state together so the operator no longer needs a pre-existing `GameId`
+2. durable persistence:
+   store canonical coordinate moves keyed by `GameId`, then fall back to that durable record when the live cache is cold
+
+Those are distinct follow-up waves. Do not bundle them into one large rewrite.
