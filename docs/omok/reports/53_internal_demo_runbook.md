@@ -31,6 +31,7 @@ or open:
 
 ```text
 bin/omok-demo --help
+bin/omok-demo doctor
 bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 
@@ -51,6 +52,10 @@ Current runtime assumptions:
 - local server exposes `http://localhost:9663/run/cli`
 - `LILA_CLI_TOKEN_DEV` is set
 - `OmokRoundRepo` is still in-memory, so a server restart clears the seeded state
+
+`bin/omok-demo doctor` is the quickest operator check before a live demo:
+- `PASS` means the wrapper sees an executable helper, and if you are using the default `bin/cli`, the local CLI transport also answered.
+- `FAIL` tells you whether the missing piece is the helper path, `LILA_CLI_TOKEN_DEV`, or local `localhost:9663/run/cli` reachability.
 
 ## Safest Demo Script
 
@@ -98,6 +103,7 @@ Say:
 ## Fallback Steps If Something Flakes
 
 ### If seeding fails
+- run `bin/omok-demo doctor` first; fix the first reported `FAIL`
 - verify `bin/cli` can reach the internal CLI transport
 - verify `LILA_CLI_TOKEN_DEV`
 - verify the operator account has dev CLI permission

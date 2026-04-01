@@ -27,7 +27,19 @@ bin/check-omok-demo-wrapper
 That script stubs `LILA_OMOK_CLI_BIN` and verifies three things:
 - `bin/omok-demo` usage gating;
 - forwarded argv shape for `seed`, `show`, and `clear`;
-- fast failure when the delegated CLI helper path is missing or not executable.
+- `doctor` output when the helper is overridden or missing.
+
+For the real local runtime check, run:
+
+```text
+bin/omok-demo doctor
+```
+
+That command keeps the wrapper thin, but it removes the usual ambiguity:
+- `FAIL CLI helper is missing or not executable` means fix `LILA_OMOK_CLI_BIN` or restore `bin/cli`.
+- `FAIL LILA_CLI_TOKEN_DEV is not set` means the server path may be fine, but the shell environment is not ready.
+- `FAIL http://localhost:9663/run/cli is unreachable ...` means local server wiring is the missing piece.
+- `PASS ... responded with HTTP ...` means the wrapper can at least see the local dev CLI transport.
 
 ## Supported Commands
 
@@ -65,6 +77,7 @@ ERROR invalid game id 'bad'; expected 8 characters matching [A-Za-z0-9_-]
 1. Seed the round id before opening tabs:
 
 ```text
+bin/omok-demo doctor
 bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 

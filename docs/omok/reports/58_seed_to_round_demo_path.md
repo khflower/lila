@@ -16,11 +16,22 @@ Before checking server reachability, you can verify wrapper behavior alone with:
 bin/check-omok-demo-wrapper
 ```
 
+Before a live demo, run the narrow runtime check too:
+
+```text
+bin/omok-demo doctor
+```
+
+Interpretation:
+- `PASS` means the wrapper sees an executable helper, and with the default `bin/cli`, local `localhost:9663/run/cli` answered.
+- `FAIL` tells you whether the missing piece is the helper path, `LILA_CLI_TOKEN_DEV`, or server reachability.
+
 ## Seed
 
 Recommended seed:
 
 ```text
+bin/omok-demo doctor
 bin/omok-demo seed <gameId> renju H8 A1 I8
 bin/omok-demo show <gameId>
 ```

@@ -1,17 +1,106 @@
 #!/bin/sh -e
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-CLI_BIN=${LILA_OMOK_CLI_BIN:-"$SCRIPT_DIR/cli"}
+PROG=$(basename "$0")
+DEFAULT_CLI_BIN="$SCRIPT_DIR/cli"
+CLI_BIN=${LILA_OMOK_CLI_BIN:-"$DEFAULT_CLI_BIN"}
+DOCTOR_FAILED=0
+DOCTOR_REPORT=
 
 usage() {
-  echo "usage: $(basename "$0") <seed|show|clear> <gameId> [renju|freestyle] [move ...]" >&2
+  printf '%s\n' "usage: $PROG <seed|show|clear> <gameId> [renju|freestyle] [move ...]" >&2
+  printf '%s\n' "       $PROG doctor" >&2
 }
 
 ensure_cli_bin() {
   [ -x "$CLI_BIN" ] && return 0
   printf '%s\n' "omok-demo: CLI helper is missing or not executable: $CLI_BIN" >&2
-  printf '%s\n' "Set LILA_OMOK_CLI_BIN to a working bin/cli-style helper or restore $SCRIPT_DIR/cli." >&2
+  printf '%s\n' "Set LILA_OMOK_CLI_BIN to a working bin/cli-style helper or restore $DEFAULT_CLI_BIN." >&2
   exit 1
+}
+
+doctor_line() {
+  LINE="$1 $2"
+  if [ -n "$DOCTOR_REPORT" ]; then
+    DOCTOR_REPORT="$DOCTOR_REPORT
+$LINE"
+  else
+    DOCTOR_REPORT=$LINE
+  fi
+}
+
+doctor_pass() {
+  doctor_line "PASS" "$1"
+}
+
+doctor_fail() {
+  DOCTOR_FAILED=1
+  doctor_line "FAIL" "$1"
+}
+
+doctor_info() {
+  doctor_line "INFO" "$1"
+}
+
+doctor_default_cli_runtime() {
+  if command -v curl >/dev/null 2>&1; then
+    doctor_pass "curl is available in PATH"
+  else
+    doctor_fail "curl is not available in PATH"
+    return
+  fi
+
+  if [ -n "${LILA_CLI_TOKEN_DEV-}" ]; then
+    doctor_pass "LILA_CLI_TOKEN_DEV is set"
+  else
+    doctor_fail "LILA_CLI_TOKEN_DEV is not set"
+  fi
+
+  if HTTP_CODE=$(
+    curl -sS -o /dev/null -w '%{http_code}' \
+      --connect-timeout 2 \
+      --max-time 2 \
+      -X POST \
+      -d '' \
+      http://localhost:9663/run/cli \
+      2>/dev/null
+  ); then
+    if [ "$HTTP_CODE" = "000" ]; then
+      doctor_fail "http://localhost:9663/run/cli did not return an HTTP response"
+    else
+      doctor_pass "http://localhost:9663/run/cli responded with HTTP $HTTP_CODE"
+    fi
+  else
+    CURL_STATUS=$?
+    doctor_fail "http://localhost:9663/run/cli is unreachable (curl exit $CURL_STATUS)"
+  fi
+}
+
+doctor() {
+  DOCTOR_FAILED=0
+  DOCTOR_REPORT=
+
+  doctor_info "helper path: $CLI_BIN"
+  if [ -x "$CLI_BIN" ]; then
+    doctor_pass "CLI helper is executable"
+  else
+    doctor_fail "CLI helper is missing or not executable: $CLI_BIN"
+  fi
+
+  if [ "$CLI_BIN" = "$DEFAULT_CLI_BIN" ]; then
+    doctor_default_cli_runtime
+  else
+    doctor_info "skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper"
+  fi
+
+  if [ "$DOCTOR_FAILED" -eq 0 ]; then
+    printf '%s\n' "omok-demo doctor: PASS"
+  else
+    printf '%s\n' "omok-demo doctor: FAIL"
+  fi
+  printf '%s\n' "$DOCTOR_REPORT"
+
+  [ "$DOCTOR_FAILED" -eq 0 ]
 }
 
 case "${1-}" in
@@ -20,12 +109,23 @@ case "${1-}" in
       usage
       exit 1
     }
+    ensure_cli_bin
+    exec "$CLI_BIN" omok "$@"
     ;;
   show | clear)
     [ $# -eq 2 ] || {
       usage
       exit 1
     }
+    ensure_cli_bin
+    exec "$CLI_BIN" omok "$@"
+    ;;
+  doctor)
+    [ $# -eq 1 ] || {
+      usage
+      exit 1
+    }
+    doctor
     ;;
   -h | --help | help)
     usage
@@ -36,6 +136,3 @@ case "${1-}" in
     exit 1
     ;;
 esac
-
-ensure_cli_bin
-exec "$CLI_BIN" omok "$@"

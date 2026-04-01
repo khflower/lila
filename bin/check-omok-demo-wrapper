@@ -27,14 +27,8 @@ assert_eq() {
 }
 
 assert_usage() {
-  case "$1" in
-    "usage: omok-demo <seed|show|clear> <gameId> [renju|freestyle] [move ...]")
-      ;;
-    *)
-      printf 'unexpected usage output: %s\n' "$1" >&2
-      exit 1
-      ;;
-  esac
+  assert_eq "$1" "usage: omok-demo <seed|show|clear> <gameId> [renju|freestyle] [move ...]
+       omok-demo doctor"
 }
 
 assert_not_called() {
@@ -77,6 +71,14 @@ assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" ""
 assert_eq "$(cat "$STUB_LOG")" "omok seed demo1234 renju H8 A1"
 
+run_wrapper doctor
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" "omok-demo doctor: PASS
+INFO helper path: $STUB
+PASS CLI helper is executable
+INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper"
+assert_not_called
+
 run_wrapper show demo1234
 assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" ""
@@ -92,6 +94,14 @@ run_wrapper_with_cli "$MISSING_CLI" show demo1234
 assert_eq "$STATUS" "1"
 assert_eq "$OUTPUT" "omok-demo: CLI helper is missing or not executable: $MISSING_CLI
 Set LILA_OMOK_CLI_BIN to a working bin/cli-style helper or restore $ROOT/bin/cli."
+assert_not_called
+
+run_wrapper_with_cli "$MISSING_CLI" doctor
+assert_eq "$STATUS" "1"
+assert_eq "$OUTPUT" "omok-demo doctor: FAIL
+INFO helper path: $MISSING_CLI
+FAIL CLI helper is missing or not executable: $MISSING_CLI
+INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper"
 assert_not_called
 
 run_wrapper seed
