@@ -30,10 +30,7 @@ assert_eq() {
 }
 
 assert_usage() {
-  assert_eq "$1" "usage: omok-demo seed <gameId> [renju|freestyle] [move ...]
-       omok-demo start <fullId> [renju|freestyle]
-       omok-demo show <gameId>
-       omok-demo clear <gameId>
+  assert_eq "$1" "usage: omok-demo <seed|start|show|clear> <id> [renju|freestyle] [move ...]
        omok-demo doctor"
 }
 
