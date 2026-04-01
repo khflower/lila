@@ -62,7 +62,7 @@ final case class OmokStartScaffoldResult(
 object OmokStartScaffold:
   type FullIdExists = GameFullId => Fu[Boolean]
 
-  def apply(omokRoundRepo: OmokRoundRepo): OmokStartScaffold =
+  def apply(omokRoundRepo: OmokRoundRepo)(using Executor): OmokStartScaffold =
     new OmokStartScaffold(omokRoundRepo, _ => fuccess(true), OmokNativeGameStarter.unsupported)
 
   def apply(

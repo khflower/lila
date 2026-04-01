@@ -183,17 +183,14 @@ final class Env(
 
   private lazy val omokDemoSeed = wire[OmokDemoSeed]
 
-<<<<<<< HEAD
   private lazy val omokNativeGameStarter =
     OmokNativeGameStarter(gameRepo, onStart)(using summon[lila.core.game.IdGenerator], newPlayer)
 
-  lazy val omokStartScaffold = wire[OmokStartScaffold]
-=======
   lazy val omokStartScaffold = OmokStartScaffold(
     omokRoundRepo,
-    fullId => gameRepo.pov(fullId).map(_.isDefined)
+    fullId => gameRepo.pov(fullId).map(_.isDefined),
+    omokNativeGameStarter
   )
->>>>>>> 1f832cc46f (round: require real omok start full ids)
 
   lazy val omokMovePlayer = wire[OmokMovePlayer]
 
