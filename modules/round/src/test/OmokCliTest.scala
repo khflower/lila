@@ -9,7 +9,7 @@ class OmokCliTest extends munit.FunSuite:
 
   test("seed show and clear route through the omok demo helper"):
     val repo = OmokRoundRepo()
-    val handler = OmokCli.handler(OmokDemoSeed(repo))
+    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
 
     assert(handler.isDefinedAt(List("omok", "seed", "demo1234", "freestyle", "H8, A1")))
     assertEquals(
@@ -27,18 +27,20 @@ class OmokCliTest extends munit.FunSuite:
     assertEquals(run(handler, List("omok", "show", "demo1234")), "no omok round state for demo1234")
 
   test("only the supported omok command shapes are routed"):
-    val handler = OmokCli.handler(OmokDemoSeed(OmokRoundRepo()))
+    val repo = OmokRoundRepo()
+    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
 
     assert(!handler.isDefinedAt(Nil))
     assert(!handler.isDefinedAt(List("omok")))
     assert(!handler.isDefinedAt(List("omok", "seed")))
+    assert(!handler.isDefinedAt(List("omok", "start")))
     assert(!handler.isDefinedAt(List("omok", "show", "demo1234", "extra")))
     assert(!handler.isDefinedAt(List("omok", "clear", "demo1234", "extra")))
     assert(!handler.isDefinedAt(List("omok", "unknown", "demo1234")))
 
   test("comma-split cli argv still seeds the expected omok moves"):
     val repo = OmokRoundRepo()
-    val handler = OmokCli.handler(OmokDemoSeed(repo))
+    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
     val parsedArgs = List("omok", "seed", "demo1234", "freestyle", "H8,", "A1", ",", "I8")
 
     assert(handler.isDefinedAt(parsedArgs))
@@ -49,4 +51,22 @@ class OmokCliTest extends munit.FunSuite:
     assertEquals(
       run(handler, List("omok", "show", "demo1234")),
       "omok round demo1234: ruleSet=freestyle ply=3 turn=white lastMove=I8 moves=H8,A1,I8"
+    )
+
+  test("start routes through the typed omok scaffold entry point"):
+    val repo = OmokRoundRepo()
+    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
+
+    assert(handler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle")))
+    assertEquals(
+      run(handler, List("omok", "start", "demo1234abcd", "freestyle")),
+      "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"
+    )
+    assertEquals(
+      run(handler, List("omok", "start", "demo1234abcd", "unknown")),
+      "ERROR invalid rule set 'unknown'; expected one of: renju, freestyle"
+    )
+    assertEquals(
+      run(handler, List("omok", "show", "demo1234")),
+      "omok round demo1234: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"
     )

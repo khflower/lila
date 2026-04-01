@@ -25,6 +25,16 @@ MVP explicitly assumes:
 - Internal or lightweight identity model only
 - Basic UI polish only
 
+## Current Branch Scaffold
+
+The current branch now has a narrow internal scaffold for Phase 2 start semantics without taking on full product pairing:
+
+- a real lila round can be explicitly switched into omok mode through `omok start <fullId>` or `/dev/omok/start/<fullId>`
+- that scaffold seeds `OmokRoundRepo` from an explicit write path, not from preload/socket reads
+- it redirects straight into the existing round player page, where the omok boot/live loop already runs
+
+This is not the final create/join/start product flow. It is the first practical bridge from an existing real round to an omok-native round boot, and it deliberately avoids challenge/lobby complexity until the generic session contract is clearer.
+
 ## Exact Phase Ordering
 
 The implementation should follow this order and should not parallelize phases until the dependency boundary is clear.
@@ -68,6 +78,12 @@ Exit criteria:
 
 - One backend path can host a full game from start to finish
 - Session service rejects illegal or out-of-order moves
+
+Current checkpoint on this branch:
+
+- `play`, `resign`, reconnect, and live redraw already exist on the omok sidecar path
+- the newly landed internal start scaffold covers only the `start existing round in omok mode` slice
+- `create`, `join`, lobby seek publication, and challenge acceptance remain intentionally out of scope for this wave
 
 ### Phase 3: Playable Client
 

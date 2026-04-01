@@ -3,7 +3,7 @@
 ## Objective
 
 Show the current `omok/mvp` branch as a believable internal prototype:
-- seed a round with `bin/omok-demo`
+- start an omok round from one internal entrypoint
 - open an omok round page with visible board/state
 - make one or two legal moves through the live path
 - reach a finished state if desired
@@ -11,25 +11,34 @@ Show the current `omok/mvp` branch as a believable internal prototype:
 
 ## Pre-Demo Setup
 
-1. Confirm the local/internal CLI path works:
+1. Pick one real active player `fullId` for the round you want to use.
+
+2. Start omok on that round through either entrypoint:
+
+```text
+bin/cli omok start <fullId> [renju|freestyle]
+```
+
+or open:
+
+```text
+/dev/omok/start/<fullId>?ruleSet=renju
+```
+
+3. If you want a pre-seeded near-finish board instead of a blank start, the older seed helper still works:
 
 ```text
 bin/omok-demo --help
-```
-
-2. Seed a known round id before opening any tabs:
-
-```text
 bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 
-3. Verify state exists:
+4. Verify state exists:
 
 ```text
 bin/omok-demo show demo1234
 ```
 
-4. Open:
+5. Open:
 - black player page
 - white player page
 - watcher page
@@ -82,6 +91,8 @@ Say:
 ### If seeding fails
 - verify `bin/cli` can reach the internal CLI transport
 - verify `LILA_CLI_TOKEN_DEV`
+- verify the operator account has dev CLI permission
+- rerun `bin/cli omok start <fullId>`
 - rerun `bin/omok-demo seed <gameId>`
 
 ### If live redraw flakes
@@ -101,8 +112,8 @@ Then refresh the tabs.
 ## Best Short Demo Version
 
 If you only have 2?3 minutes:
-1. `bin/omok-demo seed demo1234 renju H8 A1 I8`
-2. open player + watcher tabs
+1. open `/dev/omok/start/<fullId>?ruleSet=renju`
+2. open a watcher tab for the same game
 3. make one legal move
 4. show finished/reload behavior if available
-5. explain that the remaining work is productized start flow and broader site integration, not the core live loop
+5. explain that the remaining work is productized challenge/lobby integration, not the core live loop

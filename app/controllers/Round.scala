@@ -78,6 +78,18 @@ final class Round(
         case Some(pov) => renderPlayer(pov)
         case None => userC.tryRedirect(fullId.into(UserStr)).getOrElse(notFound)
 
+
+  def omokStart(fullId: GameFullId, ruleSet: String) = Secure(_.Cli) { _ ?=> _ ?=>
+    Found(env.round.proxyRepo.pov(fullId)): pov =>
+      if !pov.game.playable then notFound
+      else
+        env.round.omokStartScaffold.start(fullId.value, Some(ruleSet)) match
+          case Right(started) =>
+            Redirect(routes.Round.player(started.fullId)).flashSuccess(started.message).toFuccess
+          case Left(err) =>
+            Redirect(routes.Round.player(fullId)).flashFailure(err.message).toFuccess
+  }
+
   private def otherPovs(game: GameModel)(using ctx: Context) =
     ctx.me.so: user =>
       env.round.proxyRepo
