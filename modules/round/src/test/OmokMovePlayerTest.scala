@@ -55,3 +55,31 @@ class OmokMovePlayerTest extends munit.FunSuite:
     assertEquals(rejected.message, s"[omok] $gameId cannot place I8: wrong turn")
     assertEquals(rejected.state, first.state)
     assertEquals(stateAfterRejected, stateBeforeRejected)
+
+  test("place keeps the cached state usable for the next valid move after a wrong-turn rejection"):
+    val repo = OmokRoundRepo()
+    val player = OmokMovePlayer(repo)
+    val gameId = GameId("turnflow1")
+    val first = player.place(PlaceRequest(gameId, Pos.unsafe(7, 7))).toOption.get
+
+    val rejected = player
+      .place(PlaceRequest(gameId, Pos.unsafe(7, 8), expectedTurn = Some(Color.Black)))
+      .left
+      .toOption
+      .get
+    val stateAfterRejected = repo.get(gameId).get
+
+    val accepted = player
+      .place(PlaceRequest(gameId, Pos.unsafe(7, 8), expectedTurn = Some(Color.White)))
+      .toOption
+      .get
+
+    assertEquals(rejected.message, s"[omok] $gameId cannot place I8: wrong turn")
+    assertEquals(rejected.state, first.state)
+    assertEquals(stateAfterRejected, first.state)
+    assertEquals(accepted.previous, first.state)
+    assertEquals(accepted.state.position.ply, 2)
+    assertEquals(accepted.state.position.turn, Color.Black)
+    assertEquals(accepted.state.position.lastMove.map(_.pos.key), Some("I8"))
+    assertEquals(accepted.state.moves.map(_.pos.key), Vector("H8", "I8"))
+    assertEquals(repo.get(gameId), Some(accepted.state))

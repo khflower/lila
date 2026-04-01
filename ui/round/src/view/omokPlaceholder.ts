@@ -1,5 +1,5 @@
 import { isPlayerTurn } from 'lib/game';
-import { bind, hl, type VNode } from 'lib/view';
+import { hl, onInsert, type VNode } from 'lib/view';
 
 import * as blur from '../blur';
 import type RoundController from '../ctrl';
@@ -7,12 +7,27 @@ import type { SocketPlace } from '../interfaces';
 
 const defaultBoardSize = 15;
 const boardFiles = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const placeCooldownMs = 300;
+const lastPlaceAt = new WeakMap<RoundController, number>();
 
 const normalizeBoardRows = (boardRows: string[], boardSize: number): string[] =>
   Array.from({ length: boardSize }, (_, row) => (boardRows[row] || '').padEnd(boardSize, '.').slice(0, boardSize));
 
 const fileLabel = (col: number): string => boardFiles[col] || String(col + 1);
 const posKey = (row: number, col: number): string => `${fileLabel(col)}${row + 1}`;
+const isActivationKey = (event: KeyboardEvent): boolean =>
+  event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar';
+
+const sendPlace = (ctrl: RoundController, pos: Key): void => {
+  const now = Date.now();
+  if (now - (lastPlaceAt.get(ctrl) || 0) < placeCooldownMs) return;
+
+  lastPlaceAt.set(ctrl, now);
+
+  const place: SocketPlace = { pos };
+  if (blur.get()) place.b = 1;
+  ctrl.socket.send('place', place, { ackable: true });
+};
 
 export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined => {
   const omok = ctrl.data.omok,
@@ -85,13 +100,17 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
                       tabindex: 0,
                       'data-omok-pos': pos,
                       'aria-label': `Place at ${pos}`,
+                      'aria-keyshortcuts': 'Enter Space',
                     }
                   : { 'data-omok-pos': pos },
                 hook: clickable
-                  ? bind('click', () => {
-                      const place: SocketPlace = { pos };
-                      if (blur.get()) place.b = 1;
-                      ctrl.socket.send('place', place, { ackable: true });
+                  ? onInsert((el: HTMLDivElement) => {
+                      el.addEventListener('click', () => sendPlace(ctrl, pos));
+                      el.addEventListener('keydown', (event: KeyboardEvent) => {
+                        if (event.repeat || !isActivationKey(event)) return;
+                        event.preventDefault();
+                        sendPlace(ctrl, pos);
+                      });
                     })
                   : undefined,
               },
