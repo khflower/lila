@@ -1,0 +1,39 @@
+package lila.round
+
+import lila.core.id.GameId
+import lila.omok.{ Color, Pos }
+
+class OmokMovePlayerTest extends munit.FunSuite:
+
+
+  test("preview builds the next omok state and move event payload"):
+    val gameId = GameId("abcdefgh")
+
+    val preview = OmokMovePlayer
+      .preview(gameId, OmokRoundState.initial(), Pos.unsafe(7, 7))
+      .toOption
+      .get
+
+    assertEquals(preview.move.pos.key, "H8")
+    assertEquals(preview.state.position.ply, 1)
+    assertEquals(preview.state.position.turn, Color.White)
+    assertEquals(preview.state.position.lastMove.map(_.pos.key), Some("H8"))
+    assertEquals(preview.state.moves.map(_.pos.key), Vector("H8"))
+    assertEquals(preview.payload.move.key, "H8")
+    assertEquals(preview.event.gameId, gameId)
+
+  test("place persists state in the repo and rejects an occupied point"):
+    val repo = OmokRoundRepo()
+    val player = OmokMovePlayer(repo)
+    val gameId = GameId("ijklmnop")
+    val request = PlaceRequest(gameId, Pos.unsafe(7, 7))
+
+    val first = player.place(request).toOption.get
+
+    assertEquals(first.previous.position.ply, 0)
+    assertEquals(first.state.position.ply, 1)
+    assertEquals(repo.get(gameId).map(_.position.ply), Some(1))
+
+    val error = player.place(request).left.toOption.get
+
+    assertEquals(error.message, s"[omok] $gameId cannot place H8: occupied")

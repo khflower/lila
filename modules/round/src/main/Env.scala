@@ -180,6 +180,8 @@ final class Env(
 
   lazy val omokRoundRepo = wire[OmokRoundRepo]
 
+  lazy val omokMovePlayer = wire[OmokMovePlayer]
+
   private lazy val takebacker = wire[Takebacker]
 
   lazy val moretimer = wire[Moretimer]

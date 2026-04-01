@@ -1,0 +1,42 @@
+.round__app__board__omok-state {
+  @extend %box-shadow;
+
+  position: absolute;
+  inset-inline: 0.75rem;
+  inset-block-end: 0.75rem;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.8rem;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.65rem 0.8rem;
+  border: $border;
+  border-radius: $box-radius-size;
+  background: $c-bg-box;
+  pointer-events: none;
+}
+
+.round__app__board__omok-state__title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $c-font-dim;
+}
+
+.round__app__board__omok-state__field {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.round__app__board__omok-state__label {
+  color: $c-font-dim;
+}
+
+.round__app__board__omok-state__value {
+  color: $c-font;
+}

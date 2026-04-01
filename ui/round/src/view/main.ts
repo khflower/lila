@@ -12,6 +12,7 @@ import crazyView from '../crazy/crazyView';
 import type RoundController from '../ctrl';
 import { render as renderGround } from '../ground';
 import { renderOmokPlaceholder } from './omokPlaceholder';
+import { renderOmokState } from './omokState';
 import { next, prev, view } from '../keyboard';
 import { renderTable } from './table';
 
@@ -63,6 +64,7 @@ export function main(ctrl: RoundController): VNode {
               renderGround(ctrl),
               ctrl.promotion.view(ctrl.data.game.variant.key === 'antichess'),
               renderOmokPlaceholder(ctrl),
+              renderOmokState(ctrl),
             ],
           ),
           ctrl.voiceMove && renderVoiceBar(ctrl.voiceMove.ctrl, ctrl.redraw),

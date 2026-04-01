@@ -16,6 +16,9 @@ object OmokRoundState:
   def initial(ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     OmokRoundState(PositionSnapshot.fromGame(OmokGame.initial(ruleSet)))
 
+object OmokRoundRepo:
+  def apply(): OmokRoundRepo = new OmokRoundRepo
+
 final class OmokRoundRepo:
 
   private val states = TrieMap.empty[GameId, OmokRoundState]
