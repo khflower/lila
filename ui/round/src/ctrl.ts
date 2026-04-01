@@ -516,33 +516,14 @@ export default class RoundController implements MoveRootCtrl {
       omok = d.omok;
     if (!omok) return;
 
-    const turnColor = o.turn === 'white' || o.turn === 'black' ? o.turn : d.game.player;
-    omok.position.boardRows = o.boardRows;
-    omok.position.turn = o.turn;
-    omok.position.ply = o.ply;
-    omok.position.lastMove = o.lastMove;
+    const position = o.position;
+    const turnColor = position.turn === 'white' || position.turn === 'black' ? position.turn : d.game.player;
 
-    d.game.turns = o.ply;
+    omok.position = position;
+
+    d.game.turns = position.ply;
     d.game.player = turnColor;
-    if (o.status) d.game.status = o.status;
-    if (o.winner) d.game.winner = o.winner;
-    this.playerByColor('white').offeringDraw = o.wDraw;
-    this.playerByColor('black').offeringDraw = o.bDraw;
     this.setTitle();
-
-    if (o.clock) {
-      const playing = this.isPlaying(),
-        activeColor = d.player.color === d.game.player,
-        delay = playing && activeColor ? 0 : o.clock.lag || 1;
-      if (this.clock)
-        this.clock.setClock({
-          white: o.clock.white,
-          black: o.clock.black,
-          ticking: this.tickingClockColor(),
-          delay,
-        });
-      else if (this.corresClock) this.corresClock.update(o.clock.white, o.clock.black);
-    }
 
     this.redraw();
     this.onChange();

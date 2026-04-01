@@ -52,7 +52,7 @@ export interface OmokRoundPosition {
   ruleSet: string;
   ply: number;
   lastMove?: OmokRoundMove;
-  moves?: string[];
+  moves?: OmokRoundMove[];
 }
 
 export interface OmokRoundData {
@@ -198,20 +198,8 @@ export interface ApiMove {
 }
 
 export interface ApiOmokMove {
-  pos: Key | string;
-  ply: number;
-  turn: Color | string;
-  boardRows: string[];
-  lastMove?: OmokRoundMove;
-  status?: Status;
-  winner?: Color;
-  clock?: {
-    white: Seconds;
-    black: Seconds;
-    lag?: Centis;
-  };
-  wDraw?: boolean;
-  bDraw?: boolean;
+  move: OmokRoundMove;
+  position: OmokRoundPosition;
 }
 
 export interface ApiEnd {
