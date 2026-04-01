@@ -66,7 +66,7 @@ class OmokCliTest extends munit.FunSuite:
     )
     assertEquals(
       run(handler, List("omok", "start", "demo1234abcd", "freestyle")),
-      "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"
+      "restarted omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"
     )
     assertEquals(
       run(handler, List("omok", "start", "demo1234abcd", "unknown")),
