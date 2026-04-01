@@ -1,0 +1,89 @@
+#!/bin/sh -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+WRAPPER="$ROOT/bin/omok-demo"
+TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/omok-demo-wrapper.XXXXXX")
+STUB="$TMPDIR/cli-stub"
+STUB_LOG="$TMPDIR/cli.log"
+
+cleanup() {
+  rm -rf "$TMPDIR"
+}
+
+trap cleanup EXIT INT TERM HUP
+
+cat >"$STUB" <<'EOF'
+#!/bin/sh -eu
+printf '%s\n' "$*" >"$OMOK_DEMO_STUB_LOG"
+EOF
+
+chmod +x "$STUB"
+
+assert_eq() {
+  if [ "$1" != "$2" ]; then
+    printf 'expected: %s\nactual:   %s\n' "$1" "$2" >&2
+    exit 1
+  fi
+}
+
+assert_usage() {
+  case "$1" in
+    "usage: omok-demo <seed|show|clear> <gameId> [renju|freestyle] [move ...]")
+      ;;
+    *)
+      printf 'unexpected usage output: %s\n' "$1" >&2
+      exit 1
+      ;;
+  esac
+}
+
+assert_not_called() {
+  if [ -f "$STUB_LOG" ]; then
+    printf 'wrapper unexpectedly reached stub CLI: %s\n' "$(cat "$STUB_LOG")" >&2
+    exit 1
+  fi
+}
+
+run_wrapper() {
+  rm -f "$STUB_LOG"
+  set +e
+  OUTPUT=$(
+    LILA_OMOK_CLI_BIN="$STUB" \
+      OMOK_DEMO_STUB_LOG="$STUB_LOG" \
+      "$WRAPPER" "$@" 2>&1
+  )
+  STATUS=$?
+  set -e
+}
+
+run_wrapper --help
+assert_eq "$STATUS" "0"
+assert_usage "$OUTPUT"
+assert_not_called
+
+run_wrapper
+assert_eq "$STATUS" "1"
+assert_usage "$OUTPUT"
+assert_not_called
+
+run_wrapper seed demo1234 renju H8 A1
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok seed demo1234 renju H8 A1"
+
+run_wrapper show demo1234
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok show demo1234"
+
+run_wrapper clear demo1234
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok clear demo1234"
+
+run_wrapper seed
+assert_eq "$STATUS" "1"
+assert_usage "$OUTPUT"
+assert_not_called
+
+printf 'omok-demo wrapper smoke check passed\n'

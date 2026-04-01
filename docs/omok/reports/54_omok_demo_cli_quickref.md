@@ -18,6 +18,14 @@ So this path only works when:
 
 `OmokRoundRepo` is in-memory, so a server restart removes seeded omok state.
 
+For a wrapper-only smoke check that does not require the server, run:
+
+```text
+bin/check-omok-demo-wrapper
+```
+
+That script stubs `LILA_OMOK_CLI_BIN` and only verifies `bin/omok-demo` usage gating plus forwarded argv shape.
+
 ## Supported Commands
 
 ```text
