@@ -441,6 +441,9 @@ object RoundSocket:
         if flags.isEmpty then flags += '-'
         s"r/ver $roomId $version $flags ${e.typ} ${e.data}"
 
+      def omokMove(version: SocketVersion, e: OmokEvent.Move) =
+        s"r/ver ${e.gameId.into(RoomId)} $version - ${e.typ} ${Json.stringify(Json.toJson(e.payload))}"
+
       def tvSelect(gameId: GameId, speed: chess.Speed, data: JsObject) =
         s"tv/select $gameId ${speed.id} ${Json.stringify(data)}"
 
