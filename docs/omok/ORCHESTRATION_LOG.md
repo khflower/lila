@@ -128,3 +128,23 @@ Primary doc landing points:
 ### Still in progress
 - wave-3 demo-runtime and persistence-code branches did not yet yield a mergeable slice.
 - next coordinator action should either reprompt those lanes more narrowly or replace them with a more concrete runtime/persistence cut.
+
+## 2026-04-01 runtime-and-persistence checkpoint
+
+### Demo runtime wrappers
+- `8b3d5a0216` hardened wrapper behavior for the current dev/demo runtime.
+- `bin/omok-demo` now accepts `start` alongside seed/show/clear/doctor.
+- `bin/omok-start` now exists as a narrow convenience alias for scaffolded starts.
+- smoke checks:
+  - `bin/check-omok-demo-wrapper`
+  - `bin/check-omok-start-wrapper`
+
+### Persistence scaffold
+- `d8f3562161` added `OmokStoredState` as a durable-sidecar seam:
+  - key: `GameId`
+  - canonical data: `ruleSet` + coordinate `moves[]`
+  - hydration path rebuilds `OmokRoundState` by replaying canonical moves
+- focused test: `round/testOnly lila.round.OmokStoredStateTest`
+
+### Coordinator note
+This does not migrate omok to a real DB yet. It deliberately creates the smallest useful storage record shape so a later persistence wave can wire a real collection/repo without re-deciding the stored move format.
