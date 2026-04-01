@@ -39,6 +39,9 @@ final class OmokMovePlayer(omokRoundRepo: OmokRoundRepo):
   def get(gameId: GameId): Option[OmokRoundState] =
     omokRoundRepo.get(gameId)
 
+  def remove(gameId: GameId): Option[OmokRoundState] =
+    omokRoundRepo.remove(gameId)
+
   def ensure(gameId: GameId, ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     omokRoundRepo.getOrInit(gameId, ruleSet)
 
