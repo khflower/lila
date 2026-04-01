@@ -14,7 +14,8 @@ class OmokCliRoutingTest extends munit.FunSuite:
   private val omokCliHandler = omokCliModuleClass.getMethod(
     "handler",
     classOf[OmokDemoSeed],
-    classOf[OmokStartScaffold]
+    classOf[OmokStartScaffold],
+    classOf[scala.concurrent.ExecutionContextExecutor]
   )
 
   private def runRaw(handler: PartialFunction[List[String], Fu[String]], command: String): String =
@@ -29,7 +30,7 @@ class OmokCliRoutingTest extends munit.FunSuite:
     val repo = OmokRoundRepo()
     val seed = OmokDemoSeed(repo)
     val omokHandler = omokCliHandler
-      .invoke(omokCliModule, seed, OmokStartScaffold(repo))
+      .invoke(omokCliModule, seed, OmokStartScaffold(repo), scala.concurrent.ExecutionContext.global)
       .asInstanceOf[PartialFunction[List[String], Fu[String]]]
 
     assertEquals(
@@ -50,7 +51,7 @@ class OmokCliRoutingTest extends munit.FunSuite:
   test("raw dev cli command strings reach omok start routing"):
     val repo = OmokRoundRepo()
     val omokHandler = omokCliHandler
-      .invoke(omokCliModule, OmokDemoSeed(repo), OmokStartScaffold(repo))
+      .invoke(omokCliModule, OmokDemoSeed(repo), OmokStartScaffold(repo), scala.concurrent.ExecutionContext.global)
       .asInstanceOf[PartialFunction[List[String], Fu[String]]]
 
     assert(omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd")))
