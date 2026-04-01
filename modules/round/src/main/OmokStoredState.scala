@@ -16,8 +16,8 @@ object OmokStoredState:
   def toRoundState(stored: OmokGameSidecar): Either[String, OmokRoundState] =
     for
       ruleSet <- parseRuleSet(stored.ruleSet)
-      parsedMoves <- stored.moves.zipWithIndex.foldLeft(Right(Vector.empty): Either[String, Vector[OmokMove]]):
-        case (Right(acc), (raw, _)) =>
+      parsedMoves <- stored.moves.foldLeft(Right(Vector.empty): Either[String, Vector[OmokMove]]):
+        case (Right(acc), raw) =>
           CoordinateNotation
             .parse(raw)
             .map(OmokMove.apply)

@@ -3,48 +3,31 @@ package lila.round
 import scala.collection.concurrent.TrieMap
 
 import lila.core.id.GameId
-import lila.omok.{ Color as OmokColor, Game as OmokGame, Move as OmokMove, OmokAnalyseDto, OmokPositionDto, Pos, PositionSnapshot, RuleSet, Status as OmokStatus }
+import lila.game.OmokGameSidecar
+import lila.omok.{ Game as OmokGame, Move as OmokMove, Pos, RuleSet }
 
 final case class OmokRoundState(
-    position: PositionSnapshot,
+    position: lila.omok.PositionSnapshot,
     moves: Vector[OmokMove] = Vector.empty,
-    terminalStatus: Option[OmokStatus] = None
+    terminalStatus: Option[lila.omok.Status] = None
 ):
   def boardSize: Int = Pos.Size
   def ruleSet: RuleSet = position.ruleSet
-  def stored: OmokStoredState = OmokStoredState.fromState(this)
-  def analyseDto: OmokAnalyseDto =
-    terminalStatus.fold(OmokAnalyseDto.fromPosition(position)): status =>
-      OmokAnalyseDto(
-        position = Some(OmokPositionDto.fromPosition(position)),
-        status = Some(OmokRoundState.statusKey(status)),
-        winner = OmokRoundState.winnerKey(status)
-      )
+  def analyseDto = lila.omok.OmokAnalyseDto.fromPosition(position)
 
 object OmokRoundState:
   def initial(ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     fromGame(OmokGame.initial(ruleSet))
 
-  def fromGame(game: OmokGame, moves: Vector[OmokMove] = Vector.empty): OmokRoundState =
+  def fromGame(
+      game: OmokGame,
+      moves: Vector[OmokMove] = Vector.empty
+  ): OmokRoundState =
     OmokRoundState(
-      position = PositionSnapshot.fromGame(game, moves),
+      position = lila.omok.PositionSnapshot.fromGame(game, moves),
       moves = moves,
-      terminalStatus = terminalStatus(game.status)
+      terminalStatus = Option.when(game.status != lila.omok.Status.Ongoing)(game.status)
     )
-
-  private def terminalStatus(status: OmokStatus): Option[OmokStatus] = status match
-    case OmokStatus.Ongoing => None
-    case terminal           => Some(terminal)
-
-  private def statusKey(status: OmokStatus): String = status match
-    case OmokStatus.Ongoing => "ongoing"
-    case OmokStatus.Win(_)  => "win"
-    case OmokStatus.Draw    => "draw"
-
-  private def winnerKey(status: OmokStatus): Option[String] = status match
-    case OmokStatus.Win(OmokColor.Black) => Some("black")
-    case OmokStatus.Win(OmokColor.White) => Some("white")
-    case _                               => None
 
 object OmokRoundRepo:
   def apply(): OmokRoundRepo = new OmokRoundRepo
@@ -55,8 +38,6 @@ final class OmokRoundRepo:
 
   def get(gameId: GameId): Option[OmokRoundState] = states.get(gameId)
 
-  def getStored(gameId: GameId): Option[OmokStoredState] = get(gameId).map(_.stored)
-
   def getOrInit(gameId: GameId, ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     states.getOrElseUpdate(gameId, OmokRoundState.initial(ruleSet))
 
@@ -64,12 +45,23 @@ final class OmokRoundRepo:
     states.put(gameId, state)
     state
 
-  def putStored(gameId: GameId, stored: OmokStoredState): Either[String, OmokRoundState] =
-    stored.toRoundState.map(put(gameId, _))
-
   def remove(gameId: GameId): Option[OmokRoundState] = states.remove(gameId)
 
   def update(gameId: GameId)(f: Option[OmokRoundState] => OmokRoundState): OmokRoundState =
     val next = f(states.get(gameId))
     states.put(gameId, next)
     next
+
+  def getStored(gameId: GameId): Option[OmokGameSidecar] =
+    get(gameId).map(OmokStoredState.fromState(gameId, _))
+
+  def putStored(gameId: GameId, stored: OmokGameSidecar): Either[String, OmokRoundState] =
+    val normalized = stored.copy(_id = gameId)
+    putStored(normalized)
+
+  def putStored(stored: OmokGameSidecar): Either[String, OmokRoundState] =
+    OmokStoredState.toRoundState(stored).map: state =>
+      put(stored._id, state)
+
+  def buildState(game: OmokGame, moves: Vector[OmokMove]): OmokRoundState =
+    OmokRoundState.fromGame(game, moves)
