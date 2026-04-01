@@ -178,6 +178,8 @@ final class Env(
 
   lazy val mobile = wire[RoundMobile]
 
+  lazy val omokRoundRepo = wire[OmokRoundRepo]
+
   private lazy val takebacker = wire[Takebacker]
 
   lazy val moretimer = wire[Moretimer]

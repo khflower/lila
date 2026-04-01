@@ -271,7 +271,7 @@ lazy val analyse = module("analyse",
 ).dependsOn(coreI18n % "test->test")
 
 lazy val round = module("round",
-  Seq(room, game, user, playban, pref, chat),
+  Seq(room, game, user, playban, pref, chat, omok),
   Seq(hasher, kamon.core, lettuce) ++ tests.bundle
 )
 

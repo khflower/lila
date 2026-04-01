@@ -14,6 +14,7 @@ import { text as xhrText } from 'lib/xhr';
 import RoundController from './ctrl';
 import type { RoundData, RoundOpts } from './interfaces';
 import type MoveOn from './moveOn';
+import { bootOmokPlaceholder, isOmokRound } from './omok';
 import { tourStandingCtrl, type TourStandingCtrl } from './tourStanding';
 import { main as view } from './view/main';
 
@@ -21,6 +22,7 @@ const patch = init([classModule, attributesModule]);
 
 export async function initModule(opts: RoundOpts): Promise<RoundController> {
   await site.asset.loadPieces;
+  if (isOmokRound(opts)) return opts.data.local ? bootOmokPlaceholder(opts, app) : boot(opts, app);
   return opts.data.local ? app(opts) : boot(opts, app);
 }
 
@@ -113,7 +115,7 @@ async function boot(
     else if (d.game.status.id >= 30) return 'end';
     return;
   };
-  const ctrl = await roundMain(opts);
+  const ctrl = await (isOmokRound(opts) ? bootOmokPlaceholder(opts, roundMain) : roundMain(opts));
   const round: RoundApi = { socketReceive: ctrl.socket.receive, moveOn: ctrl.moveOn };
   const chatOpts = opts.chat;
   if (chatOpts) {

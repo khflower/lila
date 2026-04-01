@@ -34,11 +34,40 @@ export interface SocketDrop {
   b?: 1;
 }
 
+export interface SocketPlace {
+  pos: Key;
+  b?: 1;
+}
+
+export interface OmokRoundMove {
+  key: string;
+  row: number;
+  col: number;
+}
+
+export interface OmokRoundPosition {
+  boardSize: number;
+  boardRows: string[];
+  turn: Color | string;
+  ruleSet: string;
+  ply: number;
+  lastMove?: OmokRoundMove;
+  moves?: string[];
+}
+
+export interface OmokRoundData {
+  position: OmokRoundPosition;
+  steps?: unknown[];
+  ruleset?: string;
+  boardSize?: number;
+}
+
 export interface EventsWithPayload {
   rep: { n: string };
   flag: Color;
   move: SocketMove;
   drop: SocketDrop;
+  place: SocketPlace;
 }
 
 export type EventsWithoutPayload =
@@ -78,6 +107,7 @@ export type EncodedDests = string | Record<string, string>;
 
 export interface RoundData extends GameData {
   clock?: ClockData;
+  omok?: OmokRoundData;
   pref: Pref;
   steps: RoundStep[];
   possibleMoves?: EncodedDests;
@@ -165,6 +195,23 @@ export interface ApiMove {
   isMove?: true;
   isDrop?: true;
   volume?: number;
+}
+
+export interface ApiOmokMove {
+  pos: Key | string;
+  ply: number;
+  turn: Color | string;
+  boardRows: string[];
+  lastMove?: OmokRoundMove;
+  status?: Status;
+  winner?: Color;
+  clock?: {
+    white: Seconds;
+    black: Seconds;
+    lag?: Centis;
+  };
+  wDraw?: boolean;
+  bDraw?: boolean;
 }
 
 export interface ApiEnd {
