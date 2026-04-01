@@ -75,6 +75,39 @@ class OmokStoredStateTest extends munit.FunSuite:
     assertEquals(restoredRepo.get(restoredGameId), Some(original))
     assertEquals(restoredRepo.getStored(restoredGameId), Some(stored.copy(_id = restoredGameId)))
 
+
+  test("getOrHydrate restores cold cache from stored state and normalizes the target game id"):
+    val repo = OmokRoundRepo()
+    val gameId = GameId("cold1234")
+    val stored = OmokGameSidecar(
+      _id = GameId("source01"),
+      ruleSet = "freestyle",
+      moves = Vector("H8", "A1", "I8")
+    )
+
+    val hydrated = repo.getOrHydrate(gameId)(Some(stored)).toOption.flatten.get
+
+    assertEquals(hydrated.ruleSet, RuleSet.Freestyle)
+    assertEquals(hydrated.moves.map(_.pos.key), Vector("H8", "A1", "I8"))
+    assertEquals(repo.get(gameId), Some(hydrated))
+    assertEquals(repo.getStored(gameId), Some(stored.copy(_id = gameId)))
+
+  test("getOrHydrate returns cached state without touching the stored fallback"):
+    val repo = OmokRoundRepo()
+    val gameId = GameId("cache123")
+    val cached = OmokRoundState.initial(RuleSet.Freestyle)
+    var fetches = 0
+
+    repo.put(gameId, cached)
+
+    val result = repo.getOrHydrate(gameId):
+      fetches += 1
+      Some(OmokGameSidecar(gameId, "renju", Vector("H8")))
+
+    assertEquals(result, Right(Some(cached)))
+    assertEquals(fetches, 0)
+    assertEquals(repo.get(gameId), Some(cached))
+
   test("putStored rejects invalid durable state without mutating the repo"):
     val repo = OmokRoundRepo()
     val gameId = GameId("invalid01")
@@ -85,6 +118,22 @@ class OmokStoredStateTest extends munit.FunSuite:
     )
 
     val result = repo.putStored(stored)
+
+    assertEquals(result, Left("invalid stored omok sequence at move 2 H8: occupied"))
+    assertEquals(repo.get(gameId), None)
+    assertEquals(repo.getStored(gameId), None)
+
+
+  test("getOrHydrate rejects invalid stored state without caching it"):
+    val repo = OmokRoundRepo()
+    val gameId = GameId("invalid02")
+    val stored = OmokGameSidecar(
+      _id = GameId("source01"),
+      ruleSet = "freestyle",
+      moves = Vector("H8", "H8")
+    )
+
+    val result = repo.getOrHydrate(gameId)(Some(stored))
 
     assertEquals(result, Left("invalid stored omok sequence at move 2 H8: occupied"))
     assertEquals(repo.get(gameId), None)

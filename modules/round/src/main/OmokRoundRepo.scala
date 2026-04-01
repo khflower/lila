@@ -55,6 +55,14 @@ final class OmokRoundRepo:
   def getStored(gameId: GameId): Option[OmokGameSidecar] =
     get(gameId).map(OmokStoredState.fromState(gameId, _))
 
+  def getOrHydrate(gameId: GameId)(loadStored: => Option[OmokGameSidecar]): Either[String, Option[OmokRoundState]] =
+    get(gameId) match
+      case some @ Some(_) => Right(some)
+      case None =>
+        loadStored match
+          case Some(stored) => putStored(gameId, stored).map(Some(_))
+          case None         => Right(None)
+
   def putStored(gameId: GameId, stored: OmokGameSidecar): Either[String, OmokRoundState] =
     val normalized = stored.copy(_id = gameId)
     putStored(normalized)
