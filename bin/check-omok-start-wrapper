@@ -12,6 +12,9 @@ trap cleanup EXIT INT TERM HUP
 cat >"$STUB" <<'STUBEOF'
 #!/bin/sh -eu
 printf '%s\n' "$*" >"$OMOK_START_STUB_LOG"
+if [ "$*" = "uptime" ]; then
+  printf '123 seconds\n'
+fi
 STUBEOF
 chmod +x "$STUB"
 
@@ -40,8 +43,19 @@ run_wrapper() {
 run_wrapper --help
 assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" "usage: omok-start <fullId> [renju|freestyle]
-       fullId must be 12 characters; the gameId is its first 8."
+       fullId must be 12 characters; the gameId is its first 8.
+       omok-start doctor"
 assert_not_called
+
+run_wrapper doctor
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" "omok-demo doctor: PASS
+INFO helper path: $STUB
+PASS CLI helper is executable
+INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper
+PASS CLI helper completed 'uptime': 123 seconds
+INFO ready: bin/omok-start <fullId> [renju|freestyle]"
+assert_eq "$(cat "$STUB_LOG")" "uptime"
 
 run_wrapper demo1234abcd
 assert_eq "$STATUS" "0"
@@ -62,7 +76,8 @@ assert_not_called
 run_wrapper demo1234abcd freestyle extra
 assert_eq "$STATUS" "1"
 assert_eq "$OUTPUT" "usage: omok-start <fullId> [renju|freestyle]
-       fullId must be 12 characters; the gameId is its first 8."
+       fullId must be 12 characters; the gameId is its first 8.
+       omok-start doctor"
 assert_not_called
 
 printf 'omok-start wrapper smoke check passed\n'

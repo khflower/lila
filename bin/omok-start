@@ -6,9 +6,14 @@ PROG=$(basename "$0")
 usage() {
   printf '%s\n' "usage: $PROG <fullId> [renju|freestyle]" >&2
   printf '%s\n' "       fullId must be 12 characters; the gameId is its first 8." >&2
+  printf '%s\n' "       $PROG doctor" >&2
 }
 
 case "${1-}" in
+  doctor)
+    [ $# -eq 1 ] || { usage; exit 1; }
+    exec "$SCRIPT_DIR/omok-demo" doctor
+    ;;
   -h | --help | help)
     usage
     exit 0

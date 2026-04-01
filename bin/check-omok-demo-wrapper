@@ -15,6 +15,9 @@ trap cleanup EXIT INT TERM HUP
 cat >"$STUB" <<'EOF'
 #!/bin/sh -eu
 printf '%s\n' "$*" >"$OMOK_DEMO_STUB_LOG"
+if [ "$*" = "uptime" ]; then
+  printf '123 seconds\n'
+fi
 EOF
 
 chmod +x "$STUB"
@@ -95,8 +98,10 @@ assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" "omok-demo doctor: PASS
 INFO helper path: $STUB
 PASS CLI helper is executable
-INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper"
-assert_not_called
+INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper
+PASS CLI helper completed 'uptime': 123 seconds
+INFO ready: bin/omok-start <fullId> [renju|freestyle]"
+assert_eq "$(cat "$STUB_LOG")" "uptime"
 
 run_wrapper show demo1234
 assert_eq "$STATUS" "0"
@@ -120,7 +125,8 @@ assert_eq "$STATUS" "1"
 assert_eq "$OUTPUT" "omok-demo doctor: FAIL
 INFO helper path: $MISSING_CLI
 FAIL CLI helper is missing or not executable: $MISSING_CLI
-INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper"
+INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because LILA_OMOK_CLI_BIN overrides the default bin/cli helper
+INFO fix the failing helper/runtime checks before the live demo"
 assert_not_called
 
 run_wrapper seed

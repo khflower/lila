@@ -18,6 +18,15 @@ bin/check-omok-demo-wrapper
 bin/check-omok-start-wrapper
 ```
 
+Runtime readiness checks:
+
+```text
+bin/omok-demo doctor
+bin/omok-start doctor
+```
+
+The doctor path now does more than a raw port check: it also runs a harmless `uptime` command through the resolved CLI helper so operators can confirm the actual transport works before a live demo.
+
 ## Fastest Start Path
 
 If you already know a real player fullId, the quickest path is now:
@@ -72,4 +81,4 @@ bin/omok-demo clear demo1234
 bin/omok-start demo1234abcd freestyle
 ```
 
-If the wrappers cannot reach `localhost:9663/run/cli`, the problem is runtime wiring, not the omok path on this branch.
+If the wrappers cannot reach `localhost:9663/run/cli`, or if the doctor `uptime` probe comes back with unexpected output, the problem is runtime wiring, not the omok path on this branch.

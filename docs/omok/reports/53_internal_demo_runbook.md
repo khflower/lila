@@ -17,7 +17,10 @@ Show the current `omok/mvp` branch as a believable internal prototype:
 bin/check-omok-demo-wrapper
 bin/check-omok-start-wrapper
 bin/omok-demo doctor
+bin/omok-start doctor
 ```
+
+`doctor` now checks the resolved helper path, the default local runtime wiring when `bin/cli` is in use, and a harmless end-to-end `uptime` probe through the helper itself. If that probe fails, do not start the live demo yet.
 
 2. Start a fresh scaffold for a known player fullId:
 
@@ -92,7 +95,8 @@ Say:
 ### If wrapper runtime fails
 - verify `bin/cli` can reach the internal CLI transport
 - verify `LILA_CLI_TOKEN_DEV`
-- rerun `bin/omok-demo doctor`
+- rerun `bin/omok-demo doctor` or `bin/omok-start doctor`
+- if the `uptime` probe is the failing line, treat it as a real CLI transport failure even if `localhost:9663/run/cli` is reachable
 
 ### If scaffold looks wrong
 - rerun:
@@ -119,8 +123,9 @@ Then refresh the tabs.
 
 If you only have 2?3 minutes:
 1. `bin/omok-demo doctor`
-2. `bin/omok-start demo1234abcd freestyle`
-3. open player + watcher tabs
-4. make one legal move
-5. show finished/reload behavior if available
-6. explain that the remaining work is productized start flow and broader site integration, not the core live loop
+2. or `bin/omok-start doctor`
+3. `bin/omok-start demo1234abcd freestyle`
+4. open player + watcher tabs
+5. make one legal move
+6. show finished/reload behavior if available
+7. explain that the remaining work is productized start flow and broader site integration, not the core live loop

@@ -10,7 +10,7 @@ bin/omok-start
 ```
 
 - `bin/omok-demo` handles `seed`, `start`, `show`, `clear`, and `doctor`.
-- `bin/omok-start` is the narrow convenience alias for `omok start <fullId> [renju|freestyle]`.
+- `bin/omok-start` is the narrow convenience alias for `omok start <fullId> [renju|freestyle]`, and now also forwards `doctor`.
 - `fullId` means the 12-character player id; the matching 8-character `gameId` is its first 8 characters.
 
 Both are thin wrappers over the existing internal CLI transport:
@@ -34,7 +34,13 @@ For the real local runtime check, run:
 
 ```text
 bin/omok-demo doctor
+bin/omok-start doctor
 ```
+
+The doctor path is meant to reduce live-demo ambiguity:
+- it reports the resolved helper path;
+- it still checks local `curl` / `LILA_CLI_TOKEN_DEV` / `localhost:9663/run/cli` when using the default `bin/cli`;
+- it now runs a harmless `uptime` probe through the helper itself, so you can tell whether the actual CLI transport is working end-to-end.
 
 ## Supported Commands
 
@@ -45,6 +51,7 @@ bin/omok-demo show <gameId>
 bin/omok-demo clear <gameId>
 bin/omok-demo doctor
 bin/omok-start <fullId> [renju|freestyle]
+bin/omok-start doctor
 ```
 
 `bin/omok-demo start` and `bin/omok-start` fail locally if the `fullId` is not 12 characters matching `[A-Za-z0-9_-]`, so the operator gets a wrapper error before the call reaches `bin/cli`.
@@ -76,6 +83,14 @@ restarted omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=
 omok round demo1234: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-
 cleared omok round demo1234: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-
 ERROR invalid game id 'bad'; expected 8 characters matching [A-Za-z0-9_-]
+omok-demo doctor: PASS
+INFO helper path: /.../bin/cli
+PASS CLI helper is executable
+PASS curl is available in PATH
+PASS LILA_CLI_TOKEN_DEV is set
+PASS http://localhost:9663/run/cli responded with HTTP 401
+PASS CLI helper completed 'uptime': 12345 seconds
+INFO ready: bin/omok-start <fullId> [renju|freestyle]
 ```
 
 ## Fastest Demo Flow
@@ -84,6 +99,7 @@ ERROR invalid game id 'bad'; expected 8 characters matching [A-Za-z0-9_-]
 
 ```text
 bin/omok-demo doctor
+bin/omok-start doctor
 ```
 
 2. Start a fresh omok scaffold for an existing player fullId:
@@ -117,6 +133,6 @@ bin/omok-demo seed demo1234 renju H8 A1 I8
 
 ## Important Caveat
 
-If `bin/cli` cannot reach `localhost:9663/run/cli`, the wrappers will fail even though the omok helper code exists. In that case, the missing piece is environment/runtime wiring, not omok seed/start logic itself.
+If `bin/cli` cannot reach `localhost:9663/run/cli`, or if doctor reports that the helper returned unexpected output for `uptime`, the wrappers will fail even though the omok helper code exists. In that case, the missing piece is environment/runtime wiring, not omok seed/start logic itself.
 
 If either wrapper prints `CLI helper is missing or not executable`, fix `LILA_OMOK_CLI_BIN` or restore the executable bit on `bin/cli` before debugging the server path.
