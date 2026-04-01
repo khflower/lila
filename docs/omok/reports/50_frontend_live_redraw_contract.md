@@ -18,7 +18,7 @@ It is intentionally narrow:
 - `ui/round/src/interfaces.ts` now matches that envelope with `ApiOmokMove { move, position }`.
 - `ui/round/src/socket.ts` forwards `omokMove` unchanged to `RoundController.apiOmokMove(...)`.
 - `ui/round/src/ctrl.ts` mutates `data.omok.position` from `o.position` and also updates generic round turn metadata from that same position snapshot.
-- `ui/round/src/view/omokPlaceholder.ts` and `ui/round/src/view/omokState.ts` both redraw from `ctrl.data.omok.position`.
+- `ui/round/src/view/omokPlaceholder.ts` and `ui/round/src/view/omokState.ts` both redraw from `ctrl.data.omok.position`, with viewer-facing status text derived from `omok.status` / `omok.winner` when present and from generic round finish metadata as fallback.
 - `modules/api/src/main/RoundApi.scala` boot/reload still expose `data.omok` from `OmokAnalyseDto.fromPosition(...)`, so initial load and reconnect use the same `position` DTO shape as live `omokMove`.
 
 ## Contract
@@ -89,7 +89,7 @@ The frontend currently treats `o.position` as authoritative for:
 
 - board stones via `position.boardRows`;
 - last-move highlight via `position.lastMove`;
-- state pill text via `position.turn`, `position.ply`, `position.lastMove`, `position.ruleSet`;
+- board-top status badge and state pill text via `position.turn`, `position.ply`, `position.lastMove`, `position.ruleSet`, plus terminal `omok.status` / `omok.winner` when those are present;
 - placement clickability indirectly through generic `data.game.player`, because `renderOmokPlaceholder.ts` still gates `canPlace` with `isPlayerTurn(ctrl.data)`.
 
 ## Verification Anchors
@@ -112,6 +112,7 @@ Together, those tests verify the key invariant for this report:
 - The current redraw contract is board-and-turn only. `apiOmokMove(...)` does not update generic round status, winner, clocks, or draw flags.
 - `move` is present in the socket payload but is not currently used by the redraw path. The frontend redraw depends on `position`.
 - `renderOmokPlaceholder.ts` still decides clickability from generic round state, not directly from `data.omok.position.turn`. This works only because `apiOmokMove(...)` now mirrors `position.turn` into `data.game.player`.
+- Viewer-facing copy is now slightly richer than the transport contract: player pages may show `Your turn` / `Waiting for Black`, while watcher pages show `Black to play`. That distinction is derived locally from existing round viewer metadata plus `position.turn`.
 - `modules/api/src/main/RoundApi.scala` currently builds `data.omok` with `OmokAnalyseDto.fromPosition(...)`, not the fuller `OmokGameDto`. That means boot/reload still does not carry omok status or winner through the `omok` sidecar.
 - If a page boots without `data.omok`, incoming `omokMove` is effectively ignored by the current controller branch.
 

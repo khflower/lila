@@ -45,6 +45,8 @@ export interface OmokRoundMove {
   col: number;
 }
 
+export type OmokRoundStatus = 'ongoing' | 'win' | 'draw' | (string & {});
+
 export interface OmokRoundPosition {
   boardSize: number;
   boardRows: string[];
@@ -58,7 +60,7 @@ export interface OmokRoundPosition {
 export interface OmokRoundData {
   position: OmokRoundPosition;
   steps?: unknown[];
-  status?: string;
+  status?: OmokRoundStatus;
   winner?: Color | string;
   ruleset?: string;
   boardSize?: number;
@@ -202,7 +204,7 @@ export interface ApiMove {
 export interface ApiOmokMove {
   move: OmokRoundMove;
   position: OmokRoundPosition;
-  status?: string;
+  status?: OmokRoundStatus;
   winner?: Color | string;
 }
 

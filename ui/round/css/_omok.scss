@@ -17,6 +17,7 @@
 .round__app__board__omok-placeholder__shell {
   --omok-frame-size: clamp(1.2rem, 4.2%, 1.8rem);
 
+  position: relative;
   width: 100%;
   height: 100%;
   display: grid;
@@ -33,6 +34,49 @@
     inset 0 0 0 1px rgba(87, 55, 20, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.24),
     0 12px 28px rgba(38, 21, 3, 0.12);
+}
+
+.round__app__board__omok-placeholder__status {
+  position: absolute;
+  inset-block-start: clamp(0.45rem, 1.8%, 0.8rem);
+  inset-inline-start: clamp(0.45rem, 1.8%, 0.8rem);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-width: min(72%, 18rem);
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.8rem;
+  background: rgba(33, 24, 12, 0.74);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 20px rgba(20, 12, 3, 0.18);
+  color: rgba(255, 250, 242, 0.98);
+  backdrop-filter: blur(6px);
+}
+
+.round__app__board__omok-placeholder__status.is-active {
+  background: rgba(37, 71, 43, 0.82);
+}
+
+.round__app__board__omok-placeholder__status.is-terminal {
+  background: rgba(73, 35, 18, 0.82);
+}
+
+.round__app__board__omok-placeholder__status.is-draw {
+  background: rgba(64, 64, 64, 0.78);
+}
+
+.round__app__board__omok-placeholder__status-main {
+  font-size: clamp(0.76rem, 1.9vw, 0.96rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.round__app__board__omok-placeholder__status-detail {
+  font-size: clamp(0.62rem, 1.5vw, 0.76rem);
+  line-height: 1.2;
+  color: rgba(255, 247, 233, 0.78);
 }
 
 .round__app__board__omok-placeholder__coords {
@@ -151,11 +195,62 @@
   pointer-events: none;
 }
 
+.round__app__board__omok-state.is-active {
+  border-color: rgba(51, 114, 65, 0.28);
+  box-shadow:
+    0 12px 28px rgba(27, 43, 31, 0.16),
+    inset 0 0 0 1px rgba(51, 114, 65, 0.12);
+}
+
+.round__app__board__omok-state.is-terminal {
+  border-color: rgba(127, 75, 27, 0.28);
+}
+
+.round__app__board__omok-state.is-draw {
+  border-color: rgba(94, 94, 94, 0.24);
+}
+
 .round__app__board__omok-state__title {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: $c-font-dim;
+}
+
+.round__app__board__omok-state__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  color: $c-font;
+}
+
+.round__app__board__omok-state__summary.is-active {
+  background: rgba(53, 110, 69, 0.12);
+  color: #214f2d;
+}
+
+.round__app__board__omok-state__summary.is-terminal {
+  background: rgba(126, 74, 27, 0.12);
+  color: #6d3c17;
+}
+
+.round__app__board__omok-state__summary.is-draw {
+  background: rgba(72, 72, 72, 0.1);
+  color: #444;
+}
+
+.round__app__board__omok-state__summary-main {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.round__app__board__omok-state__summary-detail {
+  font-size: 0.78rem;
   color: $c-font-dim;
 }
 
@@ -165,6 +260,10 @@
   gap: 0.35em;
   white-space: nowrap;
   font-size: 0.9rem;
+}
+
+.round__app__board__omok-state__field.is-emphasis .round__app__board__omok-state__value {
+  color: inherit;
 }
 
 .round__app__board__omok-state__label {

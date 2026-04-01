@@ -4,6 +4,7 @@ import { hl, onInsert, type VNode } from 'lib/view';
 import * as blur from '../blur';
 import type RoundController from '../ctrl';
 import type { SocketPlace } from '../interfaces';
+import { getOmokStatusSummary } from './omokState';
 
 const defaultBoardSize = 15;
 const boardFiles = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -34,6 +35,8 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
   const omok = ctrl.data.omok,
     position = omok?.position;
   if (!position) return;
+  const statusSummary = getOmokStatusSummary(ctrl);
+  if (!statusSummary) return;
 
   const boardSize = position.boardSize || omok.boardSize || position.boardRows.length || defaultBoardSize;
   const boardRows = normalizeBoardRows(position.boardRows, boardSize);
@@ -69,6 +72,22 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
 
   return hl('div.round__app__board__omok-placeholder', { attrs }, [
     hl('div.round__app__board__omok-placeholder__shell', [
+      hl(
+        'div.round__app__board__omok-placeholder__status',
+        {
+          class: {
+            'is-active': statusSummary.tone === 'active',
+            'is-terminal': statusSummary.terminal,
+            'is-draw': statusSummary.tone === 'draw',
+          },
+        },
+        [
+          hl('strong.round__app__board__omok-placeholder__status-main', statusSummary.text),
+          statusSummary.detail
+            ? hl('span.round__app__board__omok-placeholder__status-detail', statusSummary.detail)
+            : undefined,
+        ],
+      ),
       hl(
         'div.round__app__board__omok-placeholder__coords.round__app__board__omok-placeholder__coords--top',
         { style: horizontalCoordStyle },
