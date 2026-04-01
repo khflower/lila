@@ -30,3 +30,39 @@ Coordinator restart performed after reviewing the prior Discord thread and the l
 2. Read `docs/omok/WORKERS.md`.
 3. Check `git branch -vv` and `git worktree list`.
 4. Inspect worker output logs under `/kh_code/codex-orch/`.
+
+## 2026-04-01 wave-1 merge checkpoint
+
+### User reporting preference
+- Keep detailed execution state in repo/server logs.
+- User-facing updates can stay high-level.
+- Keep Codex workers busy continuously; avoid idle workers when there is a clear next slice.
+
+### Wave-1 worker harvest
+Merged into `omok/mvp`:
+- `e457493b29` Handle full-board draws in omok core
+- `9c8c5040bc` round: avoid implicit omok live reseed
+- `099171fb43` omok: reset stale rapfi adapter handles
+- `fda6da8e45` omok: sync fresh rapfi sessions with board state
+- `011d35b914` Harden omok demo CLI wrapper path
+- `ac5063f25c` Polish omok live status surfaces
+
+Deferred as reference branches for now:
+- `worker/start-flow` docs
+- `worker/persistence` docs
+
+### Post-merge validation
+- `./lila.sh compile`
+- focused round tests
+- focused omok/rapfi/core tests
+- `api/testOnly lila.api.OmokCliRoutingTest`
+- Result: all targeted checks passed after merge.
+
+### Next execution bias
+Prioritize narrow, mergeable slices that reduce demo risk or unlock the first omok-native start/persistence wave:
+1. round lifecycle cleanup ownership
+2. frontend turn gating from omok state
+3. snapshot/core API terminal status propagation
+4. engine session reset keyed by game/ruleset
+5. first omok-native start flow scaffold
+6. persistence bridge scaffolding or merged planning doc cut
