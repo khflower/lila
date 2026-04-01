@@ -1,6 +1,7 @@
 import { aborted, finished } from 'lib/game';
 
 import type RoundController from './ctrl';
+import { isOmokTerminal } from './omok';
 
 const initialTitle = document.title;
 
@@ -37,7 +38,7 @@ export const init = (): void => window.addEventListener('focus', resetTicker);
 export function set(ctrl: RoundController, text?: string): void {
   if (ctrl.data.player.spectator) return;
   if (!text) {
-    if (aborted(ctrl.data) || finished(ctrl.data)) {
+    if (aborted(ctrl.data) || finished(ctrl.data) || isOmokTerminal(ctrl.data)) {
       text = i18n.site.gameOver;
     } else if (ctrl.isPlayerTurn()) {
       text = i18n.site.yourTurn;

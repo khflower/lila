@@ -1,7 +1,12 @@
 import type RoundController from './ctrl';
-import type { RoundOpts } from './interfaces';
+import type { RoundData, RoundOpts } from './interfaces';
 
 export const isOmokRound = (opts: Pick<RoundOpts, 'data'>): boolean => !!opts.data.omok;
+
+export const isOmokTerminal = (data: Pick<RoundData, 'omok'>): boolean => {
+  const omok = data.omok;
+  return !!omok && (!!omok.winner || (!!omok.status && omok.status !== 'ongoing'));
+};
 
 export async function bootOmokPlaceholder(
   opts: RoundOpts,

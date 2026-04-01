@@ -49,6 +49,7 @@ import type {
 } from './interfaces';
 import { init as keyboardInit } from './keyboard';
 import MoveOn from './moveOn';
+import { isOmokTerminal } from './omok';
 import Server from './server';
 import { make as makeSocket, type RoundSocket } from './socket';
 import * as title from './title';
@@ -280,6 +281,7 @@ export default class RoundController implements MoveRootCtrl {
 
   canPlaceOmok = (): boolean =>
     this.isPlaying() &&
+    !isOmokTerminal(this.data) &&
     this.omokTurnColor() === this.data.player.color &&
     !this.replaying() &&
     !this.loading;
