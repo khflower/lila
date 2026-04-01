@@ -936,7 +936,7 @@ POST  /run/cli                         controllers.Dev.command
 # Dev
 GET   /dev/cli                         controllers.Dev.cli
 POST  /dev/cli                         controllers.Dev.cliPost
-GET   /dev/omok/start/$fullId<\w{12}>  controllers.Round.omokStart(fullId: GameFullId, ruleSet: String ?= "renju")
+GET   /dev/omok/start/$fullId<[\w-]{12}>  controllers.Round.omokStart(fullId: GameFullId, ruleSet: String ?= "renju")
 GET   /dev/settings                    controllers.Dev.settings
 POST  /dev/settings/:id                controllers.Dev.settingsPost(id)
 GET   /dev/ip-tiers                    controllers.Dev.ipTiers
