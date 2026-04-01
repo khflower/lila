@@ -34,6 +34,7 @@ class OmokCliTest extends munit.FunSuite:
     assert(!handler.isDefinedAt(List("omok")))
     assert(!handler.isDefinedAt(List("omok", "seed")))
     assert(!handler.isDefinedAt(List("omok", "start")))
+    assert(!handler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle", "extra")))
     assert(!handler.isDefinedAt(List("omok", "show", "demo1234", "extra")))
     assert(!handler.isDefinedAt(List("omok", "clear", "demo1234", "extra")))
     assert(!handler.isDefinedAt(List("omok", "unknown", "demo1234")))
@@ -57,7 +58,12 @@ class OmokCliTest extends munit.FunSuite:
     val repo = OmokRoundRepo()
     val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
 
+    assert(handler.isDefinedAt(List("omok", "start", "demo1234abcd")))
     assert(handler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle")))
+    assertEquals(
+      run(handler, List("omok", "start", "demo1234abcd")),
+      "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=renju ply=0 turn=black lastMove=- moves=-"
+    )
     assertEquals(
       run(handler, List("omok", "start", "demo1234abcd", "freestyle")),
       "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"

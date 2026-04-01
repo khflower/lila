@@ -53,6 +53,12 @@ class OmokCliRoutingTest extends munit.FunSuite:
       .invoke(omokCliModule, OmokDemoSeed(repo), OmokStartScaffold(repo))
       .asInstanceOf[PartialFunction[List[String], Fu[String]]]
 
+    assert(omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd")))
+    assert(!omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle", "extra")))
+    assertEquals(
+      runRaw(omokHandler, "omok start demo1234abcd"),
+      "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=renju ply=0 turn=black lastMove=- moves=-"
+    )
     assertEquals(
       runRaw(omokHandler, "omok start demo1234abcd freestyle"),
       "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"

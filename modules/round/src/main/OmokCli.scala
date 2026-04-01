@@ -6,11 +6,16 @@ private[round] object OmokCli:
       omokDemoSeed: OmokDemoSeed,
       omokStartScaffold: OmokStartScaffold
   ): PartialFunction[List[String], Fu[String]] =
-    case "omok" :: "start" :: fullId :: rest =>
-      val ruleSet = rest.headOption
+    case "omok" :: "start" :: fullId :: Nil =>
       fuccess(
         omokStartScaffold
-          .start(fullId, ruleSet)
+          .start(fullId, None)
+          .fold(err => s"ERROR ${err.message}", _.message)
+      )
+    case "omok" :: "start" :: fullId :: ruleSet :: Nil =>
+      fuccess(
+        omokStartScaffold
+          .start(fullId, Some(ruleSet))
           .fold(err => s"ERROR ${err.message}", _.message)
       )
     case "omok" :: "seed" :: gameId :: rest =>
