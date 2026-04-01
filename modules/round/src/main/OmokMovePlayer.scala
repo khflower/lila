@@ -47,7 +47,12 @@ final class OmokMovePlayer(omokRoundRepo: OmokRoundRepo):
     omokRoundRepo.getOrInit(gameId, ruleSet)
 
   def place(request: PlaceRequest): Either[PlaceError, PlaceAccepted] =
-    val previous = omokRoundRepo.getOrInit(request.gameId, request.ruleSet)
+    placeFromState(request, omokRoundRepo.getOrInit(request.gameId, request.ruleSet))
+
+  def placeIfPresent(request: PlaceRequest): Option[Either[PlaceError, PlaceAccepted]] =
+    omokRoundRepo.get(request.gameId).map(placeFromState(request, _))
+
+  private def placeFromState(request: PlaceRequest, previous: OmokRoundState): Either[PlaceError, PlaceAccepted] =
     request.expectedTurn
       .filterNot(_ == previous.position.turn)
       .map(_ => PlaceError(request, previous, OmokMoveError.WrongTurn))

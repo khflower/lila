@@ -22,7 +22,7 @@ The checklist below is based on the code currently on `omok/mvp`.
 - `modules/api/src/main/RoundApi.scala` only adds `data.omok` when `omokRoundRepo.get(gameId)` already has state.
 - `modules/round/src/main/ui/RoundUi.scala`, `app/views/round/player.scala`, `app/views/round/watcher.scala`, `ui/round/src/omok.ts`, and `ui/round/css/_omok.scss` already mark the page as omok mode and hide the visible chessground board behind an omok overlay.
 - `modules/round/src/main/RoundSocket.scala` already parses `r/place` with `CoordinateNotation.parse(...)`.
-- `modules/round/src/main/RoundAsyncActor.scala` now routes `HumanPlace` into `OmokMovePlayer.place(...)`, increments socket version, and emits `omokMove` for accepted placements.
+- `modules/round/src/main/RoundAsyncActor.scala` now routes `HumanPlace` into `OmokMovePlayer.placeIfPresent(...)`, increments socket version, emits `omokMove` for accepted placements, and resyncs instead of silently creating missing omok state.
 - `modules/round/src/main/OmokEvent.scala` currently emits `omokMove` as `{ "move": ..., "position": ... }`.
 - `ui/round/src/ctrl.ts` still consumes `ApiOmokMove` as a flatter payload with top-level `boardRows`, `turn`, `ply`, and `lastMove`.
 - `ui/round/src/round.ts` still boots the standard `RoundController` for omok pages.

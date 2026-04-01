@@ -184,44 +184,32 @@ final private class RoundAsyncActor(
 
     case p: HumanPlace =>
       handle(p.playerId): pov =>
-        omokMovePlayer.get(gameId) match
+        val expectedTurn = assumedOmokTurnFor(pov.color)
+        omokMovePlayer.placeIfPresent(PlaceRequest(gameId, p.pos, expectedTurn = Some(expectedTurn))) match
           case None =>
             fuccess:
               logger.debug(s"[omok] ignoring HumanPlace for unseeded round ${pov.gameId}/${pov.color.name}")
               socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
               Nil
-          case Some(current) =>
-            val expectedTurn = assumedOmokTurnFor(pov.color)
-            val povMatchesTurn = current.position.turn == expectedTurn
-
-            if !povMatchesTurn then
-              fuccess:
-                logger.debug(
-                  s"[omok] rejecting place for ${pov.gameId}/${pov.color.name} at ${p.pos.key}; expected turn ${expectedTurn.toString.toLowerCase}, found ${current.position.turn.toString.toLowerCase}"
-                )
-                socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
-                Nil
-            else
-              omokMovePlayer.place(PlaceRequest(gameId, p.pos, expectedTurn = Some(expectedTurn))) match
-                case Left(err) =>
-                  fuccess:
-                    logger.debug(err.message)
-                    socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
-                    Nil
-                case Right(applied) =>
-                  applied.terminalStatus match
-                    case Some(terminalStatus) =>
-                      for
-                        _ <- fuccess:
-                          version = version.map(_ + 1)
-                          socketSend.exec(Protocol.Out.omokMove(version, applied.event))
-                        events <- finishOmokTerminal(pov.game, terminalStatus)
-                      yield events
-                    case None =>
-                      fuccess:
-                        version = version.map(_ + 1)
-                        socketSend.exec(Protocol.Out.omokMove(version, applied.event))
-                        Nil
+          case Some(Left(err)) =>
+            fuccess:
+              logger.debug(err.message)
+              socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+              Nil
+          case Some(Right(applied)) =>
+            applied.terminalStatus match
+              case Some(terminalStatus) =>
+                for
+                  _ <- fuccess:
+                    version = version.map(_ + 1)
+                    socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+                  events <- finishOmokTerminal(pov.game, terminalStatus)
+                yield events
+              case None =>
+                fuccess:
+                  version = version.map(_ + 1)
+                  socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+                  Nil
       .addEffect(_ => p.promise.foreach(_.success {}))
 
     case p: RoundBus.BotPlay =>

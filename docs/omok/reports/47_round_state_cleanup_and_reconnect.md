@@ -17,15 +17,15 @@ Focus here is limited to:
 
 - `modules/round/src/main/OmokRoundRepo.scala` stores live omok round state in an in-memory `TrieMap[GameId, OmokRoundState]`.
 - `modules/api/src/main/RoundApi.scala` only appends `data.omok` when `omokRoundRepo.get(pov.gameId)` already has state; it does not seed on read.
-- `modules/round/src/main/OmokMovePlayer.scala` exists, and `modules/round/src/test/OmokMovePlayerTest.scala` confirms preview and repo persistence behavior, but there is still no production caller wired into the round actor.
+- `modules/round/src/main/OmokMovePlayer.scala` exists, and `modules/round/src/test/OmokMovePlayerTest.scala` confirms preview, repo persistence behavior, and a read-only `placeIfPresent(...)` path for live round calls.
 - `modules/round/src/main/RoundSocket.scala` already parses `r/place` into `HumanPlace`.
-- `modules/round/src/main/RoundAsyncActor.scala` still ignores `HumanPlace`, logs, and resyncs the sender instead of applying a move.
+- `modules/round/src/main/RoundAsyncActor.scala` now routes `HumanPlace` into `OmokMovePlayer.placeIfPresent(...)`, publishes `omokMove` for accepted placements, and resyncs when omok state is missing or invalid.
 - `modules/round/src/main/OmokEvent.scala` plus `RoundSocket.Protocol.Out.omokMove(...)` already define the outward omok move packet as `{ move, position }`.
 - `ui/round/src/socket.ts` forwards `omokMove`, but `ui/round/src/interfaces.ts` and `ui/round/src/ctrl.ts` still expect a flatter `ApiOmokMove` shape, not the current `{ move, position }` envelope.
 - `ui/round/src/interfaces.ts` also types `omok.position.moves` as `string[]`, while the current omok DTO layer emits move objects.
 - `ui/round/src/round.ts` still boots `RoundController` for omok pages, so reconnect and reload still pass through the chess-oriented round runtime.
-- No current production hook removes `OmokRoundRepo` entries on `FinishGame`, abort, `DeleteUnplayed`, round termination, or `RoundAsyncActor.Stop`.
-- `modules/round/src/main/Titivate.scala` deletes stale unplayed games and chat state, but it does not touch `OmokRoundRepo`.
+- No current production hook removes `OmokRoundRepo` entries on `FinishGame`, abort, round termination, or `RoundAsyncActor.Stop`; `DeleteUnplayed` already clears state through `RoundSocket`.
+- `modules/round/src/main/Titivate.scala` still deletes stale unplayed games and chat state, while `modules/round/src/main/RoundSocket.scala` already clears `OmokRoundRepo` on the `DeleteUnplayed` bus path.
 
 ## Main Integrity Risks
 
@@ -40,9 +40,9 @@ That creates two concrete risks:
 
 ### 2. Silent state creation from the wrong path
 
-`OmokMovePlayer.place(...)` currently uses `getOrInit(...)`.
+`OmokMovePlayer.place(...)` still uses `getOrInit(...)` for explicit helper-driven seeding.
 
-That is acceptable for a local helper, but once it is wired into production it will silently create new omok state from a move path unless the caller prevents it. That would hide missing-seed bugs and make reconnect/resync behavior nondeterministic.
+The current production `HumanPlace` path now uses `placeIfPresent(...)`, which prevents silent re-seeding during live play. The remaining risk is future production callers accidentally using `place(...)` instead of the read-only path, which would hide missing-seed bugs and make reconnect/resync behavior nondeterministic.
 
 ### 3. Socket and reload schemas are not yet aligned
 

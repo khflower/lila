@@ -40,6 +40,17 @@ class OmokMovePlayerTest extends munit.FunSuite:
 
     assertEquals(error.message, s"[omok] $gameId cannot place H8: occupied")
 
+  test("placeIfPresent refuses to initialize missing omok state"):
+    val repo = OmokRoundRepo()
+    val player = OmokMovePlayer(repo)
+    val gameId = GameId("missing42")
+
+    val missing = player.placeIfPresent(PlaceRequest(gameId, Pos.unsafe(7, 7), expectedTurn = Some(Color.Black)))
+
+    assertEquals(missing, None)
+    assertEquals(repo.get(gameId), None)
+    assertEquals(player.get(gameId), None)
+
   test("place rejects a mismatched expected turn without mutating cached state"):
     val repo = OmokRoundRepo()
     val player = OmokMovePlayer(repo)
