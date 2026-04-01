@@ -184,10 +184,36 @@ final private class RoundAsyncActor(
 
     case p: HumanPlace =>
       handle(p.playerId): pov =>
-        fuccess:
-          logger.debug(s"Ignoring HumanPlace for ${pov.gameId}/${pov.color.name} at ${p.pos.key}")
-          socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
-          Nil
+        omokMovePlayer.get(gameId) match
+          case None =>
+            fuccess:
+              logger.debug(s"[omok] ignoring HumanPlace for unseeded round ${pov.gameId}/${pov.color.name}")
+              socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+              Nil
+          case Some(current) =>
+            val povMatchesTurn =
+              (pov.color.white && current.position.turn == lila.omok.Color.White) ||
+              (pov.color.black && current.position.turn == lila.omok.Color.Black)
+
+            if !povMatchesTurn then
+              fuccess:
+                logger.debug(
+                  s"[omok] rejecting out-of-turn place for ${pov.gameId}/${pov.color.name} at ${p.pos.key}"
+                )
+                socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+                Nil
+            else
+              omokMovePlayer.place(PlaceRequest(gameId, p.pos)) match
+                case Left(err) =>
+                  fuccess:
+                    logger.debug(err.message)
+                    socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+                    Nil
+                case Right(applied) =>
+                  fuccess:
+                    version = version.map(_ + 1)
+                    socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+                    Nil
       .addEffect(_ => p.promise.foreach(_.success {}))
 
     case p: RoundBus.BotPlay =>
@@ -497,5 +523,6 @@ object RoundAsyncActor:
       val drawer: Drawer,
       val forecastApi: ForecastApi,
       val simulApi: lila.core.data.CircularDep[lila.core.simul.SimulApi],
-      val jsonView: JsonView
+      val jsonView: JsonView,
+      val omokMovePlayer: OmokMovePlayer
   )
