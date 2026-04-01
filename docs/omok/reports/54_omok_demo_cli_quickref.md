@@ -9,8 +9,8 @@ bin/omok-demo
 bin/omok-start
 ```
 
-- `bin/omok-demo` handles `seed`, `show`, `clear`, and `doctor`.
-- `bin/omok-start` is the narrow convenience wrapper for `omok start <fullId> [renju|freestyle]`.
+- `bin/omok-demo` handles `seed`, `start`, `show`, `clear`, and `doctor`.
+- `bin/omok-start` is the narrow convenience alias for `omok start <fullId> [renju|freestyle]`.
 
 Both are thin wrappers over the existing internal CLI transport:
 - `bin/cli`
@@ -39,6 +39,7 @@ bin/omok-demo doctor
 
 ```text
 bin/omok-demo seed <gameId> [renju|freestyle] [move ...]
+bin/omok-demo start <fullId> [renju|freestyle]
 bin/omok-demo show <gameId>
 bin/omok-demo clear <gameId>
 bin/omok-demo doctor
@@ -50,6 +51,8 @@ Examples:
 ```text
 bin/omok-demo seed demo1234
 bin/omok-demo seed demo1234 renju H8 A1 I8
+bin/omok-demo start demo1234abcd
+bin/omok-demo start demo1234abcd freestyle
 bin/omok-start demo1234abcd
 bin/omok-start demo1234abcd freestyle
 bin/omok-demo show demo1234
