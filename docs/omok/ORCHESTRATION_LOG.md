@@ -112,3 +112,19 @@ Primary doc landing points:
 - `omok/mvp` now contains wave-1 plus wave-2 merged slices.
 - Branch is ahead of `origin/omok/mvp` and not yet pushed.
 - Next useful work should prefer runtime validation, persistence scaffolding, and further narrowing of the internal start path toward a stronger demo and pre-service cut.
+
+## 2026-04-01 start-surface stabilization checkpoint
+
+### What landed
+- Internal omok start scaffold is merged on `omok/mvp`.
+- CLI and dev route now expose the scaffolded start path.
+- CLI routing/tests were tightened so `omok start` accepts only the intended shapes.
+
+### Follow-up fix
+- Test expectations were corrected to reflect actual scaffold semantics:
+  repeated start on the same `GameId` returns `restarted`, not `started`.
+- Focused start-surface tests now pass again after the semantic alignment.
+
+### Still in progress
+- wave-3 demo-runtime and persistence-code branches did not yet yield a mergeable slice.
+- next coordinator action should either reprompt those lanes more narrowly or replace them with a more concrete runtime/persistence cut.
