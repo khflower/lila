@@ -18,4 +18,3 @@ Constraints:
 - Analysis only.
 - Do not modify tracked files outside the assigned report path.
 - Final message must be exactly: DONE_11
-EOF

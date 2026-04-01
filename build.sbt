@@ -61,7 +61,7 @@ lazy val modules = Seq(
   // level 1
   core, coreI18n,
   // level 2
-  ui, common, tree,
+  ui, common, tree, omok,
   // level 3
   db, room, search,
   // level 4
@@ -108,6 +108,11 @@ lazy val common = module("common",
 lazy val db = module("db",
   Seq(common),
   Seq(hasher) ++ macwire.bundle
+)
+
+lazy val omok = module("omok",
+  Seq(common),
+  tests.bundle
 )
 
 lazy val memo = module("memo",
