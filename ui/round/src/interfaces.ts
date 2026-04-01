@@ -58,6 +58,8 @@ export interface OmokRoundPosition {
 export interface OmokRoundData {
   position: OmokRoundPosition;
   steps?: unknown[];
+  status?: string;
+  winner?: Color | string;
   ruleset?: string;
   boardSize?: number;
 }
@@ -200,6 +202,8 @@ export interface ApiMove {
 export interface ApiOmokMove {
   move: OmokRoundMove;
   position: OmokRoundPosition;
+  status?: string;
+  winner?: Color | string;
 }
 
 export interface ApiEnd {

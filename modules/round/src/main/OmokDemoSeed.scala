@@ -80,7 +80,7 @@ final class OmokDemoSeed(omokRoundRepo: OmokRoundRepo):
 
   private def buildState(ruleSet: RuleSet, moves: Vector[OmokMove]): Either[String, OmokRoundState] =
     Replay(OmokGame.initial(ruleSet), moves).left.map(renderReplayError).map: game =>
-      OmokRoundState(lila.omok.PositionSnapshot.fromGame(game, moves), moves)
+      OmokRoundState.fromGame(game, moves)
 
   private def renderReplayError(err: lila.omok.ReplayError): String =
     val moveNumber = err.index + 1
