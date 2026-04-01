@@ -1,4 +1,3 @@
-import { Chessground as makeChessground } from '@lichess-org/chessground';
 import type { Elements } from '@lichess-org/chessground/types';
 import { h, type VNode } from 'snabbdom';
 
@@ -7,12 +6,13 @@ import { isSafari } from 'lib/device';
 import * as Prefs from 'lib/prefs';
 import { storage } from 'lib/storage';
 
+import { createBoard } from './board';
 import type AnalyseCtrl from './ctrl';
 
 export const render = (ctrl: AnalyseCtrl): VNode =>
   h('div.cg-wrap.cgv' + ctrl.cgVersion.js, {
     hook: {
-      insert: vnode => ctrl.setChessground(makeChessground(vnode.elm as HTMLElement, makeConfig(ctrl))),
+      insert: vnode => ctrl.setChessground(createBoard(ctrl, vnode.elm as HTMLElement, makeConfig(ctrl))),
     },
   });
 

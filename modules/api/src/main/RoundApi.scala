@@ -7,6 +7,7 @@ import lila.analyse.{ Analysis, JsonView as analysisJson }
 import lila.api.Context.given
 import lila.common.HTTPRequest
 import lila.common.Json.given
+import lila.omok.OmokAnalyseDto
 import scalalib.data.Preload
 import lila.core.i18n.Translate
 import lila.core.perm.Granter
@@ -142,6 +143,7 @@ final private[api] class RoundApi(
           .compose(withAnalysis(pov.game, analysis))
           .compose(withForecast(pov, fco))
           .compose(withPuzzleOpening(puzzleOpening))
+          .compose(withOmokAnalyse)
       )(json)
     .flatMap(externalEngineApi.withExternalEngines)
       .mon(_.round.api.watcher)
@@ -157,16 +159,17 @@ final private[api] class RoundApi(
     owner
       .so(forecastApi.loadForDisplay(pov))
       .map: fco =>
-        withForecast(pov, fco):
-          val opts = ExportOptions(lichobileCompat = addLichobileCompat)
-          withTree(pov, analysis = none, initialFen, opts):
-            jsonView.userAnalysisJson(
-              pov,
-              pref,
-              initialFen,
-              orientation,
-              owner = owner
-            )
+        withOmokAnalyse:
+          withForecast(pov, fco):
+            val opts = ExportOptions(lichobileCompat = addLichobileCompat)
+            withTree(pov, analysis = none, initialFen, opts):
+              jsonView.userAnalysisJson(
+                pov,
+                pref,
+                initialFen,
+                orientation,
+                owner = owner
+              )
       .flatMap(externalEngineApi.withExternalEngines)
 
   private def withTree(
@@ -221,6 +224,10 @@ final private[api] class RoundApi(
           Json.obj("key" -> key, "name" -> name, "count" -> count)
         }
     )
+
+  // Reserve a stable namespace for future omok analyse boot data.
+  private def withOmokAnalyse(json: JsObject) =
+    json + ("omok" -> OmokAnalyseDto.empty.asJson)
 
   private def withForecast(pov: Pov, fco: Option[Forecast])(json: JsObject) =
     if pov.game.forecastable then

@@ -50,3 +50,27 @@ class OmokBridgeTest extends munit.FunSuite:
     assertEquals(dto.boardRows(7), ".......bw......")
     assertEquals((dto.asJson \ "turn").as[String], "black")
     assertEquals((dto.asJson \ "moves").as[play.api.libs.json.JsArray].value.size, 2)
+
+  test("analyse dto keeps the boot namespace compact and can reuse game snapshots"):
+    val moves = Vector(
+      Move(pos(7, 7)),
+      Move(pos(0, 0)),
+      Move(pos(7, 8)),
+      Move(pos(0, 1)),
+      Move(pos(7, 9)),
+      Move(pos(0, 2)),
+      Move(pos(7, 10)),
+      Move(pos(0, 3)),
+      Move(pos(7, 11))
+    )
+    val game = Replay(Game.initial(RuleSet.Renju), moves).toOption.get
+
+    val empty = OmokAnalyseDto.empty
+    val dto = OmokAnalyseDto.fromGame(game, moves)
+
+    assertEquals(empty.asJson.keys, Set.empty)
+    assertEquals(dto.status, Some("win"))
+    assertEquals(dto.winner, Some("black"))
+    assertEquals(dto.position.flatMap(_.lastMove).map(_.key), Some("L8"))
+    assertEquals((dto.asJson \ "status").asOpt[String], Some("win"))
+    assertEquals((dto.asJson \ "position" \ "moves").as[play.api.libs.json.JsArray].value.size, moves.size)

@@ -28,6 +28,7 @@ import {
 import * as control from '../control';
 import type AnalyseCtrl from '../ctrl';
 import * as chessground from '../ground';
+import { renderBoardInjectionPlaceholder } from '../board';
 import type { ConcealOf } from '../interfaces';
 import * as pgnExport from '../pgnExport';
 import { renderPgnError } from '../pgnImport';
@@ -147,6 +148,7 @@ export const renderBoard = ({ ctrl, study, playerBars, playerStrips }: ViewConte
     [
       playerStrips,
       playerBars?.[ctrl.bottomIsWhite() ? 1 : 0],
+      renderBoardInjectionPlaceholder(ctrl),
       chessground.render(ctrl),
       playerBars?.[ctrl.bottomIsWhite() ? 0 : 1],
       ctrl.promotion.view(ctrl.data.game.variant.key === 'antichess'),

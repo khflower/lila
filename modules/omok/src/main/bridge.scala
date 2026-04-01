@@ -112,6 +112,40 @@ object OmokGameDto:
       winner = winnerKey(game.status)
     )
 
+final case class OmokAnalyseDto(
+    position: Option[OmokPositionDto] = None,
+    status: Option[String] = None,
+    winner: Option[String] = None
+):
+
+  def asJson: JsObject = OmokAnalyseDto.writes.writes(this)
+
+object OmokAnalyseDto:
+
+  val empty = OmokAnalyseDto()
+
+  val writes: OWrites[OmokAnalyseDto] = OWrites: dto =>
+    JsObject(
+      List(
+        dto.position.map("position" -> PlayJson.toJson(_)),
+        dto.status.map("status" -> PlayJson.toJson(_)),
+        dto.winner.map("winner" -> PlayJson.toJson(_))
+      ).flatten
+    )
+
+  given OWrites[OmokAnalyseDto] = writes
+
+  def fromPosition(position: PositionSnapshot): OmokAnalyseDto =
+    OmokAnalyseDto(position = Some(OmokPositionDto.fromPosition(position)))
+
+  def fromGame(game: Game, moves: Vector[Move] = Vector.empty): OmokAnalyseDto =
+    val gameDto = OmokGameDto.fromGame(game, moves)
+    OmokAnalyseDto(
+      position = Some(gameDto.position),
+      status = Some(gameDto.status),
+      winner = gameDto.winner
+    )
+
 private def colorKey(color: Color): String = color match
   case Color.Black => "black"
   case Color.White => "white"
