@@ -102,6 +102,33 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
       )
     )
 
+  test("process adapter restarts the session when the next move request changes ruleset"):
+    val firstHandle = new FakeHandle(Vector("BESTMOVE 7,7"))
+    val secondHandle = new FakeHandle(Vector("BESTMOVE 9,9"))
+    val factory = new FakeFactory(Vector(firstHandle, secondHandle))
+    val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
+
+    val renjuInitial = PositionSnapshot.fromGame(Game.initial(RuleSet.Renju))
+    val renjuMove = Await.result(adapter.bestMove(EngineMoveRequest(renjuInitial)), 2.seconds)
+    val firstMove = renjuMove.bestMove
+    val freestyleGame = Game.initial(RuleSet.Freestyle).play(firstMove).toOption.get
+    val freestylePosition = PositionSnapshot.fromGame(freestyleGame, Vector(firstMove))
+    val freestyleReply = Await.result(adapter.bestMove(EngineMoveRequest(freestylePosition)), 2.seconds)
+
+    assert(firstHandle.closed)
+    assertEquals(freestyleReply.bestMove, Move(pos(9, 9)))
+    assertEquals(factory.starts, 2)
+    assertEquals(
+      secondHandle.writes.toVector,
+      Vector(
+        "START 15",
+        "INFO rule 0",
+        "BOARD",
+        "7,7,1",
+        "DONE"
+      )
+    )
+
   test("analysis falls back to a single primary variation from best-move output"):
     val handle = new FakeHandle(Vector("BESTMOVE 9,9"))
     val adapter =
@@ -129,9 +156,10 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
     assertEquals(move.bestMove, Move(pos(9, 9)))
     assertEquals(factory.starts, 2)
 
-  test("successful analysis leaves the adapter unsynced so the next move request replays the board"):
-    val handle = new FakeHandle(Vector("BESTMOVE 9,9", "BESTMOVE 8,7"))
-    val factory = new FakeFactory(Vector(handle))
+  test("successful analysis recycles the process so the next move request starts a fresh session"):
+    val analysisHandle = new FakeHandle(Vector("BESTMOVE 9,9"))
+    val moveHandle = new FakeHandle(Vector("BESTMOVE 8,7"))
+    val factory = new FakeFactory(Vector(analysisHandle, moveHandle))
     val adapter = new RapfiProcessAdapter(RapfiProcessConfig(command = List("rapfi")), factory)
     val firstMove = Move(pos(7, 7))
     val game = Game.initial().play(firstMove).toOption.get
@@ -142,18 +170,26 @@ class RapfiProcessAdapterTest extends munit.FunSuite:
 
     assertEquals(analysis.bestMove, Some(Move(pos(9, 9))))
     assertEquals(move.bestMove, Move(pos(7, 8)))
-    assertEquals(factory.starts, 1)
+    assert(analysisHandle.closed)
+    assertEquals(factory.starts, 2)
     assertEquals(
-      handle.writes.toVector,
+      analysisHandle.writes.toVector,
+      Vector(
+        "START 15",
+        "INFO rule 0",
+        "BOARD",
+        "7,7,1",
+        "DONE"
+      )
+    )
+    assertEquals(
+      moveHandle.writes.toVector,
       Vector(
         "START 15",
         "INFO rule 0",
         "BOARD",
         "7,7,1",
         "DONE",
-        "BOARD",
-        "7,7,1",
-        "DONE"
       )
     )
 

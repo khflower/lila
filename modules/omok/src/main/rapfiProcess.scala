@@ -53,53 +53,65 @@ object RapfiParsers:
   def parseBestMove(line: String): Either[EngineError.Protocol, Move] =
     RapfiResponseParser.parseMove(Vector(line)).map(_.bestMove).left.map(EngineError.Protocol.apply)
 
+private final case class RapfiSessionState(ruleSet: RuleSet, syncedMoves: Vector[Move])
+
 class RapfiProcessAdapter(config: RapfiProcessConfig, factory: RapfiProcessFactory) extends EngineClient:
 
   @volatile private var currentHandle: Option[RapfiProcessHandle] = None
-  @volatile private var syncedMoves: Option[Vector[Move]] = None
+  @volatile private var currentSession: Option[RapfiSessionState] = None
 
   private def ensureHandle(): RapfiProcessHandle = synchronized {
     currentHandle.filter(_.isAlive).getOrElse {
       val handle = factory.start(config.command)
       RapfiAdapter.openingHandshake(config.boardSize).foreach(handle.writeLine)
       currentHandle = Some(handle)
-      syncedMoves = Some(Vector.empty)
+      currentSession = None
       handle
     }
   }
 
   private def currentSyncedMoves(handle: RapfiProcessHandle): Option[Vector[Move]] = synchronized {
-    Option.when(currentHandle.contains(handle))(syncedMoves).flatten
+    Option.when(currentHandle.contains(handle))(currentSession.map(_.syncedMoves)).flatten
   }
 
-  private def rememberSyncedMoves(handle: RapfiProcessHandle, moves: Vector[Move]): Unit =
-    synchronized {
-      if currentHandle.contains(handle) then syncedMoves = Some(moves)
-    }
+  private def canContinueMoveSession(position: EnginePosition): Boolean = synchronized {
+    currentSession.exists: session =>
+      session.ruleSet == position.ruleSet
+        && position.moves.length == session.syncedMoves.length + 1
+        && position.moves.startsWith(session.syncedMoves)
+  }
 
-  private def markUnsynced(handle: RapfiProcessHandle): Unit =
+  private def ensureMoveHandle(position: EnginePosition): RapfiProcessHandle =
+    currentHandle.filter(_.isAlive) match
+      case Some(handle) if canContinueMoveSession(position) => handle
+      case Some(handle) =>
+        invalidateHandle(handle)
+        ensureHandle()
+      case None => ensureHandle()
+
+  private def rememberMoveSession(handle: RapfiProcessHandle, position: EnginePosition, bestMove: Move): Unit =
     synchronized {
-      if currentHandle.contains(handle) then syncedMoves = None
+      if currentHandle.contains(handle) then
+        currentSession = Some(RapfiSessionState(position.ruleSet, position.moves :+ bestMove))
     }
 
   private def invalidateHandle(handle: RapfiProcessHandle): Unit =
     synchronized {
       if currentHandle.contains(handle) then
         currentHandle = None
-        syncedMoves = None
+        currentSession = None
     }
     handle.close()
 
-  private def withHandle[A](use: RapfiProcessHandle => A): A =
+  private def withFreshHandle[A](use: RapfiProcessHandle => A): A =
+    currentHandle.filter(_.isAlive).foreach(invalidateHandle)
     val handle = ensureHandle()
     try use(handle)
-    catch
-      case NonFatal(err) =>
-        invalidateHandle(handle)
-        throw err
+    finally invalidateHandle(handle)
 
   def bestMove(request: EngineMoveRequest): Fu[EngineMoveResponse] = Future {
-    withHandle { handle =>
+    val handle = ensureMoveHandle(request.position)
+    try
       val batch =
         RapfiCommandBatch(
           RapfiAdapter.incrementalMoveRequest(request.position, request.limits, currentSyncedMoves(handle)),
@@ -109,22 +121,23 @@ class RapfiProcessAdapter(config: RapfiProcessConfig, factory: RapfiProcessFacto
       val response = collectMoveResponse(handle)
       response match
         case Right(move) =>
-          rememberSyncedMoves(handle, request.position.moves :+ move.bestMove)
+          rememberMoveSession(handle, request.position, move.bestMove)
           move
         case Left(err)   => throw new RuntimeException(err)
-    }
+    catch
+      case NonFatal(err) =>
+        invalidateHandle(handle)
+        throw err
   }
 
   def analyse(request: EngineAnalysisRequest): Fu[EngineAnalysisResponse] = Future {
-    withHandle { handle =>
+    withFreshHandle { handle =>
       val batch = RapfiCommandBatch.analysis(request)
       batch.lines.foreach(handle.writeLine)
       collectMoveResponse(handle) match
         case Right(move) =>
-          markUnsynced(handle)
           EngineAnalysisResponse.fromMoveResponse(move)
         case Left(_) =>
-          invalidateHandle(handle)
           EngineAnalysisResponse.normalized(Vector.empty, Map("status" -> "phase1-scaffold"))
     }
   }
