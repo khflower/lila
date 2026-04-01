@@ -27,7 +27,7 @@ assert_eq() {
 }
 
 assert_usage() {
-  assert_eq "$1" "usage: omok-demo <seed|show|clear> <gameId> [renju|freestyle] [move ...]
+  assert_eq "$1" "usage: omok-demo <seed|start|show|clear> <id> [renju|freestyle] [move ...]
        omok-demo doctor"
 }
 
@@ -71,6 +71,16 @@ assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" ""
 assert_eq "$(cat "$STUB_LOG")" "omok seed demo1234 renju H8 A1"
 
+run_wrapper start demo1234abcd
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok start demo1234abcd"
+
+run_wrapper start demo1234abcd freestyle
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok start demo1234abcd freestyle"
+
 run_wrapper doctor
 assert_eq "$STATUS" "0"
 assert_eq "$OUTPUT" "omok-demo doctor: PASS
@@ -105,6 +115,11 @@ INFO skipped local LILA_CLI_TOKEN_DEV and localhost:9663/run/cli checks because 
 assert_not_called
 
 run_wrapper seed
+assert_eq "$STATUS" "1"
+assert_usage "$OUTPUT"
+assert_not_called
+
+run_wrapper start
 assert_eq "$STATUS" "1"
 assert_usage "$OUTPUT"
 assert_not_called

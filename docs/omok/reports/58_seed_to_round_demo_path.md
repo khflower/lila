@@ -6,47 +6,40 @@ Current `omok/mvp` demo path is still a sidecar on top of an existing lila round
 
 - Local server is running and exposing `http://localhost:9663/run/cli`.
 - `LILA_CLI_TOKEN_DEV` is set in the shell.
-- `bin/omok-demo` can reach an executable CLI helper (`bin/cli` by default, or `LILA_OMOK_CLI_BIN`).
+- `bin/omok-demo` / `bin/omok-start` can reach an executable CLI helper (`bin/cli` by default, or `LILA_OMOK_CLI_BIN`).
 - You already have a real started 8-character `GameId` plus at least one real player `fullId` for that round.
 - `OmokRoundRepo` is in-memory, so any server restart wipes seeded omok state.
 
-Before checking server reachability, you can verify wrapper behavior alone with:
+Wrapper-only smoke checks:
 
 ```text
 bin/check-omok-demo-wrapper
+bin/check-omok-start-wrapper
 ```
 
-Before a live demo, run the narrow runtime check too:
+## Fastest Start Path
+
+If you already know a real player fullId, the quickest path is now:
 
 ```text
-bin/omok-demo doctor
+bin/omok-start demo1234abcd freestyle
 ```
 
-Interpretation:
-- `PASS` means the wrapper sees an executable helper, and with the default `bin/cli`, local `localhost:9663/run/cli` answered.
-- `FAIL` tells you whether the missing piece is the helper path, `LILA_CLI_TOKEN_DEV`, or server reachability.
-
-## Seed
-
-Recommended seed:
+This should return a message like:
 
 ```text
-bin/omok-demo doctor
-bin/omok-demo seed <gameId> renju H8 A1 I8
-bin/omok-demo show <gameId>
+started omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-
 ```
 
-Expected helper output shape:
+That gives you a playable omok scaffold without manually seeding moves first.
+
+## Seed / Inspect Path
+
+If you want a deterministic non-empty board instead, use:
 
 ```text
-seeded omok round <gameId>: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-omok round <gameId>: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-```
-
-For a blank reset-to-start seed, use:
-
-```text
-bin/omok-demo seed <gameId>
+bin/omok-demo seed demo1234 renju H8 A1 I8
+bin/omok-demo show demo1234
 ```
 
 ## Open The Round
@@ -56,53 +49,26 @@ bin/omok-demo seed <gameId>
 
 ## Expected Page Behavior
 
-- If the round was seeded before page load, `RoundApi` injects `data.omok` and the round boots in omok mode.
+- If the round was started or seeded before page load, `RoundApi` injects `data.omok` and the round boots in omok mode.
 - The page shows the 15x15 omok placeholder board plus the omok state card with turn, ply, last move, rule set, and finished metadata when present.
 - On the player page, only the side to move can click an empty point. That sends socket `place`; backend applies it through `OmokMovePlayer`; success returns `omokMove`; all open tabs redraw from the new omok position.
 - If the move ends the game, the final `omokMove` payload already carries terminal `status` / `winner`, the local omok state updates immediately, and the normal round finish path follows.
 - Reload returns to the same finished omok snapshot because finished omok state is retained until explicit cleanup.
-- If the tab was opened before seeding, or the id does not map to a real round, you do not get the omok path until you seed the real round id and refresh.
-
-## What This Path Proves
-
-This path proves:
-
-- round boot from `data.omok`
-- live `place -> omokMove`
-- finish and reload behavior on the current sidecar architecture
-
-This path does not yet prove:
-
-- native omok game creation
-- durable storage across restart
-- cache-cold boot from a DB-backed omok record
+- If the tab was opened before start/seed, or the id does not map to a real round, you do not get the omok path until you initialize the real round id and refresh.
 
 ## Fast Fallback / Reset
 
-Fastest recovery:
+Fastest recovery with a fresh scaffold:
 
 ```text
-bin/omok-demo seed <gameId> renju H8 A1 I8
+bin/omok-start demo1234abcd
 ```
 
-Then hard refresh the player and watcher tabs.
-
-Clean reset:
+Clean reset with explicit sidecar wipe:
 
 ```text
-bin/omok-demo clear <gameId>
-bin/omok-demo seed <gameId> renju H8 A1 I8
+bin/omok-demo clear demo1234
+bin/omok-start demo1234abcd freestyle
 ```
 
-If the helper cannot reach `localhost:9663/run/cli`, the problem is runtime wiring, not the omok seed path on this branch.
-
-## Planned Upgrade Order
-
-Keep this operator flow shape, but change the seams beneath it in two separate steps:
-
-1. native start flow:
-   create a real game and initial omok state together so the operator no longer needs a pre-existing `GameId`
-2. durable persistence:
-   store canonical coordinate moves keyed by `GameId`, then fall back to that durable record when the live cache is cold
-
-Those are distinct follow-up waves. Do not bundle them into one large rewrite.
+If the wrappers cannot reach `localhost:9663/run/cli`, the problem is runtime wiring, not the omok path on this branch.

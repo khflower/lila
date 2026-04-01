@@ -18,6 +18,10 @@ This is the current demo path, not the planned native start-flow path.
 2. Start omok on that round through either entrypoint:
 
 ```text
+bin/omok-demo start <fullId> [renju|freestyle]
+# or
+bin/omok-start <fullId> [renju|freestyle]
+# or
 bin/cli omok start <fullId> [renju|freestyle]
 ```
 
@@ -31,7 +35,9 @@ or open:
 
 ```text
 bin/omok-demo --help
+bin/omok-start --help
 bin/omok-demo doctor
+bin/check-omok-start-wrapper
 bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 

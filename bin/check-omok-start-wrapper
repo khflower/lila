@@ -1,0 +1,60 @@
+#!/bin/sh -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+WRAPPER="$ROOT/bin/omok-start"
+TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/omok-start-wrapper.XXXXXX")
+STUB="$TMPDIR/cli-stub"
+STUB_LOG="$TMPDIR/cli.log"
+
+cleanup() { rm -rf "$TMPDIR"; }
+trap cleanup EXIT INT TERM HUP
+
+cat >"$STUB" <<'STUBEOF'
+#!/bin/sh -eu
+printf '%s\n' "$*" >"$OMOK_START_STUB_LOG"
+STUBEOF
+chmod +x "$STUB"
+
+assert_eq() {
+  if [ "$1" != "$2" ]; then
+    printf 'expected: %s\nactual:   %s\n' "$1" "$2" >&2
+    exit 1
+  fi
+}
+
+assert_not_called() {
+  if [ -f "$STUB_LOG" ]; then
+    printf 'wrapper unexpectedly reached stub CLI: %s\n' "$(cat "$STUB_LOG")" >&2
+    exit 1
+  fi
+}
+
+run_wrapper() {
+  rm -f "$STUB_LOG"
+  set +e
+  OUTPUT=$(LILA_OMOK_CLI_BIN="$STUB" OMOK_START_STUB_LOG="$STUB_LOG" "$WRAPPER" "$@" 2>&1)
+  STATUS=$?
+  set -e
+}
+
+run_wrapper --help
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" "usage: omok-start <fullId> [renju|freestyle]"
+assert_not_called
+
+run_wrapper demo1234abcd
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok start demo1234abcd"
+
+run_wrapper demo1234abcd freestyle
+assert_eq "$STATUS" "0"
+assert_eq "$OUTPUT" ""
+assert_eq "$(cat "$STUB_LOG")" "omok start demo1234abcd freestyle"
+
+run_wrapper demo1234abcd freestyle extra
+assert_eq "$STATUS" "1"
+assert_eq "$OUTPUT" "usage: omok-start <fullId> [renju|freestyle]"
+assert_not_called
+
+printf 'omok-start wrapper smoke check passed\n'

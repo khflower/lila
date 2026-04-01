@@ -8,7 +8,7 @@ DOCTOR_FAILED=0
 DOCTOR_REPORT=
 
 usage() {
-  printf '%s\n' "usage: $PROG <seed|show|clear> <gameId> [renju|freestyle] [move ...]" >&2
+  printf '%s\n' "usage: $PROG <seed|start|show|clear> <id> [renju|freestyle] [move ...]" >&2
   printf '%s\n' "       $PROG doctor" >&2
 }
 
@@ -29,18 +29,9 @@ $LINE"
   fi
 }
 
-doctor_pass() {
-  doctor_line "PASS" "$1"
-}
-
-doctor_fail() {
-  DOCTOR_FAILED=1
-  doctor_line "FAIL" "$1"
-}
-
-doctor_info() {
-  doctor_line "INFO" "$1"
-}
+doctor_pass() { doctor_line "PASS" "$1"; }
+doctor_fail() { DOCTOR_FAILED=1; doctor_line "FAIL" "$1"; }
+doctor_info() { doctor_line "INFO" "$1"; }
 
 doctor_default_cli_runtime() {
   if command -v curl >/dev/null 2>&1; then
@@ -79,7 +70,6 @@ doctor_default_cli_runtime() {
 doctor() {
   DOCTOR_FAILED=0
   DOCTOR_REPORT=
-
   doctor_info "helper path: $CLI_BIN"
   if [ -x "$CLI_BIN" ]; then
     doctor_pass "CLI helper is executable"
@@ -99,32 +89,27 @@ doctor() {
     printf '%s\n' "omok-demo doctor: FAIL"
   fi
   printf '%s\n' "$DOCTOR_REPORT"
-
   [ "$DOCTOR_FAILED" -eq 0 ]
 }
 
 case "${1-}" in
   seed)
-    [ $# -ge 2 ] || {
-      usage
-      exit 1
-    }
+    [ $# -ge 2 ] || { usage; exit 1; }
+    ensure_cli_bin
+    exec "$CLI_BIN" omok "$@"
+    ;;
+  start)
+    [ $# -ge 2 ] && [ $# -le 3 ] || { usage; exit 1; }
     ensure_cli_bin
     exec "$CLI_BIN" omok "$@"
     ;;
   show | clear)
-    [ $# -eq 2 ] || {
-      usage
-      exit 1
-    }
+    [ $# -eq 2 ] || { usage; exit 1; }
     ensure_cli_bin
     exec "$CLI_BIN" omok "$@"
     ;;
   doctor)
-    [ $# -eq 1 ] || {
-      usage
-      exit 1
-    }
+    [ $# -eq 1 ] || { usage; exit 1; }
     doctor
     ;;
   -h | --help | help)

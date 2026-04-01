@@ -1,14 +1,18 @@
 # Omok Demo CLI Quickref
 
-## Current Entry Point
+## Current Entry Points
 
-On `omok/mvp`, the smallest operator-facing wrapper is:
+Operator-facing wrappers on `omok/mvp` are now:
 
 ```text
 bin/omok-demo
+bin/omok-start
 ```
 
-It is a thin wrapper over the existing internal CLI transport:
+- `bin/omok-demo` handles `seed`, `show`, `clear`, and `doctor`.
+- `bin/omok-start` is the narrow convenience wrapper for `omok start <fullId> [renju|freestyle]`.
+
+Both are thin wrappers over the existing internal CLI transport:
 - `bin/cli`
 - `POST http://localhost:9663/run/cli`
 
@@ -18,16 +22,12 @@ So this path only works when:
 
 `OmokRoundRepo` is in-memory, so a server restart removes seeded omok state.
 
-For a wrapper-only smoke check that does not require the server, run:
+For wrapper-only smoke checks that do not require the server, run:
 
 ```text
 bin/check-omok-demo-wrapper
+bin/check-omok-start-wrapper
 ```
-
-That script stubs `LILA_OMOK_CLI_BIN` and verifies three things:
-- `bin/omok-demo` usage gating;
-- forwarded argv shape for `seed`, `show`, and `clear`;
-- `doctor` output when the helper is overridden or missing.
 
 For the real local runtime check, run:
 
@@ -35,18 +35,14 @@ For the real local runtime check, run:
 bin/omok-demo doctor
 ```
 
-That command keeps the wrapper thin, but it removes the usual ambiguity:
-- `FAIL CLI helper is missing or not executable` means fix `LILA_OMOK_CLI_BIN` or restore `bin/cli`.
-- `FAIL LILA_CLI_TOKEN_DEV is not set` means the server path may be fine, but the shell environment is not ready.
-- `FAIL http://localhost:9663/run/cli is unreachable ...` means local server wiring is the missing piece.
-- `PASS ... responded with HTTP ...` means the wrapper can at least see the local dev CLI transport.
-
 ## Supported Commands
 
 ```text
 bin/omok-demo seed <gameId> [renju|freestyle] [move ...]
 bin/omok-demo show <gameId>
 bin/omok-demo clear <gameId>
+bin/omok-demo doctor
+bin/omok-start <fullId> [renju|freestyle]
 ```
 
 Examples:
@@ -54,6 +50,8 @@ Examples:
 ```text
 bin/omok-demo seed demo1234
 bin/omok-demo seed demo1234 renju H8 A1 I8
+bin/omok-start demo1234abcd
+bin/omok-start demo1234abcd freestyle
 bin/omok-demo show demo1234
 bin/omok-demo clear demo1234
 ```
@@ -67,46 +65,52 @@ Representative outputs from the helper logic:
 ```text
 seeded omok round demo1234: ruleSet=renju ply=0 turn=black lastMove=- moves=-
 reseeded omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
-cleared omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
+started omok scaffold demo1234 -> /demo1234abcd: ruleSet=renju ply=0 turn=black lastMove=- moves=-
+restarted omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-
+omok round demo1234: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-
+cleared omok round demo1234: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-
 ERROR invalid game id 'bad'; expected 8 characters matching [A-Za-z0-9_-]
 ```
 
 ## Fastest Demo Flow
 
-1. Seed the round id before opening tabs:
+1. Doctor the local runtime path:
 
 ```text
 bin/omok-demo doctor
-bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 
-2. Verify state exists:
+2. Start a fresh omok scaffold for an existing player fullId:
+
+```text
+bin/omok-start demo1234abcd freestyle
+```
+
+3. Optionally inspect the seeded omok sidecar by game id:
 
 ```text
 bin/omok-demo show demo1234
 ```
 
-3. Open player/watcher tabs for that round id.
-4. If the page misses omok state, reseed the same id and refresh the tabs.
+4. Open the player URL from the scaffold result, then watcher tabs for the matching game id.
 
 ## Reset / Recovery
 
-Fast reset:
+Fast reset to a fresh started scaffold:
 
 ```text
-bin/omok-demo seed demo1234
+bin/omok-start demo1234abcd
 ```
 
-Explicit clear + restart:
+Explicit clear + seed path:
 
 ```text
 bin/omok-demo clear demo1234
-bin/omok-demo seed demo1234
+bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 
 ## Important Caveat
 
-If `bin/cli` cannot reach `localhost:9663/run/cli`, the wrapper will fail even though the omok helper code exists. In that case, the missing piece is environment/runtime wiring, not omok seed logic itself.
+If `bin/cli` cannot reach `localhost:9663/run/cli`, the wrappers will fail even though the omok helper code exists. In that case, the missing piece is environment/runtime wiring, not omok seed/start logic itself.
 
-If the wrapper prints `omok-demo: CLI helper is missing or not executable: ...`, fix `LILA_OMOK_CLI_BIN` or restore the executable bit on `bin/cli` before debugging the server path.
+If either wrapper prints `CLI helper is missing or not executable`, fix `LILA_OMOK_CLI_BIN` or restore the executable bit on `bin/cli` before debugging the server path.
