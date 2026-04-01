@@ -1,13 +1,15 @@
 package lila.api
 
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
 
 import lila.common.{ Bus, CliCommand }
+import lila.core.id.GameFullId
 import lila.round.{ OmokDemoSeed, OmokRoundRepo, OmokStartScaffold }
 
 class OmokCliRoutingTest extends munit.FunSuite:
+
+  given Executor = scala.concurrent.ExecutionContext.global
 
   private val omokCliModuleClass = getClass.getClassLoader.loadClass("lila.round.OmokCli$")
   private val omokCliModule = omokCliModuleClass.getField("MODULE$").get(null)
@@ -30,7 +32,12 @@ class OmokCliRoutingTest extends munit.FunSuite:
     val repo = OmokRoundRepo()
     val seed = OmokDemoSeed(repo)
     val omokHandler = omokCliHandler
-      .invoke(omokCliModule, seed, OmokStartScaffold(repo), scala.concurrent.ExecutionContext.global)
+      .invoke(
+        omokCliModule,
+        seed,
+        OmokStartScaffold(repo, _ => fuccess(false)),
+        scala.concurrent.ExecutionContext.global
+      )
       .asInstanceOf[PartialFunction[List[String], Fu[String]]]
 
     assertEquals(
@@ -50,12 +57,21 @@ class OmokCliRoutingTest extends munit.FunSuite:
 
   test("raw dev cli command strings reach omok start routing"):
     val repo = OmokRoundRepo()
+    val fullId = GameFullId("demo1234abcd")
     val omokHandler = omokCliHandler
-      .invoke(omokCliModule, OmokDemoSeed(repo), OmokStartScaffold(repo), scala.concurrent.ExecutionContext.global)
+      .invoke(
+        omokCliModule,
+        OmokDemoSeed(repo),
+        OmokStartScaffold(repo, candidate => fuccess(candidate == fullId)),
+        scala.concurrent.ExecutionContext.global
+      )
       .asInstanceOf[PartialFunction[List[String], Fu[String]]]
 
-    assert(omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd")))
-    assert(!omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle", "extra")))
+    assert(omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd")), "start route should exist")
+    assert(
+      !omokHandler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle", "extra")),
+      "extra start args should not route"
+    )
     assertEquals(
       runRaw(omokHandler, "omok start demo1234abcd"),
       "started omok scaffold demo1234 -> /demo1234abcd: ruleSet=renju ply=0 turn=black lastMove=- moves=-"
@@ -63,6 +79,10 @@ class OmokCliRoutingTest extends munit.FunSuite:
     assertEquals(
       runRaw(omokHandler, "omok start demo1234abcd freestyle"),
       "restarted omok scaffold demo1234 -> /demo1234abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"
+    )
+    assertEquals(
+      runRaw(omokHandler, "omok start ghost123abcd"),
+      "ERROR no real round for full id 'ghost123abcd'; expected an existing player fullId"
     )
     assertEquals(
       runRaw(omokHandler, "omok show demo1234"),

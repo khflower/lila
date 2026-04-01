@@ -11,6 +11,8 @@ import lila.omok.RuleSet
 class OmokStartScaffoldTest extends munit.FunSuite:
   private given Executor = scala.concurrent.ExecutionContext.global
 
+  private def await[A](fa: Fu[A]): A = Await.result(fa, 1.second)
+
   private def makeNativeGame(gameId: GameId) =
     newGame(
       chess.Game(chess.variant.Standard),
@@ -23,15 +25,18 @@ class OmokStartScaffoldTest extends munit.FunSuite:
       pgnImport = none
     ).withId(gameId).start
 
+  private def scaffold(repo: OmokRoundRepo, existing: Set[GameFullId]) =
+    OmokStartScaffold(repo, fullId => fuccess(existing(fullId)))
+
   test("startNew creates a fresh omok round and reveals real black and white full ids"):
     val repo = OmokRoundRepo()
     val game = makeNativeGame(GameId("native01"))
-    val scaffold = OmokStartScaffold(
+    val scaffolded = OmokStartScaffold(
       repo,
       new OmokNativeGameStarter(() => fuccess(OmokNativeStartGame(game, game.fullIds)))
     )
 
-    val result = Await.result(scaffold.startNew(Some("freestyle")), 1.second).toOption.get
+    val result = await(scaffolded.startNew(Some("freestyle"))).toOption.get
     val state = repo.get(GameId("native01")).get
 
     assertEquals(result.fullId, GameFullId("native01wxyz"))
@@ -48,9 +53,10 @@ class OmokStartScaffoldTest extends munit.FunSuite:
 
   test("start seeds a blank renju state for the requested player full id"):
     val repo = OmokRoundRepo()
-    val scaffold = OmokStartScaffold(repo)
+    val fullId = GameFullId("demo1234abcd")
+    val scaffolded = scaffold(repo, Set(fullId))
 
-    val result = scaffold.start(GameFullId("demo1234abcd"))
+    val result = await(scaffolded.start(fullId)).toOption.get
     val state = repo.get(GameId("demo1234")).get
 
     assertEquals(result.reset, false)
@@ -65,14 +71,15 @@ class OmokStartScaffoldTest extends munit.FunSuite:
 
   test("start resets an existing omok sidecar state back to a blank ruleset-specific root"):
     val repo = OmokRoundRepo()
-    val scaffold = OmokStartScaffold(repo)
+    val fullId = GameFullId("demo1234wxyz")
+    val scaffolded = scaffold(repo, Set(fullId))
 
     repo.put(
       GameId("demo1234"),
       OmokRoundState.initial().copy(moves = Vector(lila.omok.Move(lila.omok.Pos.unsafe(7, 7))))
     )
 
-    val result = scaffold.start(GameFullId("demo1234wxyz"), RuleSet.Freestyle)
+    val result = await(scaffolded.start(fullId, RuleSet.Freestyle)).toOption.get
     val state = repo.get(GameId("demo1234")).get
 
     assertEquals(result.reset, true)
@@ -86,18 +93,28 @@ class OmokStartScaffoldTest extends munit.FunSuite:
 
   test("raw start parsing rejects invalid full ids and rule sets"):
     val repo = OmokRoundRepo()
-    val scaffold = OmokStartScaffold(repo)
+    val scaffolded = scaffold(repo, Set(GameFullId("demo1234abcd")))
 
     assertEquals(
-      scaffold.start("bad-full-id").left.map(_.message),
+      await(scaffolded.start("bad-full-id")).left.map(_.message),
       Left("invalid full id 'bad-full-id'; expected 12 characters matching [A-Za-z0-9_-]")
     )
     assertEquals(
-      scaffold.start("demo1234abcd", Some("unknown")).left.map(_.message),
+      await(scaffolded.start("demo1234abcd", Some("unknown"))).left.map(_.message),
       Left("invalid rule set 'unknown'; expected one of: renju, freestyle")
     )
     assertEquals(
-      Await.result(scaffold.startNew(Some("unknown")), 1.second).left.map(_.message),
+      await(scaffolded.startNew(Some("unknown"))).left.map(_.message),
       Left("invalid rule set 'unknown'; expected one of: renju, freestyle")
+    )
+    assertEquals(repo.get(GameId("demo1234")), None)
+
+  test("start rejects unknown full ids instead of scaffolding a fake round"):
+    val repo = OmokRoundRepo()
+    val scaffolded = scaffold(repo, Set.empty)
+
+    assertEquals(
+      await(scaffolded.start("demo1234abcd")).left.map(_.message),
+      Left("no real round for full id 'demo1234abcd'; expected an existing player fullId")
     )
     assertEquals(repo.get(GameId("demo1234")), None)

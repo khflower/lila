@@ -17,45 +17,6 @@ final case class OmokNativeStartGame(
 final class OmokNativeGameStarter(private val create: () => Fu[OmokNativeStartGame]):
   def start(): Fu[OmokNativeStartGame] = create()
 
-final case class OmokStartScaffoldResult(
-    fullId: GameFullId,
-    state: OmokRoundState,
-    reset: Boolean,
-    nativeFullIds: Option[ByColor[GameFullId]] = None
-):
-  def gameId: GameId = fullId.gameId
-  def redirectPath: String = s"/$fullId"
-  def message: String =
-    nativeFullIds.fold(
-      s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokStartScaffold.renderState(state)}"
-    ): fullIds =>
-      s"started native omok round $gameId: black=/${fullIds.black} white=/${fullIds.white}: ${OmokStartScaffold.renderState(state)}"
-
-object OmokStartScaffold:
-  def apply(omokRoundRepo: OmokRoundRepo): OmokStartScaffold =
-    new OmokStartScaffold(omokRoundRepo, OmokNativeGameStarter.unsupported)
-
-  def apply(
-      omokRoundRepo: OmokRoundRepo,
-      nativeGameStarter: OmokNativeGameStarter
-  ): OmokStartScaffold =
-    new OmokStartScaffold(omokRoundRepo, nativeGameStarter)
-
-  def parseRuleSet(raw: String): Option[RuleSet] =
-    raw.trim.toLowerCase match
-      case "renju"     => Some(RuleSet.Renju)
-      case "freestyle" => Some(RuleSet.Freestyle)
-      case _           => None
-
-  def renderState(state: OmokRoundState): String =
-    val lastMove = state.position.lastMove.fold("-")(_.pos.key)
-    s"ruleSet=${renderRuleSet(state.ruleSet)} ply=${state.position.ply} turn=${renderColor(state.position.turn)} lastMove=$lastMove moves=${renderMoves(state.moves)}"
-
-  private def renderRuleSet(ruleSet: RuleSet): String = ruleSet.toString.toLowerCase
-  private def renderColor(color: OmokColor): String = color.toString.toLowerCase
-  private def renderMoves(moves: Vector[OmokMove]): String =
-    if moves.isEmpty then "-" else moves.map(_.pos.key).mkString(",")
-
 object OmokNativeGameStarter:
   def apply(
       gameRepo: lila.core.game.GameRepo,
@@ -84,33 +45,111 @@ object OmokNativeGameStarter:
 
   val unsupported = new OmokNativeGameStarter(() => fufail("native omok game starter unavailable"))
 
+final case class OmokStartScaffoldResult(
+    fullId: GameFullId,
+    state: OmokRoundState,
+    reset: Boolean,
+    nativeFullIds: Option[ByColor[GameFullId]] = None
+):
+  def gameId: GameId = fullId.gameId
+  def redirectPath: String = s"/$fullId"
+  def message: String =
+    nativeFullIds.fold(
+      s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokStartScaffold.renderState(state)}"
+    ): fullIds =>
+      s"started native omok round $gameId: black=/${fullIds.black} white=/${fullIds.white}: ${OmokStartScaffold.renderState(state)}"
+
+object OmokStartScaffold:
+  type FullIdExists = GameFullId => Fu[Boolean]
+
+  def apply(omokRoundRepo: OmokRoundRepo): OmokStartScaffold =
+    new OmokStartScaffold(omokRoundRepo, _ => fuccess(true), OmokNativeGameStarter.unsupported)
+
+  def apply(
+      omokRoundRepo: OmokRoundRepo,
+      nativeGameStarter: OmokNativeGameStarter
+  )(using Executor): OmokStartScaffold =
+    new OmokStartScaffold(omokRoundRepo, _ => fuccess(true), nativeGameStarter)
+
+  def apply(
+      omokRoundRepo: OmokRoundRepo,
+      fullIdExists: FullIdExists
+  )(using Executor): OmokStartScaffold =
+    new OmokStartScaffold(omokRoundRepo, fullIdExists, OmokNativeGameStarter.unsupported)
+
+  def apply(
+      omokRoundRepo: OmokRoundRepo,
+      fullIdExists: FullIdExists,
+      nativeGameStarter: OmokNativeGameStarter
+  )(using Executor): OmokStartScaffold =
+    new OmokStartScaffold(omokRoundRepo, fullIdExists, nativeGameStarter)
+
+  def parseRuleSet(raw: String): Option[RuleSet] =
+    raw.trim.toLowerCase match
+      case "renju"     => Some(RuleSet.Renju)
+      case "freestyle" => Some(RuleSet.Freestyle)
+      case _           => None
+
+  def renderState(state: OmokRoundState): String =
+    val lastMove = state.position.lastMove.fold("-")(_.pos.key)
+    s"ruleSet=${renderRuleSet(state.ruleSet)} ply=${state.position.ply} turn=${renderColor(state.position.turn)} lastMove=$lastMove moves=${renderMoves(state.moves)}"
+
+  def missingRound(fullId: GameFullId): OmokStartScaffoldError =
+    OmokStartScaffoldError(
+      s"no real round for full id '$fullId'; expected an existing player fullId"
+    )
+
+  private def renderRuleSet(ruleSet: RuleSet): String = ruleSet.toString.toLowerCase
+  private def renderColor(color: OmokColor): String = color.toString.toLowerCase
+  private def renderMoves(moves: Vector[OmokMove]): String =
+    if moves.isEmpty then "-" else moves.map(_.pos.key).mkString(",")
+
 final class OmokStartScaffold(
     omokRoundRepo: OmokRoundRepo,
+    fullIdExists: OmokStartScaffold.FullIdExists,
     nativeGameStarter: OmokNativeGameStarter
-):
+)(using Executor):
 
-  def startNew(rawRuleSet: Option[String] = None)(using
-      Executor
-  ): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
+  def startNew(rawRuleSet: Option[String] = None): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
     parseRuleSet(rawRuleSet).fold(
       err => fuccess(Left(err)),
       ruleSet =>
-      nativeGameStarter.start().map: started =>
-        val state = OmokRoundState.initial(ruleSet)
-        omokRoundRepo.put(started.game.id, state)
-        Right(OmokStartScaffoldResult(started.fullId, state, reset = false, nativeFullIds = started.fullIds.some))
+        nativeGameStarter.start().map: started =>
+          val state = OmokRoundState.initial(ruleSet)
+          omokRoundRepo.put(started.game.id, state)
+          Right(OmokStartScaffoldResult(started.fullId, state, reset = false, nativeFullIds = started.fullIds.some))
     )
 
-  def start(rawFullId: String, rawRuleSet: Option[String] = None): Either[OmokStartScaffoldError, OmokStartScaffoldResult] =
-    for
+  def start(
+      rawFullId: String,
+      rawRuleSet: Option[String] = None
+  ): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
+    val parsed = for
       fullId <- parseFullId(rawFullId)
       ruleSet <- parseRuleSet(rawRuleSet)
-    yield start(fullId, ruleSet)
+    yield (fullId, ruleSet)
+    parsed match
+      case Left(err)                => fuccess(Left(err))
+      case Right((fullId, ruleSet)) => start(fullId, ruleSet)
 
-  def start(fullId: GameFullId): OmokStartScaffoldResult =
+  def startMessage(rawFullId: String, rawRuleSet: Option[String] = None): Fu[String] =
+    start(rawFullId, rawRuleSet).map(_.fold(err => s"ERROR ${err.message}", _.message))
+
+  def start(fullId: GameFullId): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
     start(fullId, RuleSet.Renju)
 
-  def start(fullId: GameFullId, ruleSet: RuleSet): OmokStartScaffoldResult =
+  def start(
+      fullId: GameFullId,
+      ruleSet: RuleSet
+  ): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
+    fullIdExists(fullId).map: exists =>
+      Either.cond(
+        exists,
+        startExisting(fullId, ruleSet),
+        OmokStartScaffold.missingRound(fullId)
+      )
+
+  private def startExisting(fullId: GameFullId, ruleSet: RuleSet): OmokStartScaffoldResult =
     val state = OmokRoundState.initial(ruleSet)
     val reset = omokRoundRepo.get(fullId.gameId).isDefined
     omokRoundRepo.put(fullId.gameId, state)

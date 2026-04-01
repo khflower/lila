@@ -14,9 +14,9 @@ private[round] object OmokCli:
     case "omok" :: "start" :: raw :: Nil if OmokStartScaffold.parseRuleSet(raw).isDefined =>
       omokStartScaffold.startNew(Some(raw)).map(render)
     case "omok" :: "start" :: fullId :: Nil =>
-      fuccess(render(omokStartScaffold.start(fullId, None)))
+      omokStartScaffold.startMessage(fullId, None)
     case "omok" :: "start" :: fullId :: ruleSet :: Nil =>
-      fuccess(render(omokStartScaffold.start(fullId, Some(ruleSet))))
+      omokStartScaffold.startMessage(fullId, Some(ruleSet))
     case "omok" :: "seed" :: gameId :: rest =>
       fuccess(omokDemoSeed.seed(gameId, rest))
     case "omok" :: "show" :: gameId :: Nil =>

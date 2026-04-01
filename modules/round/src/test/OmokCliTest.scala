@@ -5,13 +5,16 @@ import scala.concurrent.Await
 import chess.{ ByColor, Rated }
 
 import lila.core.game.{ Player, Source, newGame }
-import lila.core.id.{ GameId, GamePlayerId }
+import lila.core.id.{ GameFullId, GameId, GamePlayerId }
 
 class OmokCliTest extends munit.FunSuite:
   private given Executor = scala.concurrent.ExecutionContext.global
 
   private def run(handler: PartialFunction[List[String], Fu[String]], args: List[String]): String =
     Await.result(handler(args), 1.second)
+
+  private def scaffold(repo: OmokRoundRepo, existing: Set[GameFullId]) =
+    OmokStartScaffold(repo, fullId => fuccess(existing(fullId)))
 
   private def nativeScaffold(repo: OmokRoundRepo) =
     val game = newGame(
@@ -28,7 +31,7 @@ class OmokCliTest extends munit.FunSuite:
 
   test("seed show and clear route through the omok demo helper"):
     val repo = OmokRoundRepo()
-    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
+    val handler = OmokCli.handler(OmokDemoSeed(repo), scaffold(repo, Set.empty))
 
     assert(handler.isDefinedAt(List("omok", "seed", "demo1234", "freestyle", "H8, A1")))
     assertEquals(
@@ -47,7 +50,7 @@ class OmokCliTest extends munit.FunSuite:
 
   test("only the supported omok command shapes are routed"):
     val repo = OmokRoundRepo()
-    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
+    val handler = OmokCli.handler(OmokDemoSeed(repo), scaffold(repo, Set.empty))
 
     assert(!handler.isDefinedAt(Nil))
     assert(!handler.isDefinedAt(List("omok")))
@@ -60,7 +63,7 @@ class OmokCliTest extends munit.FunSuite:
 
   test("comma-split cli argv still seeds the expected omok moves"):
     val repo = OmokRoundRepo()
-    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
+    val handler = OmokCli.handler(OmokDemoSeed(repo), scaffold(repo, Set.empty))
     val parsedArgs = List("omok", "seed", "demo1234", "freestyle", "H8,", "A1", ",", "I8")
 
     assert(handler.isDefinedAt(parsedArgs))
@@ -75,7 +78,8 @@ class OmokCliTest extends munit.FunSuite:
 
   test("start routes through the typed omok scaffold entry point for existing full ids"):
     val repo = OmokRoundRepo()
-    val handler = OmokCli.handler(OmokDemoSeed(repo), OmokStartScaffold(repo))
+    val fullId = GameFullId("demo1234abcd")
+    val handler = OmokCli.handler(OmokDemoSeed(repo), scaffold(repo, Set(fullId)))
 
     assert(handler.isDefinedAt(List("omok", "start", "demo1234abcd")))
     assert(handler.isDefinedAt(List("omok", "start", "demo1234abcd", "freestyle")))
@@ -90,6 +94,10 @@ class OmokCliTest extends munit.FunSuite:
     assertEquals(
       run(handler, List("omok", "start", "demo1234abcd", "unknown")),
       "ERROR invalid rule set 'unknown'; expected one of: renju, freestyle"
+    )
+    assertEquals(
+      run(handler, List("omok", "start", "ghost123abcd")),
+      "ERROR no real round for full id 'ghost123abcd'; expected an existing player fullId"
     )
     assertEquals(
       run(handler, List("omok", "show", "demo1234")),
