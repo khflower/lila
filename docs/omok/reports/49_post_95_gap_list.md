@@ -4,7 +4,7 @@
 
 This is the current short checkpoint for the remaining gap between `omok/mvp` and a convincing internal demo / next integration cut.
 
-It reflects the branch **after** the live omok loop, finished-state retention, live terminal payloads, and the `bin/omok-demo` wrapper landed.
+It reflects the branch after the live omok loop, finished-state retention, live terminal payloads, the `bin/omok-demo` wrapper, and the dedicated dev CLI command path landed.
 
 ## What Is Already Good Enough
 
@@ -14,24 +14,27 @@ These are no longer the primary blockers:
 - omok board shell renders on player/watcher pages
 - click-to-place sends `place`
 - backend `HumanPlace -> OmokMovePlayer -> omokMove` works
-- final move can carry terminal omok status/winner in the live payload
+- final move carries terminal omok status/winner in the live payload
 - finished omok state survives reload until explicit cleanup
-- a small operator wrapper now exists: `bin/omok-demo`
+- a small operator wrapper exists: `bin/omok-demo`
+- wrapper-only smoke validation exists: `bin/check-omok-demo-wrapper`
+- the dev CLI path is now explicit and tested through `CliInput` + `OmokCli`
 
 ## Smallest Remaining Blockers
 
 ### 1. Demo seeding still depends on runtime environment, not just branch code
 
-`bin/omok-demo` is now present, but it still depends on:
+`bin/omok-demo` now has a real path, but it still depends on:
 - a running local server exposing the internal CLI transport;
 - `LILA_CLI_TOKEN_DEV` being available in the shell.
 
 Why it still matters:
-- the helper logic exists, but demo reliability still depends on environment wiring, not only repo state.
+- helper logic exists;
+- demo reliability still depends on environment wiring, not only repo state.
 
 ### 2. Omok finish is visible, but broader round-status integration is still thin
 
-The current branch now surfaces terminal omok state well enough for an internal demo, but it is still an omok-sidecar story more than a full round/game-model integration.
+The current branch surfaces terminal omok state well enough for an internal demo, but it is still an omok-sidecar story more than a full round/game-model integration.
 
 Why it matters:
 - this is fine for internal demos;
@@ -42,7 +45,7 @@ Why it matters:
 We can now seed and demo a known round id, but there is still no normal user-facing omok game creation/start flow.
 
 Why it matters:
-- internal demos are now realistic;
+- internal demos are realistic;
 - product readiness still needs a real create/start path.
 
 ### 4. Wider site integration is still intentionally incomplete
@@ -68,4 +71,4 @@ Why it matters:
 
 The branch is now past the old ?can it work at all?? stage.
 
-The biggest remaining gaps are no longer core gameplay seams ? they are **demo operability, productized start flow, and broader platform integration**.
+The biggest remaining gaps are no longer core gameplay seams ? they are demo operability, productized start flow, and broader platform integration.

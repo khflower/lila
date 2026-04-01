@@ -12,12 +12,12 @@ Current `omok/mvp` command flow from the shell wrapper to the real server-side h
    - `POST /run/cli controllers.Dev.command`
 4. `app/controllers/Dev.scala`
    - `Dev.command` reads the raw text body and calls `runCommand(ctx.body.body)`
-   - `runCommand` now forwards the raw command string to `env.api.cli.run(command)`
+   - `runCommand` forwards the raw command string to `env.api.cli.run(command)`
 5. `modules/api/src/main/Cli.scala`
    - `Cli.run(command: String)` parses the raw string with `CliInput.parse(...)`
    - then `Cli.run(args: List[String])` publishes `CliCommand(args, ...)` on the shared CLI bus with `Bus.ask(...)`
 6. `modules/round/src/main/OmokCli.scala`
-   - the round module exposes `OmokCli.handler(omokDemoSeed)` as the actual `omok` command router
+   - exposes the actual omok command router as `OmokCli.handler(omokDemoSeed)`
 7. `modules/round/src/main/Env.scala`
    - registers that router through `lila.common.Cli.handle(OmokCli.handler(omokDemoSeed))`
 
@@ -32,6 +32,7 @@ Supported routed shapes on this branch are:
 
 This means the branch now has:
 - a shell wrapper (`bin/omok-demo`)
+- a wrapper smoke check (`bin/check-omok-demo-wrapper`)
 - a raw command-string parser (`CliInput`)
 - a dedicated round-level command router (`OmokCli`)
 - the existing shared dev CLI transport (`/run/cli`)
