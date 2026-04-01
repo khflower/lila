@@ -67,7 +67,7 @@ final class Dev(env: Env) extends LilaController(env):
   private def runCommand(command: String)(using Me): Fu[String] =
     for
       _ <- env.mod.logApi.cli(command)
-      res <- env.api.cli.run(command.split(" ").toList)
+      res <- env.api.cli.run(command)
     yield res
 
   private lazy val settingsList = List[(String, List[lila.memo.SettingStore[?]])](

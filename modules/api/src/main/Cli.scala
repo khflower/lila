@@ -1,6 +1,6 @@
 package lila.api
 
-import lila.common.{ Cli, CliCommand, Bus }
+import lila.common.{ Cli as CommonCli, CliCommand, Bus }
 import scalalib.data.LazyFu
 import scalalib.future.TimeoutException
 
@@ -8,6 +8,8 @@ final private class Cli(manifest: lila.web.AssetManifest)(using Executor, Schedu
 
   import play.api.data.Forms.*
   val form = play.api.data.Form(single("command" -> nonEmptyText))
+
+  def run(command: String): Fu[String] = run(CliInput.parse(command))
 
   def run(args: List[String]): Fu[String] =
     Bus
@@ -21,7 +23,7 @@ final private class Cli(manifest: lila.web.AssetManifest)(using Executor, Schedu
       .recover:
         case e: Exception => s"ERROR $e\n"
 
-  Cli.handle:
+  CommonCli.handle:
     case "uptime" :: Nil => fuccess(s"${lila.common.Uptime.seconds} seconds")
     case "announce" :: words => lila.web.AnnounceApi.cli(words)
     case "change" :: ("asset" | "assets") :: "version" :: Nil =>
@@ -30,3 +32,10 @@ final private class Cli(manifest: lila.web.AssetManifest)(using Executor, Schedu
       val current = AssetVersion.change()
       Bus.pub(AssetVersion.Changed(current))
       fuccess(s"Changed to ${AssetVersion.current}")
+
+private[api] object CliInput:
+
+  def parse(command: String): List[String] =
+    command.trim match
+      case ""      => Nil
+      case trimmed => trimmed.split("\\s+").toList
