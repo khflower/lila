@@ -42,6 +42,7 @@ What is still not demo-safe:
 
 3. Seed omok state for that existing `GameId` inside the running server JVM.
    - Important: `OmokRoundRepo` is in-memory. Seed the repo inside the live app process, not in a separate standalone console.
+   - In the snippets below, `env` means your live `lila.app.Env` handle for the running server process.
    - Empty-board seed:
 
 ```scala
