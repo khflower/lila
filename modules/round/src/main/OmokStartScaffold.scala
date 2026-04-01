@@ -1,7 +1,7 @@
 package lila.round
 
 import lila.core.id.{ GameFullId, GameId }
-import lila.omok.RuleSet
+import lila.omok.{ Color as OmokColor, Move as OmokMove, RuleSet }
 
 final case class OmokStartScaffoldError(message: String)
 
@@ -13,10 +13,25 @@ final case class OmokStartScaffoldResult(
   def gameId: GameId = fullId.gameId
   def redirectPath: String = s"/$fullId"
   def message: String =
-    s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokDemoSeed.renderState(state)}"
+    s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokStartScaffold.renderState(state)}"
 
 object OmokStartScaffold:
   def apply(omokRoundRepo: OmokRoundRepo): OmokStartScaffold = new OmokStartScaffold(omokRoundRepo)
+
+  def parseRuleSet(raw: String): Option[RuleSet] =
+    raw.trim.toLowerCase match
+      case "renju"     => Some(RuleSet.Renju)
+      case "freestyle" => Some(RuleSet.Freestyle)
+      case _           => None
+
+  def renderState(state: OmokRoundState): String =
+    val lastMove = state.position.lastMove.fold("-")(_.pos.key)
+    s"ruleSet=${renderRuleSet(state.ruleSet)} ply=${state.position.ply} turn=${renderColor(state.position.turn)} lastMove=$lastMove moves=${renderMoves(state.moves)}"
+
+  private def renderRuleSet(ruleSet: RuleSet): String = ruleSet.toString.toLowerCase
+  private def renderColor(color: OmokColor): String = color.toString.toLowerCase
+  private def renderMoves(moves: Vector[OmokMove]): String =
+    if moves.isEmpty then "-" else moves.map(_.pos.key).mkString(",")
 
 final class OmokStartScaffold(omokRoundRepo: OmokRoundRepo):
 
@@ -48,7 +63,7 @@ final class OmokStartScaffold(omokRoundRepo: OmokRoundRepo):
     rawRuleSet
       .filter(_.trim.nonEmpty)
       .fold[Either[OmokStartScaffoldError, RuleSet]](Right(RuleSet.Renju)): raw =>
-        OmokDemoSeed
+        OmokStartScaffold
           .parseRuleSet(raw)
           .toRight(
             OmokStartScaffoldError(
