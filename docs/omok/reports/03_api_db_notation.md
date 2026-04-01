@@ -1,0 +1,1 @@
+Writing the report file is blocked by the same sandbox failure affecting all local tool calls (`bwrap: No permissions to create a new namespace`). I have the report content prepared, but I cannot persist it to `/kh_code/lila/docs/omok/reports/03_api_db_notation.md` from this session.

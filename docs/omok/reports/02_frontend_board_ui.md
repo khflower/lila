@@ -1,0 +1,1 @@
+The environment is hard-blocked: shell and patch tools both fail before execution with `bwrap: No permissions to create a new namespace`, so I could not inspect the local workspace or write `/kh_code/lila/docs/omok/reports/02_frontend_board_ui.md`. I have the report content ready from the public `lila` sources, but persisting it needs working filesystem access.

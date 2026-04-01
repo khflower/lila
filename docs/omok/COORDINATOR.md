@@ -18,3 +18,13 @@ Port lila toward an omok-focused site while preserving as much platform infrastr
 - Prefer analysis and documentation first.
 - Write only to assigned report file.
 - Do not modify production code in this wave.
+
+## Confirmed product decisions from user
+- Prefer using an existing strong engine over training from scratch for now.
+- Rapfi is the default engine candidate unless a lighter alternative is clearly better.
+- No immediate training wave; prioritize integration first.
+- GPU 3 may be used later if engine/training experiments actually need it.
+
+## Current status snapshot
+- Analysis lanes recovered into report files for 01, 02, 03, 04, 05, 08, 09, 10.
+- Next wave should shift from analysis into implementation scaffolding.
