@@ -1,9 +1,11 @@
 package lila.round
 
 import lila.core.id.GameId
-import lila.omok.{ Color, Pos }
+import lila.omok.{ Color, Game, Move, Pos, PositionSnapshot, Replay, Status }
 
 class OmokMovePlayerTest extends munit.FunSuite:
+
+  private def move(row: Int, col: Int) = Move(Pos.unsafe(row, col))
 
 
   test("preview builds the next omok state and move event payload"):
@@ -83,3 +85,25 @@ class OmokMovePlayerTest extends munit.FunSuite:
     assertEquals(accepted.state.position.lastMove.map(_.pos.key), Some("I8"))
     assertEquals(accepted.state.moves.map(_.pos.key), Vector("H8", "I8"))
     assertEquals(repo.get(gameId), Some(accepted.state))
+
+  test("preview keeps terminal omok status for a winning move"):
+    val gameId = GameId("terminal")
+    val moves = Vector(
+      move(7, 7),
+      move(0, 0),
+      move(7, 8),
+      move(0, 1),
+      move(7, 9),
+      move(0, 2),
+      move(7, 10),
+      move(0, 3)
+    )
+    val game = Replay(Game.initial(), moves).toOption.get
+    val winningState = OmokRoundState.initial().copy(
+      moves = moves,
+      position = PositionSnapshot.fromGame(game, moves)
+    )
+
+    val preview = OmokMovePlayer.preview(gameId, winningState, Pos.unsafe(7, 11)).toOption.get
+
+    assertEquals(preview.terminalStatus, Some(Status.Win(Color.Black)))
