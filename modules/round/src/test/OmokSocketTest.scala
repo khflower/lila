@@ -4,7 +4,7 @@ import play.api.libs.json.{ JsObject, Json }
 
 import lila.core.id.GameId
 import lila.core.socket.SocketVersion
-import lila.omok.{ Game, Move, PositionSnapshot, Pos, Replay, RuleSet }
+import lila.omok.{ Color, Game, Move, PositionSnapshot, Pos, Replay, RuleSet, Status }
 
 class OmokSocketTest extends munit.FunSuite:
 
@@ -96,3 +96,40 @@ class OmokSocketTest extends munit.FunSuite:
 
     assert(message.startsWith(prefix))
     assertEquals(Json.parse(message.drop(prefix.length)), expectedPayloadJson)
+
+  test("terminal omok move payload includes additive status and winner fields"):
+    val repo = OmokRoundRepo()
+    val player = OmokMovePlayer(repo)
+    val gameId = GameId("termmove")
+    val version = SocketVersion(7)
+    val prefix = s"r/ver $gameId $version - ${OmokEvent.moveType} "
+    val winningMoves = List(
+      pos(7, 7),
+      pos(0, 0),
+      pos(7, 8),
+      pos(0, 1),
+      pos(7, 9),
+      pos(0, 2),
+      pos(7, 10),
+      pos(0, 3),
+      pos(7, 11)
+    )
+
+    val accepted = winningMoves.foldLeft(Option.empty[PlaceAccepted]):
+      case (_, nextPos) => Some(player.place(PlaceRequest(gameId, nextPos)).toOption.get)
+
+    assertEquals(accepted.flatMap(_.terminalStatus), Some(Status.Win(Color.Black)))
+
+    val payloadJson = Json.toJson(accepted.get.payload).as[JsObject]
+
+    assertEquals((payloadJson \ "status").as[String], "win")
+    assertEquals((payloadJson \ "winner").as[String], "black")
+    assertEquals((payloadJson \ "position" \ "lastMove" \ "key").as[String], "L8")
+
+    val message = RoundSocket.Protocol.Out.omokMove(version, accepted.get.event)
+    val messageJson = Json.parse(message.drop(prefix.length)).as[JsObject]
+
+    assert(message.startsWith(prefix))
+    assertEquals((messageJson \ "status").as[String], "win")
+    assertEquals((messageJson \ "winner").as[String], "black")
+    assertEquals((messageJson \ "position" \ "lastMove" \ "key").as[String], "L8")

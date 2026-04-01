@@ -520,6 +520,8 @@ export default class RoundController implements MoveRootCtrl {
     const turnColor = position.turn === 'white' || position.turn === 'black' ? position.turn : d.game.player;
 
     omok.position = position;
+    if (defined(o.status)) omok.status = o.status;
+    if (defined(o.winner)) omok.winner = o.winner;
 
     d.game.turns = position.ply;
     d.game.player = turnColor;

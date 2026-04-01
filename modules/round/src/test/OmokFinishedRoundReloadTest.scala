@@ -42,3 +42,35 @@ class OmokFinishedRoundReloadTest extends munit.FunSuite:
     assertEquals(rejected.message, s"[omok] $gameId cannot place E1: game already over")
     assertEquals(rejected.state, retained)
     assertEquals(repo.get(gameId), Some(retained))
+
+  test("finished omok state survives reload until cleanup clears it for a fresh restart"):
+    val repo = OmokRoundRepo()
+    val gameId = GameId("reloadclr")
+    val player = OmokMovePlayer(repo)
+
+    winningMoves.foreach: pos =>
+      player.place(PlaceRequest(gameId, pos)).toOption.get
+
+    val retained = repo.get(gameId).get
+    val reloadedPlayer = OmokMovePlayer(repo)
+
+    assertEquals(retained.terminalStatus, Some(Status.Win(Color.Black)))
+    assertEquals(player.get(gameId), Some(retained))
+    assertEquals(reloadedPlayer.get(gameId), Some(retained))
+    assertEquals((retained.analyseDto.asJson \ "status").as[String], "win")
+    assertEquals((retained.analyseDto.asJson \ "winner").as[String], "black")
+
+    val removed = reloadedPlayer.remove(gameId)
+
+    assertEquals(removed, Some(retained))
+    assertEquals(repo.get(gameId), None)
+    assertEquals(player.get(gameId), None)
+    assertEquals(reloadedPlayer.get(gameId), None)
+
+    val restarted = reloadedPlayer.place(PlaceRequest(gameId, pos(0, 0))).toOption.get
+
+    assertEquals(restarted.previous.position.ply, 0)
+    assertEquals(restarted.previous.moves, Vector.empty)
+    assertEquals(restarted.state.position.ply, 1)
+    assertEquals(restarted.state.position.lastMove.map(_.pos.key), Some("A1"))
+    assertEquals(restarted.state.moves.map(_.pos.key), Vector("A1"))

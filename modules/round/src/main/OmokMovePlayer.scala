@@ -66,13 +66,13 @@ object OmokMovePlayer:
     currentGame(previous).play(move).left.map(PlaceError(request, previous, _)).map: nextGame =>
       val moves = previous.moves :+ move
       val state = OmokRoundState.fromGame(nextGame, moves)
-      val payload = OmokEvent.MovePayload(move, state.position)
+      val payload = OmokEvent.MovePayload(move, state)
       PlaceAccepted(
         previous = previous,
         state = state,
         move = move,
         payload = payload,
-        event = OmokEvent.Move(gameId, move, state.position),
+        event = OmokEvent.Move(gameId, move, state),
         terminalStatus = state.terminalStatus
       )
 

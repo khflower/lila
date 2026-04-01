@@ -107,6 +107,8 @@ class OmokMovePlayerTest extends munit.FunSuite:
     val preview = OmokMovePlayer.preview(gameId, winningState, Pos.unsafe(7, 11)).toOption.get
 
     assertEquals(preview.terminalStatus, Some(Status.Win(Color.Black)))
+    assertEquals(preview.payload.status, Some("win"))
+    assertEquals(preview.payload.winner, Some("black"))
 
   test("place retains terminal omok outcome in cached state for reconnect boot data"):
     val repo = OmokRoundRepo()
