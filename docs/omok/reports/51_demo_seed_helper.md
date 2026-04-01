@@ -1,104 +1,136 @@
-# Demo Seed Helper
+# Omok Demo Seed Helper
 
-## Purpose
+## Scope
 
-This is the smallest practical internal helper plan for showing the current `omok/mvp` branch without building a public omok-game creation surface.
+This checkpoint adds the smallest practical internal helper for demo seeding on the current `omok/mvp` branch.
 
-The branch already supports omok round boot only when `OmokRoundRepo` contains state for the target `GameId`.
+The goal is narrow:
 
-So the demo seeding problem is not database schema or socket wiring anymore; it is simply **how to put one known snapshot into `OmokRoundRepo` before opening the round page**.
+- seed `OmokRoundRepo` for one known `GameId`;
+- keep the helper behind existing internal tooling;
+- avoid adding a new public round endpoint or broader production wiring.
 
-## Current Reality
+## Why This Shape
 
-- `modules/api/src/main/RoundApi.scala` reads `roundApi.omokRoundRepo.get(game.id)` and only adds `data.omok` if the repo already has state.
-- `modules/round/src/main/Env.scala` already wires `omokRoundRepo` and `omokMovePlayer`.
-- `modules/round/src/main/OmokMovePlayer.scala` already has the easiest state mutation surface:
-  - `ensure(gameId, ruleSet)`
-  - `place(PlaceRequest(...))`
-  - `remove(gameId)`
+On this branch, live omok round state is held in the in-memory `TrieMap[GameId, OmokRoundState]` inside `modules/round/src/main/OmokRoundRepo.scala`.
 
-That means the smallest safe seed path is an **internal-only startup/dev helper** that calls `omokMovePlayer.ensure(...)` plus a few `place(...)` calls for a known `GameId`.
+That makes two constraints important:
 
-## Best Low-Risk Approach
+1. `modules/api/src/main/RoundApi.scala` only exposes `data.omok` when `omokRoundRepo.get(gameId)` already returns state.
+2. `build.sbt` sets `Compile / run / fork := true`, so an external `sbt console` or standalone script would seed a different JVM and would not affect the running server.
 
-### Option A ? Dev-only one-shot helper object
+Because of that, the safest practical helper is an internal CLI command that runs inside the already-running lila server process.
 
-Recommended first.
+## Current Helper
 
-Add one tiny internal helper under a clearly non-production path, for example:
-- `modules/round/src/test/OmokDemoSeed.scala`, or
-- `docs/omok/scripts/seed_demo_round.scala.txt` as an operator recipe.
+Current branch addition:
 
-The helper should:
-1. take a known `GameId`;
-2. call `omokMovePlayer.remove(gameId)` first;
-3. call `omokMovePlayer.ensure(gameId)`;
-4. replay a short move list through `place(...)`;
-5. print the resulting board/ply/turn so the operator can verify the seed succeeded.
+- `modules/round/src/main/OmokDemoSeed.scala`
+- hooked from `modules/round/src/main/Env.scala` through the existing `lila.common.Cli.handle` path
 
-Why this is the best current option:
-- no new public route;
-- no new admin endpoint;
-- no change to production gameplay permissions;
-- reuses the same code path the live round already depends on.
+Supported commands:
 
-## Suggested Seed Recipe
+- `omok seed <gameId>`
+- `omok seed <gameId> <renju|freestyle>`
+- `omok seed <gameId> <renju|freestyle> <move...>`
+- `omok show <gameId>`
+- `omok clear <gameId>`
 
-For the safest internal demo, seed exactly one black move:
-- `H8`
+Move notation uses the existing omok coordinate parser from `modules/omok/src/main/CoordinateNotation.scala`, so examples like `H8`, `A1`, and `O15` work.
 
-Why one move is the sweet spot:
-- boot/reload shows a visible omok board immediately;
-- turn becomes white after the seed;
-- watcher/player state is easy to inspect;
-- it minimizes confusion while testing click gating and live redraw.
+If no ruleset is provided, the helper defaults to `renju`, which matches `OmokRoundState.initial(...)` on this branch.
 
-For a slightly richer demo seed, use:
-- `H8`, `A1`, `I8`
+## Exact Seeding Flow For A Known Game Id
 
-That gives:
-- visible move history;
-- non-empty `moves` array;
-- a clear last-move marker;
-- a reconnect state that is easy to validate.
+### 1. Start the normal local stack
 
-## Operator Runbook
+Minimum for a real round page:
 
-1. Create or choose a known round `GameId` that already has a normal round page.
-2. Stop any prior stale omok seed for that id:
-   - `omokMovePlayer.remove(gameId)`
-3. Seed a fresh omok snapshot:
-   - `omokMovePlayer.ensure(gameId)`
-   - replay the chosen moves with `place(...)`
-4. Open:
-   - black player page,
-   - white player page,
-   - watcher page.
-5. Confirm `data.omok` appears on boot and the overlay board matches the seeded moves.
+- MongoDB
+- Redis
+- lila via `./lila.sh` then `run`
+- `lila-ws` if you want the socket round path, not just page boot
 
-## Minimal Example Logic
+### 2. Use the existing internal CLI
 
-Pseudocode only:
+Use either:
 
-```scala
-val gameId = GameId("abcdefgh")
-omokMovePlayer.remove(gameId)
-omokMovePlayer.ensure(gameId)
-List("H8", "A1", "I8").foreach { key =>
-  val pos = lila.omok.Pos.fromKey(key).get
-  omokMovePlayer.place(PlaceRequest(gameId, pos)).toOption.get
-}
-println(omokMovePlayer.get(gameId))
+- the `/dev/cli` page as a user with the existing `Cli` permission, or
+- the existing `/run/cli` internal route if you already have an authenticated way to hit it
+
+No new route was added for omok seeding.
+
+### 3. Seed the live repo entry
+
+Example for known game id `demo1234`:
+
+```text
+omok seed demo1234 renju H8 A1 I8
 ```
 
-## What Not To Do
+Expected CLI output:
 
-Avoid these for the current branch:
-- public HTTP seed endpoint;
-- permanent admin API unless demo usage proves it is needed;
-- DB-backed seeding for now;
-- wiring demo seeding into normal game creation before the omok finish/status story is ready.
+```text
+seeded omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
+```
 
-## Recommendation
+What this does internally on the current branch:
 
-If we need the fastest path to a repeatable internal demo, build a **tiny dev-only seed helper that reuses `OmokMovePlayer`**. That is the smallest practical step still missing for reliable demos.
+1. validates `demo1234` through `GameId.from(...)`;
+2. parses `H8 A1 I8` through `CoordinateNotation.parse(...)`;
+3. replays those moves with `Replay(Game.initial(ruleSet), moves)`;
+4. builds `OmokRoundState(PositionSnapshot.fromGame(game, moves), moves)`;
+5. writes it to `env.round.omokRoundRepo.put(gameId, state)`.
+
+That exact write is what makes subsequent player and watcher boot paths include `data.omok` for that round.
+
+### 4. Verify the seed before opening pages
+
+Use:
+
+```text
+omok show demo1234
+```
+
+Expected output:
+
+```text
+omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
+```
+
+### 5. Open the round
+
+After the seed is present in the live server process, load the normal player or watcher round URL for that same `GameId`.
+
+Because `RoundApi.withOmok(...)` is read-only on this branch, the page will only boot into omok mode if this repo entry already exists.
+
+## Resetting Or Reseeding
+
+To clear one demo round entry:
+
+```text
+omok clear demo1234
+```
+
+To reset it to a fresh empty renju state:
+
+```text
+omok seed demo1234
+```
+
+To overwrite with a different scripted move list, just run `omok seed ...` again for the same game id.
+
+## Safety Notes
+
+- This does not add any public player or watcher API.
+- This does not seed on read paths such as `RoundApi.withOmok(...)`.
+- This does not change normal round creation.
+- This stays scoped to the existing internal CLI permission surface.
+- Repo state is still in-memory only, so a process restart removes the seed.
+
+## Known Limits
+
+- The helper is demo-only. It is not a production omok round creation path.
+- The target `GameId` still has to correspond to a real round page you can open normally.
+- If you seed moves that leave omok turn on white, but the generic round state still thinks black should move, current UI turn gating issues on this branch still apply.
+- `RoundSocket` cleanup on `FinishGame` and `DeleteUnplayed` still removes the repo entry after the round lifecycle advances.
