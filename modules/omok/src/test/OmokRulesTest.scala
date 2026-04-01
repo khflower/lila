@@ -4,6 +4,23 @@ class OmokRulesTest extends munit.FunSuite:
 
   private def board(rows: String*) = Board.fromRows(rows.toList)
   private def pos(row: Int, col: Int) = Pos.unsafe(row, col)
+  private val nearDrawRows = List(
+    ".WBWWBBWBBWWBBW",
+    "BBWWWBWWBBBBWBW",
+    "BWWBWBWBWWBWBBB",
+    "WBWWWBWBBWWBBBB",
+    "BBBWBWWBWBWBWWB",
+    "BWBBWWBBWWWBWWW",
+    "WBWWWBWWBBWWBWB",
+    "WWBWWWBWBWBWWBB",
+    "BBBWWWWBBBWBBWB",
+    "WBBWBBWWWWBWWWB",
+    "WWBBBWBBBWBBWWW",
+    "BBWWWWBWWWBBWBW",
+    "WBWWWBWWBWWBBBW",
+    "BBBWBBWWWBWBWWW",
+    "BBWWWBBWWBBWWWB"
+  )
 
   test("freestyle exact five is a win"):
     val g = Game(
@@ -161,3 +178,18 @@ class OmokRulesTest extends munit.FunSuite:
       RuleSet.Renju
     )
     assert(situation.play(Move(pos(7, 7))).isRight)
+
+  test("freestyle full board without five is a draw"):
+    val situation = Situation(Board.fromRows(nearDrawRows), Color.White, RuleSet.Freestyle)
+
+    val next = Game(situation).play(Move(pos(0, 0))).toOption.get
+
+    assertEquals(next.status, Status.Draw)
+    assert(next.situation.board.isFull)
+    assertEquals(next.lastMove, Some(Move(pos(0, 0))))
+
+  test("drawn games reject further moves"):
+    val situation = Situation(Board.fromRows(nearDrawRows), Color.White, RuleSet.Freestyle)
+    val drawn = Game(situation).play(Move(pos(0, 0))).toOption.get
+
+    assertEquals(drawn.play(Move(pos(1, 1))), Left(MoveError.GameAlreadyOver))

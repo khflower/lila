@@ -45,6 +45,8 @@ final case class Board private (cells: Vector[Option[Color]]):
 
   def isEmpty(pos: Pos): Boolean = apply(pos).isEmpty
 
+  def isFull: Boolean = cells.forall(_.nonEmpty)
+
   def place(pos: Pos, color: Color): Either[MoveError, Board] =
     if !isEmpty(pos) then Left(MoveError.Occupied)
     else Right(copy(cells = cells.updated(pos.index, Some(color))))
@@ -206,6 +208,7 @@ final case class Game(
           val playedColor = situation.turn
           val nextStatus =
             if placedBoard.hasFive(move.pos, playedColor) then Status.Win(playedColor)
+            else if placedBoard.isFull then Status.Draw
             else Status.Ongoing
           copy(
             situation = nextSituation,
