@@ -1,9 +1,50 @@
 package lila.round
 
-import lila.core.id.{ GameFullId, GameId }
+import scala.concurrent.Await
+
+import chess.{ ByColor, Rated }
+
+import lila.core.game.{ Player, Source, newGame }
+import lila.core.id.{ GameFullId, GameId, GamePlayerId }
 import lila.omok.RuleSet
 
 class OmokStartScaffoldTest extends munit.FunSuite:
+  private given Executor = scala.concurrent.ExecutionContext.global
+
+  private def makeNativeGame(gameId: GameId) =
+    newGame(
+      chess.Game(chess.variant.Standard),
+      ByColor(color =>
+        if color.white then Player(GamePlayerId("abcd"), color, none)
+        else Player(GamePlayerId("wxyz"), color, none)
+      ),
+      rated = Rated.No,
+      source = Source.Api,
+      pgnImport = none
+    ).withId(gameId).start
+
+  test("startNew creates a fresh omok round and reveals real black and white full ids"):
+    val repo = OmokRoundRepo()
+    val game = makeNativeGame(GameId("native01"))
+    val scaffold = OmokStartScaffold(
+      repo,
+      new OmokNativeGameStarter(() => fuccess(OmokNativeStartGame(game, game.fullIds)))
+    )
+
+    val result = Await.result(scaffold.startNew(Some("freestyle")), 1.second).toOption.get
+    val state = repo.get(GameId("native01")).get
+
+    assertEquals(result.fullId, GameFullId("native01wxyz"))
+    assertEquals(result.redirectPath, "/native01wxyz")
+    assertEquals(
+      result.message,
+      "started native omok round native01: black=/native01wxyz white=/native01abcd: ruleSet=freestyle ply=0 turn=black lastMove=- moves=-"
+    )
+    assertEquals(result.nativeFullIds.map(_.white), Some(GameFullId("native01abcd")))
+    assertEquals(result.nativeFullIds.map(_.black), Some(GameFullId("native01wxyz")))
+    assertEquals(state.ruleSet, RuleSet.Freestyle)
+    assertEquals(state.position.ply, 0)
+    assertEquals(state.moves, Vector.empty)
 
   test("start seeds a blank renju state for the requested player full id"):
     val repo = OmokRoundRepo()
@@ -53,6 +94,10 @@ class OmokStartScaffoldTest extends munit.FunSuite:
     )
     assertEquals(
       scaffold.start("demo1234abcd", Some("unknown")).left.map(_.message),
+      Left("invalid rule set 'unknown'; expected one of: renju, freestyle")
+    )
+    assertEquals(
+      Await.result(scaffold.startNew(Some("unknown")), 1.second).left.map(_.message),
       Left("invalid rule set 'unknown'; expected one of: renju, freestyle")
     )
     assertEquals(repo.get(GameId("demo1234")), None)

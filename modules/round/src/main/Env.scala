@@ -26,6 +26,7 @@ final class Env(
     appConfig: Configuration,
     db: lila.db.Db,
     gameRepo: GameRepo,
+    newPlayer: lila.core.game.NewPlayer,
     userRepo: lila.user.UserRepo,
     userApi: lila.user.UserApi,
     lightUser: lila.user.LightUserApi,
@@ -181,6 +182,9 @@ final class Env(
   lazy val omokRoundRepo = wire[OmokRoundRepo]
 
   private lazy val omokDemoSeed = wire[OmokDemoSeed]
+
+  private lazy val omokNativeGameStarter =
+    OmokNativeGameStarter(gameRepo, onStart)(using summon[lila.core.game.IdGenerator], newPlayer)
 
   lazy val omokStartScaffold = wire[OmokStartScaffold]
 

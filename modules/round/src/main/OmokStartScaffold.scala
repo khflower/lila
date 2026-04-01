@@ -1,22 +1,45 @@
 package lila.round
 
+import chess.{ ByColor, Rated }
+
+import lila.core.game.{ Game, OnStart, Source, newGame }
 import lila.core.id.{ GameFullId, GameId }
 import lila.omok.{ Color as OmokColor, Move as OmokMove, RuleSet }
 
 final case class OmokStartScaffoldError(message: String)
 
+final case class OmokNativeStartGame(
+    game: Game,
+    fullIds: ByColor[GameFullId]
+):
+  def fullId: GameFullId = fullIds.black
+
+final class OmokNativeGameStarter(private val create: () => Fu[OmokNativeStartGame]):
+  def start(): Fu[OmokNativeStartGame] = create()
+
 final case class OmokStartScaffoldResult(
     fullId: GameFullId,
     state: OmokRoundState,
-    reset: Boolean
+    reset: Boolean,
+    nativeFullIds: Option[ByColor[GameFullId]] = None
 ):
   def gameId: GameId = fullId.gameId
   def redirectPath: String = s"/$fullId"
   def message: String =
-    s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokStartScaffold.renderState(state)}"
+    nativeFullIds.fold(
+      s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokStartScaffold.renderState(state)}"
+    ): fullIds =>
+      s"started native omok round $gameId: black=/${fullIds.black} white=/${fullIds.white}: ${OmokStartScaffold.renderState(state)}"
 
 object OmokStartScaffold:
-  def apply(omokRoundRepo: OmokRoundRepo): OmokStartScaffold = new OmokStartScaffold(omokRoundRepo)
+  def apply(omokRoundRepo: OmokRoundRepo): OmokStartScaffold =
+    new OmokStartScaffold(omokRoundRepo, OmokNativeGameStarter.unsupported)
+
+  def apply(
+      omokRoundRepo: OmokRoundRepo,
+      nativeGameStarter: OmokNativeGameStarter
+  ): OmokStartScaffold =
+    new OmokStartScaffold(omokRoundRepo, nativeGameStarter)
 
   def parseRuleSet(raw: String): Option[RuleSet] =
     raw.trim.toLowerCase match
@@ -33,7 +56,50 @@ object OmokStartScaffold:
   private def renderMoves(moves: Vector[OmokMove]): String =
     if moves.isEmpty then "-" else moves.map(_.pos.key).mkString(",")
 
-final class OmokStartScaffold(omokRoundRepo: OmokRoundRepo):
+object OmokNativeGameStarter:
+  def apply(
+      gameRepo: lila.core.game.GameRepo,
+      onStart: OnStart
+  )(using
+      idGenerator: lila.core.game.IdGenerator,
+      newPlayer: lila.core.game.NewPlayer,
+      executor: Executor
+  ): OmokNativeGameStarter =
+    new OmokNativeGameStarter(() =>
+      idGenerator.game.flatMap: gameId =>
+        val game = newGame(
+          chess = chess.Game(chess.variant.Standard),
+          players = ByColor: color =>
+            newPlayer.anon(color),
+          rated = Rated.No,
+          source = Source.Api,
+          pgnImport = None
+        ).withId(gameId).start
+        val fullIds = game.fullIds
+        for
+          _ <- gameRepo.insertDenormalized(game)
+          _ <- onStart.exec(game.id)
+        yield OmokNativeStartGame(game, fullIds)
+    )
+
+  val unsupported = new OmokNativeGameStarter(() => fufail("native omok game starter unavailable"))
+
+final class OmokStartScaffold(
+    omokRoundRepo: OmokRoundRepo,
+    nativeGameStarter: OmokNativeGameStarter
+):
+
+  def startNew(rawRuleSet: Option[String] = None)(using
+      Executor
+  ): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
+    parseRuleSet(rawRuleSet).fold(
+      err => fuccess(Left(err)),
+      ruleSet =>
+      nativeGameStarter.start().map: started =>
+        val state = OmokRoundState.initial(ruleSet)
+        omokRoundRepo.put(started.game.id, state)
+        Right(OmokStartScaffoldResult(started.fullId, state, reset = false, nativeFullIds = started.fullIds.some))
+    )
 
   def start(rawFullId: String, rawRuleSet: Option[String] = None): Either[OmokStartScaffoldError, OmokStartScaffoldResult] =
     for
