@@ -1,136 +1,77 @@
-# Omok Demo Seed Helper
+# Demo Seed Helper
 
-## Scope
+## Purpose
 
-This checkpoint adds the smallest practical internal helper for demo seeding on the current `omok/mvp` branch.
+This is the smallest practical internal helper path for showing the current `omok/mvp` branch without building a public omok-game creation surface.
 
-The goal is narrow:
+Today there are two useful layers:
+- the code helper: `lila.round.OmokDemoSeed`
+- the operator wrapper: `bin/omok-demo`
 
-- seed `OmokRoundRepo` for one known `GameId`;
-- keep the helper behind existing internal tooling;
-- avoid adding a new public round endpoint or broader production wiring.
+The helper logic seeds `OmokRoundRepo` for a known `GameId`; the wrapper is the thinnest current way to invoke that logic through the existing internal CLI transport.
 
-## Why This Shape
+## Current Reality
 
-On this branch, live omok round state is held in the in-memory `TrieMap[GameId, OmokRoundState]` inside `modules/round/src/main/OmokRoundRepo.scala`.
+- `modules/api/src/main/RoundApi.scala` reads `roundApi.omokRoundRepo.get(game.id)` and only adds `data.omok` if the repo already has state.
+- `modules/round/src/main/Env.scala` wires `omokRoundRepo`, `omokMovePlayer`, and `omokDemoSeed`.
+- `modules/round/src/main/OmokDemoSeed.scala` already supports:
+  - `seed`
+  - `show`
+  - `clear`
+- `bin/omok-demo` is now the smallest operator-facing wrapper, via `bin/cli`.
 
-That makes two constraints important:
+## Best Current Path
 
-1. `modules/api/src/main/RoundApi.scala` only exposes `data.omok` when `omokRoundRepo.get(gameId)` already returns state.
-2. `build.sbt` sets `Compile / run / fork := true`, so an external `sbt console` or standalone script would seed a different JVM and would not affect the running server.
-
-Because of that, the safest practical helper is an internal CLI command that runs inside the already-running lila server process.
-
-## Current Helper
-
-Current branch addition:
-
-- `modules/round/src/main/OmokDemoSeed.scala`
-- hooked from `modules/round/src/main/Env.scala` through the existing `lila.common.Cli.handle` path
-
-Supported commands:
-
-- `omok seed <gameId>`
-- `omok seed <gameId> <renju|freestyle>`
-- `omok seed <gameId> <renju|freestyle> <move...>`
-- `omok show <gameId>`
-- `omok clear <gameId>`
-
-Move notation uses the existing omok coordinate parser from `modules/omok/src/main/CoordinateNotation.scala`, so examples like `H8`, `A1`, and `O15` work.
-
-If no ruleset is provided, the helper defaults to `renju`, which matches `OmokRoundState.initial(...)` on this branch.
-
-## Exact Seeding Flow For A Known Game Id
-
-### 1. Start the normal local stack
-
-Minimum for a real round page:
-
-- MongoDB
-- Redis
-- lila via `./lila.sh` then `run`
-- `lila-ws` if you want the socket round path, not just page boot
-
-### 2. Use the existing internal CLI
-
-Use either:
-
-- the `/dev/cli` page as a user with the existing `Cli` permission, or
-- the existing `/run/cli` internal route if you already have an authenticated way to hit it
-
-No new route was added for omok seeding.
-
-### 3. Seed the live repo entry
-
-Example for known game id `demo1234`:
+For a real internal demo, use:
 
 ```text
-omok seed demo1234 renju H8 A1 I8
+bin/omok-demo seed <gameId> [renju|freestyle] [move ...]
 ```
 
-Expected CLI output:
+This is still dev-oriented because it depends on local runtime wiring (`bin/cli`, internal CLI port, dev token), but it is much better than manual code edits or ad-hoc test-only seeding.
+
+## Suggested Seed Recipes
+
+### Safest first seed
 
 ```text
-seeded omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
+bin/omok-demo seed demo1234 renju H8
 ```
 
-What this does internally on the current branch:
+Why:
+- visible non-empty board immediately;
+- turn becomes white;
+- last move marker is obvious;
+- reload is easy to verify.
 
-1. validates `demo1234` through `GameId.from(...)`;
-2. parses `H8 A1 I8` through `CoordinateNotation.parse(...)`;
-3. replays those moves with `Replay(Game.initial(ruleSet), moves)`;
-4. builds `OmokRoundState(PositionSnapshot.fromGame(game, moves), moves)`;
-5. writes it to `env.round.omokRoundRepo.put(gameId, state)`.
-
-That exact write is what makes subsequent player and watcher boot paths include `data.omok` for that round.
-
-### 4. Verify the seed before opening pages
-
-Use:
+### Slightly richer demo seed
 
 ```text
-omok show demo1234
+bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 
-Expected output:
+Why:
+- shows move history and last-move marker;
+- keeps the state easy to explain live;
+- still small enough to debug quickly.
+
+## Reset / Recovery
+
+Fast reset:
 
 ```text
-omok round demo1234: ruleSet=renju ply=3 turn=white lastMove=I8 moves=H8,A1,I8
+bin/omok-demo seed demo1234
 ```
 
-### 5. Open the round
-
-After the seed is present in the live server process, load the normal player or watcher round URL for that same `GameId`.
-
-Because `RoundApi.withOmok(...)` is read-only on this branch, the page will only boot into omok mode if this repo entry already exists.
-
-## Resetting Or Reseeding
-
-To clear one demo round entry:
+Explicit clear + restart:
 
 ```text
-omok clear demo1234
+bin/omok-demo clear demo1234
+bin/omok-demo seed demo1234
 ```
 
-To reset it to a fresh empty renju state:
+## Important Caveat
 
-```text
-omok seed demo1234
-```
+The remaining missing piece is not helper logic anymore.
 
-To overwrite with a different scripted move list, just run `omok seed ...` again for the same game id.
-
-## Safety Notes
-
-- This does not add any public player or watcher API.
-- This does not seed on read paths such as `RoundApi.withOmok(...)`.
-- This does not change normal round creation.
-- This stays scoped to the existing internal CLI permission surface.
-- Repo state is still in-memory only, so a process restart removes the seed.
-
-## Known Limits
-
-- The helper is demo-only. It is not a production omok round creation path.
-- The target `GameId` still has to correspond to a real round page you can open normally.
-- If you seed moves that leave omok turn on white, but the generic round state still thinks black should move, current UI turn gating issues on this branch still apply.
-- `RoundSocket` cleanup on `FinishGame` and `DeleteUnplayed` still removes the repo entry after the round lifecycle advances.
+The real operational dependency is that `bin/omok-demo` must reach the internal CLI transport in the running server environment. If that runtime path is unavailable, the next fix should be environment wiring ? not more seed logic.

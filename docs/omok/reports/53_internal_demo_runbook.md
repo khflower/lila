@@ -1,153 +1,108 @@
-# Omok Internal Demo Runbook
+# Internal Demo Runbook
 
-## Scope
+## Objective
 
-This is the presenter version of the internal playtest flow.
+Show the current `omok/mvp` branch as a believable internal prototype:
+- seed a round with `bin/omok-demo`
+- open an omok round page with visible board/state
+- make one or two legal moves through the live path
+- reach a finished state if desired
+- show that reload/reconnect preserves the same finished omok snapshot
 
-It is based on the current `omok/mvp` branch plus the earlier playtest checklist:
+## Pre-Demo Setup
 
-- keep the demo on one manually seeded round;
-- show player + watcher boot, one legal live move, and reload/resync recovery;
-- do not claim production-ready round creation, finish handling, or polished replay surfaces.
+1. Confirm the local/internal CLI path works:
 
-## Current Demo-Safe Story
-
-What is safe to show on this branch:
-
-- player and watcher pages boot into omok mode when `OmokRoundRepo` already has state for the round;
-- the page renders a visible 15x15 board plus the omok state pill;
-- a legal `place` goes through the round socket path and broadcasts `omokMove`;
-- the frontend now redraws from the live `{ move, position }` payload;
-- reload still rebuilds from the same `data.omok.position` snapshot;
-- an invalid follow-up click resyncs the sender back to server state.
-
-What is still not demo-safe:
-
-- normal omok game creation or start;
-- a polished finish/winner story;
-- repeated ad hoc resets without reseeding or clearing the cached state.
-
-## Setup
-
-1. Start the normal local stack used by the playtest checklist.
-   - MongoDB on `127.0.0.1:27017`
-   - Redis on `127.0.0.1`
-   - lila via `./lila.sh` then `run`
-   - `lila-ws` on `localhost:9664`
-   - optional while iterating UI: `ui/build -w`
-
-2. Prepare one fresh ordinary live round between two local test accounts.
-   - Prefer a casual game with a long clock so the demo is not about clock pressure.
-   - Save the black player URL, white player URL, and watcher URL before the audience part starts.
-
-3. Seed omok state for that existing `GameId` inside the running server JVM.
-   - Important: `OmokRoundRepo` is in-memory. Seed the repo inside the live app process, not in a separate standalone console.
-   - In the snippets below, `env` means your live `lila.app.Env` handle for the running server process.
-   - Empty-board seed:
-
-```scala
-import lila.core.id.GameId
-import lila.round.OmokRoundState
-
-val gameId = GameId("replace_me")
-env.round.omokRoundRepo.put(gameId, OmokRoundState.initial())
+```text
+bin/omok-demo --help
 ```
 
-   - Reset between takes if needed:
+2. Seed a known round id before opening any tabs:
 
-```scala
-import lila.core.id.GameId
-
-env.round.omokMovePlayer.remove(GameId("replace_me"))
+```text
+bin/omok-demo seed demo1234 renju H8 A1 I8
 ```
 
-   - If you want a preplayed seed instead of an empty board:
+3. Verify state exists:
 
-```scala
-import lila.core.id.GameId
-import lila.omok.{ Game as OmokGame, Move as OmokMove, Pos, PositionSnapshot, Replay, RuleSet }
-import lila.round.OmokRoundState
-
-val gameId = GameId("replace_me")
-val moves = Vector(
-  OmokMove(Pos.unsafe(7, 7)),
-  OmokMove(Pos.unsafe(0, 0))
-)
-val game = Replay(OmokGame.initial(RuleSet.Renju), moves).toOption.get
-env.round.omokRoundRepo.put(gameId, OmokRoundState(PositionSnapshot.fromGame(game, moves), moves))
+```text
+bin/omok-demo show demo1234
 ```
 
-4. Open three tabs only after seeding.
-   - black player
-   - white player
-   - watcher
+4. Open:
+- black player page
+- white player page
+- watcher page
 
-5. Keep DevTools open on black and watcher tabs.
-   - preserve websocket frames
-   - keep console visible
+## Safest Demo Script
 
-## What To Say
+### A. Opening
 
-- "This is the current live omok branch running on the existing lila round shell."
-- "The round itself is still seeded manually, but once booted it uses the real round socket path."
-- "I’m showing the narrow MVP loop: board boot, live place, watcher sync, and reload/resync recovery."
+Say:
+- "This branch now boots an omok-specific round shell on top of lila round pages."
+- "The board, current turn, and last move come from the omok sidecar, not from chessground state."
 
-## Safest Demo Path
+Show:
+- visible omok overlay board
+- omok state card
+- watcher page in the same position
 
-1. Start on the black player tab.
-   - Show the visible 15x15 board and the omok state pill.
-   - Say that both player and watcher pages boot from the same `data.omok.position`.
+### B. Live move
 
-2. Flip to the watcher tab briefly.
-   - Confirm the same empty board and same state pill values are visible there.
+Do:
+- on the currently allowed side, click one empty point
 
-3. Back on black, play one obvious legal first move.
-   - Use `H8`.
-   - Keep the watcher tab visible soon after so the audience sees the same stone appear there.
+Say:
+- "This click sends `place`, the backend applies it through `OmokMovePlayer`, then emits `omokMove`."
 
-4. Call out the live path, not the polish.
-   - Mention that the accepted click sent `place` and the round broadcast `omokMove`.
-   - Do not spend time on chess-side surfaces around the board.
+Watch for:
+- outbound `place`
+- inbound `omokMove`
+- visible state change on board/state card
 
-5. Prove recovery immediately after the first accepted move.
-   - Hard refresh the watcher tab.
-   - If needed, hard refresh the black tab too.
-   - Show that both rebuild to the same one-stone board from server state.
+### C. Finish story
 
-6. Show the reject/resync safety net.
-   - Stay on black after `H8`.
-   - Click another empty point such as `I8`.
-   - Explain that it is now white's turn, so black is rejected and the sender resyncs back to the authoritative board.
+If the seed was chosen so the next move wins, show:
+- final move lands
+- state changes to finished/winner
+- normal round finish path follows
 
-7. Stop there unless the room wants one more move.
-   - Optional extension: switch to white and place `A1`.
-   - Do not rely on a finish sequence for the demo.
+Say:
+- "The winning move now carries terminal omok status/winner, and finished omok state is retained for reload."
 
-## Fallback Recovery
+### D. Reload story
 
-If live redraw flakes after a legal move:
+Hard refresh player or watcher page.
 
-- hard refresh the affected player or watcher tab;
-- if there is any doubt, refresh both black and watcher;
-- the recovery path is the boot JSON from `data.omok.position`, so the page should come back to the latest accepted state.
+Say:
+- "Reload/reconnect uses retained omok state, so the page comes back on the same final board with the same result metadata."
 
-If the sender gets out of sync after a rejected click:
+## Fallback Steps If Something Flakes
 
-- wait for automatic resync;
-- if it does not visibly recover, hard refresh that tab once.
+### If seeding fails
+- verify `bin/cli` can reach the internal CLI transport
+- verify `LILA_CLI_TOKEN_DEV`
+- rerun `bin/omok-demo seed <gameId>`
 
-If a page comes back without the omok overlay:
+### If live redraw flakes
+- show the inbound `omokMove` frame in DevTools
+- hard refresh the tabs
+- confirm the same board/result comes back from retained `data.omok`
 
-- the repo entry is missing or you opened the page before seeding;
-- reseed the same `GameId` in the running JVM and reopen the tabs.
+### If the round id is in a bad state
 
-If you need a clean second take:
+```text
+bin/omok-demo clear demo1234
+bin/omok-demo seed demo1234 renju H8 A1 I8
+```
 
-- clear the cached omok state with `env.round.omokMovePlayer.remove(gameId)` or use a new fresh round;
-- reseed before opening the tabs again.
+Then refresh the tabs.
 
-## Presenter Notes
+## Best Short Demo Version
 
-- Keep the claim small: this is a live omok round loop, not a production-complete omok product.
-- Focus the audience on board boot, one accepted move, watcher sync, and reload/resync recovery.
-- Avoid demoing creation flow, finish flow, rematch, or any chess-specific side panels as if they were already ported.
+If you only have 2?3 minutes:
+1. `bin/omok-demo seed demo1234 renju H8 A1 I8`
+2. open player + watcher tabs
+3. make one legal move
+4. show finished/reload behavior if available
+5. explain that the remaining work is productized start flow and broader site integration, not the core live loop
