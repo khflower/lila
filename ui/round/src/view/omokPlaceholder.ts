@@ -1,4 +1,3 @@
-import { isPlayerPlaying } from 'lib/game';
 import { hl, onInsert, type VNode } from 'lib/view';
 
 import * as blur from '../blur';
@@ -18,8 +17,6 @@ const fileLabel = (col: number): string => boardFiles[col] || String(col + 1);
 const posKey = (row: number, col: number): string => `${fileLabel(col)}${row + 1}`;
 const isActivationKey = (event: KeyboardEvent): boolean =>
   event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar';
-const isTurnColor = (turn: string): turn is Color => turn === 'white' || turn === 'black';
-
 const sendPlace = (ctrl: RoundController, pos: Key): void => {
   const now = Date.now();
   if (now - (lastPlaceAt.get(ctrl) || 0) < placeCooldownMs) return;
@@ -63,12 +60,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
     gridTemplateColumns: `repeat(${boardSize}, minmax(0, 1fr))`,
     gridTemplateRows: `repeat(${boardSize}, minmax(0, 1fr))`,
   };
-  const canPlace =
-    isPlayerPlaying(ctrl.data) &&
-    isTurnColor(position.turn) &&
-    position.turn === ctrl.data.player.color &&
-    !ctrl.replaying() &&
-    !ctrl.loading;
+  const canPlace = ctrl.canPlaceOmok();
 
   return hl('div.round__app__board__omok-placeholder', { attrs }, [
     hl('div.round__app__board__omok-placeholder__shell', [

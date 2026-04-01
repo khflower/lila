@@ -35,15 +35,16 @@ const onTheSide = (round: RoundController) => (color: Color, position: TopOrBott
 
 function whosTurn(ctrl: RoundController, color: Color, position: TopOrBottom) {
   const d = ctrl.data;
+  const turnColor = ctrl.currentTurnColor();
   if (finished(d) || aborted(d)) return;
   return hl(
     'div.rclock.rclock-turn.rclock-' + position,
-    d.game.player === color &&
+    turnColor === color &&
       hl(
         'div.rclock-turn__text',
         d.player.spectator
-          ? i18n.site[d.game.player === 'white' ? 'whitePlays' : 'blackPlays']
-          : i18n.site[d.game.player === d.player.color ? 'yourTurn' : 'waitingForOpponent'],
+          ? i18n.site[turnColor === 'white' ? 'whitePlays' : 'blackPlays']
+          : i18n.site[turnColor === d.player.color ? 'yourTurn' : 'waitingForOpponent'],
       ),
   );
 }

@@ -269,6 +269,21 @@ export default class RoundController implements MoveRootCtrl {
     return true;
   };
 
+  omokTurnColor = (): Color | undefined => {
+    const turn = this.data.omok?.position.turn;
+    return turn === 'white' || turn === 'black' ? turn : undefined;
+  };
+
+  currentTurnColor = (): Color | undefined => this.omokTurnColor() ?? this.data.game.player;
+
+  isPlayerTurn = (): boolean => !this.data.player.spectator && this.currentTurnColor() === this.data.player.color;
+
+  canPlaceOmok = (): boolean =>
+    this.isPlaying() &&
+    this.omokTurnColor() === this.data.player.color &&
+    !this.replaying() &&
+    !this.loading;
+
   canMove = (): boolean => !this.replaying() && this.data.player.color === this.chessground.state.turnColor;
 
   replayEnabledByPref = (): boolean => {

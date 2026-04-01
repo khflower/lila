@@ -1,4 +1,4 @@
-import { aborted, finished, isPlayerTurn } from 'lib/game';
+import { aborted, finished } from 'lib/game';
 
 import type RoundController from './ctrl';
 
@@ -39,7 +39,7 @@ export function set(ctrl: RoundController, text?: string): void {
   if (!text) {
     if (aborted(ctrl.data) || finished(ctrl.data)) {
       text = i18n.site.gameOver;
-    } else if (isPlayerTurn(ctrl.data)) {
+    } else if (ctrl.isPlayerTurn()) {
       text = i18n.site.yourTurn;
       if (!document.hasFocus()) startTicker();
     } else {
