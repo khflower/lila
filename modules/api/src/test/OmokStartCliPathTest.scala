@@ -9,6 +9,7 @@ import lila.core.id.{ GameId, GamePlayerId }
 import lila.round.{ OmokDemoSeed, OmokNativeGameStarter, OmokNativeStartGame, OmokRoundRepo, OmokStartScaffold }
 
 class OmokStartCliPathTest extends munit.FunSuite:
+  given Executor = scala.concurrent.ExecutionContext.global
   private val omokCliModuleClass = getClass.getClassLoader.loadClass("lila.round.OmokCli$")
   private val omokCliModule = omokCliModuleClass.getField("MODULE$").get(null)
   private val omokCliHandler = omokCliModuleClass.getMethod(
