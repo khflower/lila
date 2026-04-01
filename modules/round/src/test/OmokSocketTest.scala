@@ -1,0 +1,78 @@
+package lila.round
+
+import play.api.libs.json.{ JsObject, Json }
+
+import lila.core.id.GameId
+import lila.core.socket.SocketVersion
+import lila.omok.{ Game, Move, PositionSnapshot, Pos, Replay, RuleSet }
+
+class OmokSocketTest extends munit.FunSuite:
+
+  private def pos(row: Int, col: Int) = Pos.unsafe(row, col)
+  private def move(row: Int, col: Int) = Move(pos(row, col))
+
+  private val moves = Vector(
+    move(7, 7),
+    move(0, 0),
+    move(7, 8)
+  )
+
+  private val game = Replay(Game.initial(RuleSet.Renju), moves).toOption.get
+  private val snapshot = PositionSnapshot.fromGame(game, moves)
+  private val payload = OmokEvent.MovePayload(moves.last, snapshot)
+
+  private val expectedPayloadJson: JsObject =
+    Json.obj(
+      "move" -> Json.obj(
+        "key" -> "I8",
+        "row" -> 7,
+        "col" -> 8
+      ),
+      "position" -> Json.obj(
+        "boardSize" -> 15,
+        "boardRows" -> Json.arr(
+          "w..............",
+          "...............",
+          "...............",
+          "...............",
+          "...............",
+          "...............",
+          "...............",
+          ".......bb......",
+          "...............",
+          "...............",
+          "...............",
+          "...............",
+          "...............",
+          "...............",
+          "..............."
+        ),
+        "turn" -> "white",
+        "ruleSet" -> "renju",
+        "ply" -> 3,
+        "lastMove" -> Json.obj(
+          "key" -> "I8",
+          "row" -> 7,
+          "col" -> 8
+        ),
+        "moves" -> Json.arr(
+          Json.obj("key" -> "H8", "row" -> 7, "col" -> 7),
+          Json.obj("key" -> "A1", "row" -> 0, "col" -> 0),
+          Json.obj("key" -> "I8", "row" -> 7, "col" -> 8)
+        )
+      )
+    )
+
+  test("move payload JSON keeps the omok move and position shape stable"):
+    assertEquals(Json.toJson(payload).as[JsObject], expectedPayloadJson)
+
+  test("socket omok move output keeps the payload JSON intact inside the versioned envelope"):
+    val gameId = GameId("abcdefgh")
+    val version = SocketVersion(42)
+    val event = OmokEvent.Move(gameId, moves.last, snapshot)
+    val prefix = s"r/ver $gameId $version - ${OmokEvent.moveType} "
+
+    val message = RoundSocket.Protocol.Out.omokMove(version, event)
+
+    assert(message.startsWith(prefix))
+    assertEquals(Json.parse(message.drop(prefix.length)), expectedPayloadJson)

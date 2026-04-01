@@ -80,6 +80,8 @@ final class Env(
 
   lazy val gameApiV2 = wire[GameApiV2]
 
+  private lazy val omokRoundRepo = roundEnv.omokRoundRepo
+
   lazy val roundApi = wire[RoundApi]
 
   lazy val lobbyApi = wire[LobbyApi]

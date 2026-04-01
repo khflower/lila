@@ -36,7 +36,8 @@ final private[api] class RoundApi(
     userApi: lila.user.UserApi,
     prefApi: lila.pref.PrefApi,
     getLightUser: lila.core.LightUser.GetterSync,
-    userLag: lila.socket.UserLagCache
+    userLag: lila.socket.UserLagCache,
+    omokRoundRepo: lila.round.OmokRoundRepo
 )(using Executor):
 
   def player(
@@ -66,6 +67,7 @@ final private[api] class RoundApi(
         .compose(withBookmark(bookmarked))
         .compose(withForecastCount(forecast.map(_.steps.size)))
         .compose(withOpponentSignal(pov))
+        .compose(withOmok(pov))
     )(json)
   }.mon(_.round.api.player)
 
@@ -94,6 +96,7 @@ final private[api] class RoundApi(
         .compose(withNote(note))
         .compose(withBookmark(bookmarked))
         .compose(withSteps(pov, initialFen))
+        .compose(withOmok(pov))
     )(json)
   }.mon(_.round.api.watcher)
 
@@ -224,6 +227,10 @@ final private[api] class RoundApi(
           Json.obj("key" -> key, "name" -> name, "count" -> count)
         }
     )
+
+  private def withOmok(pov: Pov)(json: JsObject) =
+    omokRoundRepo.get(pov.gameId).fold(json): state =>
+      json + ("omok" -> OmokAnalyseDto.fromPosition(state.position).asJson)
 
   // Reserve a stable namespace for future omok analyse boot data.
   private def withOmokAnalyse(json: JsObject) =

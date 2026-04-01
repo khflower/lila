@@ -109,8 +109,22 @@ final class RoundUi(helpers: Helpers, gameUi: lila.game.ui.GameUi):
       pref = ctx.pref
     )
 
-  def roundAppPreload(pov: Pov)(using Context): Tag =
-    div(cls := "round__app")(
-      div(cls := "round__app__board main-board")(povChessground(pov)),
-      div(cls := "col1-rmoves-preload")
-    )
+  def roundAppPreload(pov: Pov, isOmok: Boolean = false)(using Context): Tag =
+    if isOmok then
+      div(
+        cls := "round__app",
+        attr("data-board-game") := "omok",
+        attr("data-board-ready") := "placeholder"
+      )(
+        div(
+          cls := "round__app__board main-board",
+          attr("data-board-game") := "omok",
+          attr("data-board-ready") := "placeholder"
+        ),
+        div(cls := "col1-rmoves-preload")
+      )
+    else
+      div(cls := "round__app")(
+        div(cls := "round__app__board main-board")(povChessground(pov)),
+        div(cls := "col1-rmoves-preload")
+      )

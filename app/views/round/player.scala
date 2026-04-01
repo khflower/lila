@@ -16,6 +16,7 @@ def player(
     chatOption: Option[lila.chat.Chat.GameOrEvent],
     bookmarked: Boolean
 )(using ctx: Context) =
+  val isOmok = data.value.contains("omok")
 
   val chatJson = chatOption
     .map(_.either)
@@ -65,7 +66,7 @@ def player(
           side(pov, data, tour.map(_.tourAndTeamVs), simul, bookmarked = bookmarked),
           chatOption.map(_ => views.chat.frag)
         ),
-        ui.roundAppPreload(pov),
+        ui.roundAppPreload(pov, isOmok = isOmok),
         div(cls := "round__underboard")(
           views.game.ui.crosstable.option(cross, pov.game),
           (playing.nonEmpty || simul.exists(_.isHost(ctx.me))).option(
