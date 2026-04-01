@@ -221,7 +221,6 @@ final class RoundSocket(
 
   Bus.sub[lila.core.round.DeleteUnplayed]:
     case lila.core.round.DeleteUnplayed(gameId) =>
-      cleanupOmokRound(gameId)
       finishRound(gameId)
 
   Bus.subscribeFunDyn(BusChan.round.chan, BusChan.global.chan):

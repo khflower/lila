@@ -184,6 +184,8 @@ final class Env(
 
   lazy val omokMovePlayer = wire[OmokMovePlayer]
 
+  wire[OmokRoundLifecycleCleanup]
+
   lila.common.Cli.handle(OmokCli.handler(omokDemoSeed))
 
   private lazy val takebacker = wire[Takebacker]

@@ -24,8 +24,8 @@ Focus here is limited to:
 - `ui/round/src/socket.ts` forwards `omokMove`, but `ui/round/src/interfaces.ts` and `ui/round/src/ctrl.ts` still expect a flatter `ApiOmokMove` shape, not the current `{ move, position }` envelope.
 - `ui/round/src/interfaces.ts` also types `omok.position.moves` as `string[]`, while the current omok DTO layer emits move objects.
 - `ui/round/src/round.ts` still boots `RoundController` for omok pages, so reconnect and reload still pass through the chess-oriented round runtime.
-- No current production hook removes `OmokRoundRepo` entries on `FinishGame`, abort, round termination, or `RoundAsyncActor.Stop`; `DeleteUnplayed` already clears state through `RoundSocket`.
-- `modules/round/src/main/Titivate.scala` still deletes stale unplayed games and chat state, while `modules/round/src/main/RoundSocket.scala` already clears `OmokRoundRepo` on the `DeleteUnplayed` bus path.
+- `modules/round/src/main/OmokRoundLifecycleCleanup.scala` is now the authoritative cleanup owner for terminal `FinishGame` and `DeleteUnplayed` bus events, and cleanup remains idempotent because repo removal is a plain `TrieMap.remove`.
+- `modules/round/src/main/Titivate.scala` still deletes stale unplayed games and chat state, while `modules/round/src/main/RoundSocket.scala` now only terminates the async actor on `DeleteUnplayed`.
 
 ## Main Integrity Risks
 
@@ -97,10 +97,10 @@ Exit condition:
 
 ### 4. Assign one cleanup owner and make cleanup idempotent
 
-- [ ] Pick one primary cleanup owner for `OmokRoundRepo` removal.
-- [ ] Cover game finish paths triggered by `Finisher`.
-- [ ] Cover user abort and forced abort paths.
-- [ ] Cover delete-unplayed cleanup from `Titivate` / `DeleteUnplayed`.
+- [x] Pick one primary cleanup owner for `OmokRoundRepo` removal.
+- [x] Cover game finish paths triggered by `Finisher`.
+- [x] Cover user abort and forced abort paths.
+- [x] Cover delete-unplayed cleanup from `Titivate` / `DeleteUnplayed`.
 - [ ] Cover round actor termination and `RoundAsyncActor.Stop`.
 - [ ] Cover shutdown-time teardown if omok state can still be seeded when `LilaStop` runs.
 - [ ] Make repeated cleanup safe so finish + stop or delete + stop do not race into inconsistent behavior.
@@ -126,7 +126,8 @@ If the next implementation wave keeps the current branch structure, these are th
 - `modules/api/src/main/RoundApi.scala` for read-only `data.omok` exposure.
 - `modules/round/src/main/OmokMovePlayer.scala` for preventing implicit `getOrInit(...)` from becoming the production seed path by accident.
 - `modules/round/src/main/RoundAsyncActor.scala` for `HumanPlace`, `Stop`, and shutdown behavior.
-- `modules/round/src/main/RoundSocket.scala` for round termination and existing bus subscriptions.
+- `modules/round/src/main/OmokRoundLifecycleCleanup.scala` for authoritative terminal and delete-unplayed cleanup ownership.
+- `modules/round/src/main/RoundSocket.scala` for round termination and orphan recovery when a game lookup already failed.
 - `modules/round/src/main/Finisher.scala` for generic terminal game completion.
 - `modules/round/src/main/Titivate.scala` for delete-unplayed cleanup.
 
