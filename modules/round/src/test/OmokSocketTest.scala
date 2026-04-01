@@ -76,3 +76,23 @@ class OmokSocketTest extends munit.FunSuite:
 
     assert(message.startsWith(prefix))
     assertEquals(Json.parse(message.drop(prefix.length)), expectedPayloadJson)
+
+  test("live place path keeps the frontend redraw payload contract stable after a rejected move"):
+    val repo = OmokRoundRepo()
+    val player = OmokMovePlayer(repo)
+    val gameId = GameId("livepath")
+    val version = SocketVersion(42)
+    val prefix = s"r/ver $gameId $version - ${OmokEvent.moveType} "
+
+    player.place(PlaceRequest(gameId, pos(7, 7))).toOption.get
+    player.place(PlaceRequest(gameId, pos(0, 0))).toOption.get
+    val rejected = player.place(PlaceRequest(gameId, pos(0, 0))).left.toOption.get
+    val accepted = player.place(PlaceRequest(gameId, pos(7, 8))).toOption.get
+
+    assertEquals(rejected.message, s"[omok] $gameId cannot place A1: occupied")
+    assertEquals(Json.toJson(accepted.payload).as[JsObject], expectedPayloadJson)
+
+    val message = RoundSocket.Protocol.Out.omokMove(version, accepted.event)
+
+    assert(message.startsWith(prefix))
+    assertEquals(Json.parse(message.drop(prefix.length)), expectedPayloadJson)
