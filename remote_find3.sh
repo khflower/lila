@@ -1,0 +1,2 @@
+cd /kh_code/lila || exit 1
+find modules/round app modules -type f -name '*.scala' -print | xargs grep -n "startFromInput\|startNew\|parseRuleSet\|RuleSet.Freestyle" | grep -E "Omok|omok|RuleSet" | head -n 160

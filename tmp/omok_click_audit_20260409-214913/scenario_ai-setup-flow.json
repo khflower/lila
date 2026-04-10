@@ -1,0 +1,17 @@
+{
+  "scenario": "ai-setup-flow",
+  "status": "fail",
+  "startTime": "2026-04-09T12:52:05.944Z",
+  "endTime": "2026-04-09T12:52:28.931Z",
+  "finalUrl": "http://localhost:9663/",
+  "failureReason": "page.waitForURL: Timeout 20000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+  "actionTrace": [
+    "open ai modal",
+    "set rule freestyle",
+    "set engine inputs threads=2 moveTime=700 depth=6 nodes=0",
+    "toggle time mode Real time",
+    "toggle side Black",
+    "start AI game"
+  ],
+  "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-214913\\scenario_ai-setup-flow.png"
+}

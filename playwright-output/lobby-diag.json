@@ -1,0 +1,277 @@
+{
+  "ok": true,
+  "baseUrl": "http://127.0.0.1:9663",
+  "hookButtonState": {
+    "text": "Create omok room",
+    "className": "button button-metal lobby__start__button lobby__start__button--hook",
+    "disabled": false,
+    "ariaDisabled": "false"
+  },
+  "modalVisible": 1,
+  "beforeButtons": [
+    {
+      "text": "Accessibility - Enable blind mode",
+      "className": "",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "",
+      "className": "toggle anon link",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Quick pairing",
+      "className": "active",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Lobby",
+      "className": "",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Correspondence",
+      "className": "",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Create omok room",
+      "className": "button button-metal lobby__start__button lobby__start__button--hook",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "",
+      "className": "button button-metal lobby__start__button lobby__start__button--opening-guide",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "Solo board",
+      "className": "button button-metal lobby__start__button lobby__start__button--solo",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "Invite a player",
+      "className": "button button-metal lobby__start__button lobby__start__button--friend",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "Play against Rapfi AI",
+      "className": "button button-metal lobby__start__button lobby__start__button--ai",
+      "disabled": false,
+      "ariaDisabled": "false"
+    }
+  ],
+  "afterButtons": [
+    {
+      "text": "Accessibility - Enable blind mode",
+      "className": "",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "",
+      "className": "toggle anon link",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Quick pairing",
+      "className": "active",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Lobby",
+      "className": "",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Correspondence",
+      "className": "",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Create omok room",
+      "className": "button button-metal lobby__start__button lobby__start__button--hook active",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "",
+      "className": "button button-metal lobby__start__button lobby__start__button--opening-guide",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "Solo board",
+      "className": "button button-metal lobby__start__button lobby__start__button--solo",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "Invite a player",
+      "className": "button button-metal lobby__start__button lobby__start__button--friend",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "Play against Rapfi AI",
+      "className": "button button-metal lobby__start__button lobby__start__button--ai",
+      "disabled": false,
+      "ariaDisabled": "false"
+    },
+    {
+      "text": "",
+      "className": "close-button",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "1+0",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "2+1",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "3+0",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "3+2",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "5+0",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "5+3",
+      "className": "preset-btn active",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "10+0",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "10+5",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "15+10",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "30+0",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "30+20",
+      "className": "preset-btn",
+      "disabled": false,
+      "ariaDisabled": null
+    },
+    {
+      "text": "Create omok room",
+      "className": "button button-metal lobby__start__button lobby__start__button--hook",
+      "disabled": false,
+      "ariaDisabled": null
+    }
+  ],
+  "consoleEvents": [
+    {
+      "type": "error",
+      "text": "WebSocket connection to 'ws://localhost:9663/lobby/socket/v5?sri=epJDjI0D2pU8&from=website' failed: Connection closed before receiving a handshake response"
+    },
+    {
+      "type": "debug",
+      "text": "error: [object Event] {\"isTrusted\":true}"
+    },
+    {
+      "type": "debug",
+      "text": "Will autoreconnect in 3500"
+    },
+    {
+      "type": "info",
+      "text": "Lichess is open source! See https://lichess.org/source"
+    },
+    {
+      "type": "error",
+      "text": "WebSocket connection to 'ws://localhost:9663/socket/v5?sri=epJDjI0D2pU8&from=website' failed: Connection closed before receiving a handshake response"
+    },
+    {
+      "type": "debug",
+      "text": "error: [object Event] {\"isTrusted\":true}"
+    },
+    {
+      "type": "debug",
+      "text": "Will autoreconnect in 3500"
+    },
+    {
+      "type": "debug",
+      "text": "Disconnect"
+    },
+    {
+      "type": "debug",
+      "text": "connection attempt to ws://localhost:9663/lobby/socket/v5?sri=epJDjI0D2pU8&from=website"
+    },
+    {
+      "type": "error",
+      "text": "WebSocket connection to 'ws://localhost:9663/lobby/socket/v5?sri=epJDjI0D2pU8&from=website' failed: Connection closed before receiving a handshake response"
+    },
+    {
+      "type": "debug",
+      "text": "error: [object Event] {\"isTrusted\":true}"
+    },
+    {
+      "type": "debug",
+      "text": "Will autoreconnect in 3500"
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://localhost:9663/assets/hashed/brown.d4a5fe34.png was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "responses": [
+    {
+      "url": "http://localhost:9663/assets/compiled/lobby.2AYZ3VJ7.js",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "bodyHtmlSnippet": "<form id=\"blind-mode\" action=\"/run/toggle-blind-mode\" method=\"POST\"><input type=\"hidden\" name=\"enable\" value=\"1\" style=\"\"><input type=\"hidden\" name=\"redirect\" value=\"/\" style=\"\"><button id=\"nvui-button\" type=\"submit\">Accessibility - Enable blind mode</button></form><header id=\"top\"><div class=\"site-title-nav\"><input type=\"checkbox\" id=\"tn-tg\" class=\"topnav-toggle fullscreen-toggle\" autocomplete=\"off\" aria-label=\"Navigation\" style=\"\"><label for=\"tn-tg\" class=\"fullscreen-mask\"></label><label for=\"tn-tg\" class=\"hbg\"><span class=\"hbg__in\"></span></label><a class=\"site-title\" href=\"/\"><div class=\"site-icon site-icon--omok\"><svg viewBox=\"0 0 64 64\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#d7b36a\"></rect><circle cx=\"24\" cy=\"24\" r=\"12\" fill=\"#111111\"></circle><circle cx=\"40\" cy=\"40\" r=\"12\" fill=\"#ffffff\" stroke=\"#6b4a1f\" stroke-width=\"3\"></circle></svg></div><div class=\"site-name\">Omok<span>.dev</span></div></a><nav id=\"topnav\" class=\"hover\"><section><a href=\"/\"><span class=\"play\">Play</span><span class=\"home\">Omok.dev</span></a><div role=\"group\"><a href=\"/?any#hook\">Create omok room</a><a href=\"/?any#friend\">Invite a player</a><a href=\"/?any#ai\">Play against Rapfi AI</a><a href=\"/dev/omok/opening-guide\">Opening guide</a></div></section></nav></div><div class=\"site-buttons\"><div id=\"warn-no-autoplay\"><a data-icon=\"\" target=\"_blank\" href=\"/faq#autoplay\"></a></div><div class=\"signin-or-signup\"><a href=\"/login?referrer=/\" class=\"button button-empty signin\">Sign in</a><a href=\"/signup\" class=\"button signup\">Register</a></div><div class=\"dasher\"><button class=\"toggle anon link\" title=\"Preferences\" aria-label=\"Preferences\" data-icon=\"\"></button><div id=\"dasher_app\" class=\"dropdown\"></div></div></div></header><div id=\"main-wrap\" class=\"is2d\"><main class=\"lobby\"><div class=\"lobby__side\"><div class=\"about-side\"><p>Omok.dev is a free, open source omok service focused on real-time play, browser-side AI, and opening study.</p><a class=\"blue\" href=\"/source\">Source Code</a><br><a class=\"button button-empty\" href=\"/dev/omok/opening-guide\">Open the opening guide</a><a class=\"button button-empty\" href=\"/omok/solo\">Open the solo board</a></div></div><div class=\"lobby__app lobby__app-pools lck-pools\"><div class=\"tabs-horiz\" role=\"tablist\"><button class=\"active\" role=\"tab\">Quick pairing</button><button role=\"tab\">Lobby</button><button role=\"tab\">Correspondence</button></div><div class=\"lobby__app__content lpools\"><div class=\"lpool\" role=\"button\" data-id=\"1+0\" tabindex=\"0\"><div class=\"clock\">1+0</div><div class=\"perf\">Bullet</div></div><div class=\"lpool\" role=\"button\" data-id=\"2+1\" tabindex=\"0\"><div class=\"clock\">2+1</div><div class=\"perf\">Bullet</div></div><div class=\"lpool\" role=\"button\" data-id=\"3+0\" tabindex=\"0\"><div class=\"clock\">3+0</div><div class=\"perf\">Blitz</div></div><div class=\"lpool\" role=\"button\" data-id=\"3+2\" tabindex=\"0\"><div class=\"clock\">3+2</div><div class=\"perf\">Blitz</div></div><div class=\"lpool\" role=\"button\" data-id=\"5+0\" tabindex=\"0\"><div class=\"clock\">5+0</div><div class=\"perf\">Blitz</div></div><div class=\"lpool\" role=\"button\" data-id=\"5+3\" tabindex=\"0\"><div class=\"clock\">5+3</div><div class=\"perf\">Blitz</div></div><div class=\"lpool\" role=\"button\" data-id=\"10+0\" tabindex=\"0\"><div class=\"clock\">10+0</div><div class=\"perf\">Rapid</div></div><div class=\"lpool\" role=\"button\" data-id=\"10+5\" tabindex=\"0\"><div class=\"clock\">10+5</div><div class=\"perf\">Rapid</div></div><div class=\"lpool\" role=\"button\" data-id=\"15+10\" tabindex=\"0\"><div class=\"clock\">15+10</div><div class=\"perf\">Rapid</div></div><div class=\"lpool\" role=\"button\" data-id=\"30+0\" tabindex=\"0\"><div class=\"clock\">30+0</div><div class=\"perf\">Classical</div></div><div class=\"lpool\" role=\"button\" data-id=\"30+20\" tabindex=\"0\"><div class=\"clock\">30+20</div><div class=\"perf\">Classical</div></div><div class=\"lpool\" role=\"button\" data-id=\"custom\" tabindex=\"0\">Custom</div></div></div><div class=\"lobby__table\"><div class=\"lobby__start\"><but"
+}

@@ -1,0 +1,28 @@
+{
+  "hostButtons0": [
+    "Accessibility - Enable blind mode",
+    "Chat room",
+    "Swap",
+    "Propose 10",
+    "Analyse with Rapfi"
+  ],
+  "guestButtons0": [
+    "Accessibility - Enable blind mode",
+    "Chat room",
+    "Analyse with Rapfi"
+  ],
+  "hostButtons1": [
+    "Accessibility - Enable blind mode",
+    "Chat room",
+    "Analyse with Rapfi"
+  ],
+  "guestButtons1": [
+    "Accessibility - Enable blind mode",
+    "Chat room",
+    "Analyse with Rapfi"
+  ],
+  "hostOpening": "Black proposes 10 fifth-move candidates (0/10).",
+  "guestOpening": "Black proposes 10 fifth-move candidates (0/10).",
+  "hostHtml": "<div class=\"round__app__board__omok-placeholder__opening\"><span class=\"round__app__board__omok-placeholder__opening-text\">Black proposes 10 fifth-move candidates (0/10).</span></div>",
+  "guestHtml": "<div class=\"round__app__board__omok-placeholder__opening\"><span class=\"round__app__board__omok-placeholder__opening-text\">Black proposes 10 fifth-move candidates (0/10).</span></div>"
+}

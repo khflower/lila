@@ -1,0 +1,10 @@
+{
+  "scenario": "auth-terms-flow",
+  "status": "fail",
+  "startTime": "2026-04-09T12:04:22.244Z",
+  "endTime": "2026-04-09T12:04:23.669Z",
+  "finalUrl": "http://localhost:9663/signup",
+  "failureReason": "locator.click: Error: strict mode violation: getByRole('link', { name: 'Terms of Service' }) resolved to 2 elements:\n    1) <a href=\"/terms-of-service\">Terms of Service</a> aka getByRole('link', { name: 'Terms of Service' }).first()\n    2) <a href=\"/terms-of-service\">Terms of Service</a> aka getByRole('link', { name: 'Terms of Service' }).nth(1)\n\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Terms of Service' })\u001b[22m\n",
+  "actionTrace": [],
+  "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-210158\\scenario_auth-terms-flow.png"
+}

@@ -1,0 +1,278 @@
+{
+  "home": {
+    "url": "http://localhost:9663/",
+    "title": "Omok.dev",
+    "buttons": [
+      {
+        "text": "Accessibility - Enable blind mode",
+        "className": "",
+        "disabled": false
+      },
+      {
+        "text": "Quick pairing",
+        "className": "active",
+        "disabled": false
+      },
+      {
+        "text": "Lobby",
+        "className": "",
+        "disabled": false
+      },
+      {
+        "text": "Correspondence",
+        "className": "",
+        "disabled": false
+      },
+      {
+        "text": "1+0Bullet",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "2+1Bullet",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "3+0Blitz",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "3+2Blitz",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "5+0Blitz",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "5+3Blitz",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "10+0Rapid",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "10+5Rapid",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "15+10Rapid",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "30+0Classical",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "30+20Classical",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "Custom",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "Create omok room",
+        "className": "button button-metal lobby__start__button lobby__start__button--hook",
+        "disabled": false
+      },
+      {
+        "text": "Solo board",
+        "className": "button button-metal lobby__start__button lobby__start__button--solo",
+        "disabled": false
+      },
+      {
+        "text": "Invite a player",
+        "className": "button button-metal lobby__start__button lobby__start__button--friend",
+        "disabled": false
+      },
+      {
+        "text": "Play against Rapfi AI",
+        "className": "button button-metal lobby__start__button lobby__start__button--ai",
+        "disabled": false
+      }
+    ],
+    "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\home.png"
+  },
+  "homeKo": {
+    "url": "http://localhost:9663/ko",
+    "title": "Omok.dev",
+    "buttons": [
+      {
+        "text": "접근성 - 시각장애 모드 활성화하기",
+        "className": "",
+        "disabled": false
+      },
+      {
+        "text": "빠른 상대 찾기",
+        "className": "active",
+        "disabled": false
+      },
+      {
+        "text": "로비",
+        "className": "",
+        "disabled": false
+      },
+      {
+        "text": "통신 대국",
+        "className": "",
+        "disabled": false
+      },
+      {
+        "text": "1+0불릿",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "2+1불릿",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "3+0블리츠",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "3+2블리츠",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "5+0블리츠",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "5+3블리츠",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "10+0래피드",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "10+5래피드",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "15+10래피드",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "30+0클래시컬",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "30+20클래시컬",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "사용자 지정",
+        "className": "lpool",
+        "disabled": false
+      },
+      {
+        "text": "Create omok room",
+        "className": "button button-metal lobby__start__button lobby__start__button--hook",
+        "disabled": false
+      },
+      {
+        "text": "Solo board",
+        "className": "button button-metal lobby__start__button lobby__start__button--solo",
+        "disabled": false
+      },
+      {
+        "text": "Invite a player",
+        "className": "button button-metal lobby__start__button lobby__start__button--friend",
+        "disabled": false
+      },
+      {
+        "text": "Play against Rapfi AI",
+        "className": "button button-metal lobby__start__button lobby__start__button--ai",
+        "disabled": false
+      }
+    ],
+    "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\home_ko.png"
+  },
+  "lobbyCreate": {
+    "title": "Omok.dev",
+    "url": "http://localhost:9663/",
+    "bodyText": "Accessibility - Enable blind mode\nOmok.dev\nPLAY\nSIGN IN\nREGISTER\n\nOmok.dev is a free, open source omok service focused on real-time play, browser-side AI, and opening study.\n\nSource Code\nOPEN THE OPENING GUIDEOPEN THE SOLO BOARD\nQuick pairing\nLobby\nCorrespondence\n\tTime\tMode\nAnonymous\t5+3\tCasual\nCreate omok room\nSolo board\nInvite a player\nPlay against Rapfi AI\n2 player\n0 games in play\nOpening guide\nSolo board\nTerms of Service\nPrivacy\nSource Code",
+    "hooksText": "Quick pairing\nLobby\nCorrespondence\n\tTime\tMode\nAnonymous\t5+3\tCasual",
+    "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\lobby_room_created.png"
+  },
+  "friendInvite": {
+    "hostWaitUrl": "http://localhost:9663/omok/friend/HSGvwkpj?host=LngqRwcFws0O",
+    "hostWaitTitle": "Invite a player - Omok.dev",
+    "hostWaitShot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\friend_host_wait.png",
+    "guestWaitUrl": "http://localhost:9663/omok/friend/HSGvwkpj",
+    "guestWaitTitle": "Invite a player - Omok.dev",
+    "guestWaitShot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\friend_guest_wait.png",
+    "hostGameUrl": "http://localhost:9663/UgipDxCSILLg",
+    "guestGameUrl": "http://localhost:9663/UgipDxCSkI3A",
+    "sameGameId": true,
+    "hostGameShot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\friend_host_game.png",
+    "guestGameShot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\friend_guest_game.png",
+    "hostHasOmok": 1,
+    "guestHasOmok": 1,
+    "hostTitle": "Waiting for White - Omok.dev - Omok.dev",
+    "guestTitle": "Your turn - Omok.dev - Omok.dev"
+  },
+  "aiLayout": {
+    "url": "http://localhost:9663/9fJa6ucZo6sC",
+    "title": "Your turn - Rapfi AI - Omok.dev",
+    "layout": {
+      "boardRect": {
+        "x": 401.3125,
+        "y": 106.09375,
+        "width": 807.359375,
+        "height": 807.359375,
+        "top": 106.09375,
+        "right": 1208.671875,
+        "bottom": 913.453125,
+        "left": 401.3125
+      },
+      "stateRect": {
+        "x": 1263.265625,
+        "y": 370.671875,
+        "width": 320.734375,
+        "height": 278.1875,
+        "top": 370.671875,
+        "right": 1584,
+        "bottom": 648.859375,
+        "left": 1263.265625
+      },
+      "overlap": false,
+      "rightPanelText": "Rapfi AI",
+      "opponentText": "Rapfi AI"
+    },
+    "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\ai_round_layout.png"
+  },
+  "soloBoard": {
+    "title": "Solo board - Omok.dev",
+    "url": "http://localhost:9663/omok/solo",
+    "afterMoves": "Move sequence\n1. H8\nBlack\n2. H9\nWhite\n3. I9\nBlack",
+    "afterUndo": "Move sequence\n1. H8\nBlack\n2. H9\nWhite",
+    "afterReset": "Move sequence\nPlace a stone anywhere on the board to begin.",
+    "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_recovery_check_20260409-231439\\solo_board.png"
+  }
+}

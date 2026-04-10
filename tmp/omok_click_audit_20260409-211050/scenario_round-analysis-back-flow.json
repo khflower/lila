@@ -1,0 +1,10 @@
+{
+  "scenario": "round-analysis-back-flow",
+  "status": "fail",
+  "startTime": "2026-04-09T12:13:06.865Z",
+  "endTime": "2026-04-09T12:13:18.364Z",
+  "finalUrl": "http://localhost:9663/nSR55zFblng6",
+  "failureReason": "locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: /Review|Analysis/i }).first()\u001b[22m\n",
+  "actionTrace": [],
+  "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-211050\\scenario_round-analysis-back-flow.png"
+}

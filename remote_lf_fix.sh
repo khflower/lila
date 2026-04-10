@@ -1,0 +1,5 @@
+cd /kh_code/lila || exit 1
+files='app/Env.scala modules/omok/src/main/core.scala modules/omok/src/main/bridge.scala modules/omok/src/main/coreApi.scala modules/game/src/main/OmokGameSidecar.scala modules/round/src/main/OmokRoundRepo.scala modules/round/src/main/OmokStoredState.scala modules/round/src/main/OmokMovePlayer.scala modules/round/src/main/OmokEvent.scala modules/round/src/main/RoundAsyncActor.scala modules/round/src/main/RoundSocket.scala modules/round/src/main/actorApi.scala modules/round/src/main/OmokStartScaffold.scala modules/round/src/main/OmokDemoSeed.scala modules/round/src/main/Rematcher.scala modules/api/src/main/RoundApi.scala modules/setup/src/main/HookConfig.scala ui/lobby/src/interfaces.ts ui/lobby/src/setupCtrl.ts ui/lobby/src/view/setup/modal.ts ui/round/src/interfaces.ts ui/round/src/ctrl.ts ui/round/src/view/omokPlaceholder.ts modules/round/src/test/OmokTaraguchiOpeningTest.scala'
+for f in $files; do perl -0pi -e 's/\r\n/\n/g; s/^\x{FEFF}//' "$f"; done
+cd /tmp/lila-ws-scan || exit 1
+perl -0pi -e 's/\r\n/\n/g; s/^\x{FEFF}//' src/main/scala/ipc/ClientOut.scala

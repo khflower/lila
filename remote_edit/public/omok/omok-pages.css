@@ -1,0 +1,141 @@
+.omok-page__shell {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.omok-page__hero {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.omok-page__lead {
+  margin: 0;
+  color: var(--c-font-dim);
+  line-height: 1.6;
+}
+
+.omok-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.omok-page__actions--inline {
+  margin-top: 0.75rem;
+}
+
+.omok-page__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.omok-page__stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.omok-page__card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  background: rgba(32, 28, 23, 0.72);
+  display: grid;
+  gap: 0.6rem;
+}
+
+.omok-page__card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.omok-page__card p,
+.omok-page__card ul,
+.omok-page__card ol {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.omok-page__card ul,
+.omok-page__card ol {
+  padding-left: 1.1rem;
+}
+
+.omok-page__kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.35rem 0;
+}
+
+.omok-page__kv:last-child {
+  border-bottom: 0;
+}
+
+.omok-page__moves {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.omok-page__moves td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.omok-page__share {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.omok-page__mono {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(14, 12, 10, 0.82);
+  color: #efe2c7;
+  font: inherit;
+}
+
+.omok-page__status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(144, 97, 28, 0.18);
+  color: #f2d39f;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.omok-page__status-pill.is-ready {
+  background: rgba(43, 115, 64, 0.22);
+  color: #cbefcf;
+}
+
+.omok-page__status-pill.is-starting {
+  background: rgba(63, 84, 138, 0.22);
+  color: #c9dafb;
+}
+
+.omok-page__hint {
+  color: var(--c-font-dim);
+  line-height: 1.45;
+}
+
+.omok-page__history {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.omok-embed-fallback {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(32, 28, 23, 0.92);
+  color: #f4efe7;
+}

@@ -1,0 +1,134 @@
+﻿/* shared with analysis */
+.game__meta {
+  @extend %box-neat-force;
+
+  background: $c-bg-box;
+  padding: 1.5em;
+
+  section:not(:last-child) {
+    border-bottom: $border;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.8rem;
+  }
+
+  &__infos {
+    @extend %flex-center-nowrap;
+
+    position: relative;
+
+    /* for bookmark */
+    &::before {
+      font-size: 3rem;
+      margin-inline-end: 4%;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    time {
+      opacity: 1;
+    }
+
+    form.delete button {
+      color: $c-bad;
+    }
+  }
+
+  .status {
+    text-align: center;
+  }
+
+  &__players {
+    margin-top: 0.3rem;
+    font-size: 90%;
+
+    abbr {
+      text-decoration: none;
+      color: $m-primary_font--mix-50;
+    }
+  }
+
+  .bookmark {
+    @include inline-end(0);
+
+    position: absolute;
+    z-index: $z-game-bookmark-2;
+    color: $c-font-dim;
+
+    &:not(.bookmarked) .on,
+    &.bookmarked .off {
+      display: none;
+    }
+  }
+
+  .user-tv {
+    @extend %nowrap-ellipsis;
+
+    font-size: 1.2em;
+  }
+}
+
+.game__tournament {
+  .clock {
+    @extend %roboto;
+
+    font-size: 2em;
+    text-align: center;
+    margin-top: 0.2em;
+  }
+}
+
+body.omok-dev-round {
+  .game__meta {
+    &__infos {
+      align-items: flex-start;
+      gap: 0.85rem;
+
+      &::before {
+        display: none;
+      }
+
+      .bookmark {
+        display: none !important;
+      }
+
+      .header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 0.75rem;
+        min-width: 0;
+      }
+
+      .setup {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem;
+        min-width: 0;
+      }
+
+      time {
+        margin: 0;
+        white-space: nowrap;
+      }
+    }
+
+    &__players {
+      margin-top: 0.75rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+  }
+}
+
+@media (hover: hover) {
+  .game__meta .bookmark {
+    display: none;
+  }
+
+  .game__meta:hover .bookmark {
+    display: block;
+  }
+}

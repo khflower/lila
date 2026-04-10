@@ -1,0 +1,22 @@
+{
+  "startTime": "2026-04-08T03:12:23.420Z",
+  "baseUrl": "http://localhost:9663",
+  "steps": [
+    {
+      "at": "2026-04-08T03:12:23.460Z",
+      "step": "probe-base",
+      "ok": false,
+      "status": 0,
+      "error": "fetch failed"
+    },
+    {
+      "at": "2026-04-08T03:12:23.461Z",
+      "step": "probe-upstream",
+      "app": false,
+      "ws": false
+    }
+  ],
+  "status": "failed",
+  "failureReason": "Local SSH tunnel appears down. Expected forwarded ports 19663/19664 to accept connections.",
+  "endTime": "2026-04-08T03:12:23.461Z"
+}

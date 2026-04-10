@@ -1,0 +1,4527 @@
+{
+  "startedAt": "2026-04-09T09:24:54.527Z",
+  "baseUrl": "http://localhost:9663",
+  "pages": [
+    {
+      "url": "http://localhost:9663/",
+      "finalUrl": "http://localhost:9663/",
+      "label": "home",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok.dev - Free Online Omok",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "is",
+        "a",
+        "free,",
+        "open",
+        "source",
+        "omok",
+        "service",
+        "focused",
+        "on",
+        "real-time",
+        "play,",
+        "browser-side",
+        "AI,",
+        "and",
+        "opening",
+        "study.",
+        "Source",
+        "Code",
+        "OPEN",
+        "THE",
+        "OPENING",
+        "GUIDE",
+        "Quick",
+        "pairing",
+        "Lobby",
+        "Correspondence",
+        "1+0",
+        "Bullet",
+        "2+1",
+        "Bullet",
+        "3+0",
+        "Blitz",
+        "3+2",
+        "Blitz",
+        "5+0",
+        "Blitz",
+        "5+3",
+        "Blitz",
+        "10+0",
+        "Rapid",
+        "10+5",
+        "Rapid",
+        "15+10",
+        "Rapid",
+        "30+0",
+        "Classical",
+        "30+20",
+        "Classical",
+        "Custom",
+        "Create",
+        "omok",
+        "room",
+        "Invite",
+        "a",
+        "player",
+        "Play",
+        "against",
+        "Rapfi",
+        "AI",
+        "0",
+        "players",
+        "0",
+        "games",
+        "in",
+        "play",
+        "Opening",
+        "guide",
+        "Terms",
+        "of",
+        "Service",
+        "Privacy",
+        "Source",
+        "Code"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Source Code",
+          "href": "http://localhost:9663/source",
+          "cls": "blue"
+        },
+        {
+          "text": "Open the opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "0 players",
+          "href": "http://localhost:9663/player",
+          "cls": ""
+        },
+        {
+          "text": "0 games in play",
+          "href": "http://localhost:9663/games",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "Terms of Service",
+          "href": "http://localhost:9663/terms-of-service",
+          "cls": ""
+        },
+        {
+          "text": "Privacy",
+          "href": "http://localhost:9663/privacy",
+          "cls": ""
+        },
+        {
+          "text": "Source Code",
+          "href": "http://localhost:9663/source",
+          "cls": ""
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Quick pairing",
+          "cls": "active",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Lobby",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Correspondence",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "1+0Bullet",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "2+1Bullet",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "3+0Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "3+2Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "5+0Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "5+3Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "10+0Rapid",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "10+5Rapid",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "15+10Rapid",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "30+0Classical",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "30+20Classical",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "Custom",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "Create omok room",
+          "cls": "button button-metal lobby__start__button lobby__start__button--hook",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Invite a player",
+          "cls": "button button-metal lobby__start__button lobby__start__button--friend",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "cls": "button button-metal lobby__start__button lobby__start__button--ai",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\home.png"
+    },
+    {
+      "url": "http://localhost:9663/player",
+      "finalUrl": "http://localhost:9663/player",
+      "label": "players",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok players - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "players",
+        "Open",
+        "player-related",
+        "links",
+        "without",
+        "leaving",
+        "the",
+        "Omok.dev",
+        "experience.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Current",
+        "section",
+        "You",
+        "are",
+        "viewing:",
+        "Leaderboards.",
+        "Use",
+        "this",
+        "hub",
+        "to",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "while",
+        "player-related",
+        "screens",
+        "are",
+        "being",
+        "rebuilt",
+        "for",
+        "omok-specific",
+        "play.",
+        "Quick",
+        "actions",
+        "Start",
+        "a",
+        "room,",
+        "invite",
+        "a",
+        "player,",
+        "or",
+        "launch",
+        "Rapfi",
+        "AI",
+        "without",
+        "leaving",
+        "the",
+        "omok",
+        "lobby.",
+        "CREATE",
+        "OMOK",
+        "ROOM",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "PLAY",
+        "AGAINST",
+        "RAPFI",
+        "AI"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/player",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\players.png"
+    },
+    {
+      "url": "http://localhost:9663/player/online",
+      "finalUrl": "http://localhost:9663/player/online",
+      "label": "players-online",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok players - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "players",
+        "Open",
+        "player-related",
+        "links",
+        "without",
+        "leaving",
+        "the",
+        "Omok.dev",
+        "experience.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Current",
+        "section",
+        "You",
+        "are",
+        "viewing:",
+        "Online",
+        "players.",
+        "Use",
+        "this",
+        "hub",
+        "to",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "while",
+        "player-related",
+        "screens",
+        "are",
+        "being",
+        "rebuilt",
+        "for",
+        "omok-specific",
+        "play.",
+        "Quick",
+        "actions",
+        "Start",
+        "a",
+        "room,",
+        "invite",
+        "a",
+        "player,",
+        "or",
+        "launch",
+        "Rapfi",
+        "AI",
+        "without",
+        "leaving",
+        "the",
+        "omok",
+        "lobby.",
+        "CREATE",
+        "OMOK",
+        "ROOM",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "PLAY",
+        "AGAINST",
+        "RAPFI",
+        "AI"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/player/online",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\players-online.png"
+    },
+    {
+      "url": "http://localhost:9663/player/top/blitz",
+      "finalUrl": "http://localhost:9663/player/top/blitz",
+      "label": "players-top",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok players - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "players",
+        "Open",
+        "player-related",
+        "links",
+        "without",
+        "leaving",
+        "the",
+        "Omok.dev",
+        "experience.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Current",
+        "section",
+        "You",
+        "are",
+        "viewing:",
+        "Leaderboards.",
+        "Use",
+        "this",
+        "hub",
+        "to",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "while",
+        "player-related",
+        "screens",
+        "are",
+        "being",
+        "rebuilt",
+        "for",
+        "omok-specific",
+        "play.",
+        "Quick",
+        "actions",
+        "Start",
+        "a",
+        "room,",
+        "invite",
+        "a",
+        "player,",
+        "or",
+        "launch",
+        "Rapfi",
+        "AI",
+        "without",
+        "leaving",
+        "the",
+        "omok",
+        "lobby.",
+        "CREATE",
+        "OMOK",
+        "ROOM",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "PLAY",
+        "AGAINST",
+        "RAPFI",
+        "AI"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/player/top/blitz",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\players-top.png"
+    },
+    {
+      "url": "http://localhost:9663/games",
+      "finalUrl": "http://localhost:9663/games",
+      "label": "games",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok games - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "games",
+        "Open",
+        "live-game",
+        "related",
+        "links",
+        "without",
+        "jumping",
+        "into",
+        "legacy",
+        "game",
+        "pages.",
+        "Current",
+        "channel",
+        "request:",
+        "best.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Live",
+        "play",
+        "Open",
+        "live",
+        "omok",
+        "rooms",
+        "from",
+        "the",
+        "lobby.",
+        "Legacy",
+        "TV",
+        "pages",
+        "are",
+        "replaced",
+        "by",
+        "Omok.dev",
+        "room",
+        "and",
+        "game",
+        "flows.",
+        "CREATE",
+        "OMOK",
+        "ROOM",
+        "PLAY",
+        "Study",
+        "and",
+        "review",
+        "Use",
+        "the",
+        "opening",
+        "guide",
+        "for",
+        "structured",
+        "opening",
+        "study,",
+        "or",
+        "open",
+        "a",
+        "live",
+        "room",
+        "to",
+        "continue",
+        "play",
+        "and",
+        "rematches.",
+        "OPENING",
+        "GUIDE"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/games",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Play",
+          "href": "http://localhost:9663/",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\games.png"
+    },
+    {
+      "url": "http://localhost:9663/faq",
+      "finalUrl": "http://localhost:9663/faq",
+      "label": "faq",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok.dev FAQ - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "FAQ",
+        "Answers",
+        "for",
+        "Omok.dev",
+        "play,",
+        "correspondence,",
+        "autoplay,",
+        "rules,",
+        "and",
+        "browser-side",
+        "Rapfi",
+        "AI.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Autoplay",
+        "and",
+        "sound",
+        "If",
+        "your",
+        "browser",
+        "blocks",
+        "autoplay,",
+        "Omok.dev",
+        "shows",
+        "the",
+        "mute",
+        "warning",
+        "icon.",
+        "Click",
+        "it",
+        "to",
+        "open",
+        "this",
+        "help",
+        "page",
+        "and",
+        "review",
+        "your",
+        "browser",
+        "audio",
+        "settings.",
+        "Correspondence",
+        "Correspondence",
+        "on",
+        "Omok.dev",
+        "keeps",
+        "the",
+        "same",
+        "broad",
+        "idea:",
+        "turns",
+        "can",
+        "happen",
+        "over",
+        "a",
+        "long",
+        "time",
+        "instead",
+        "of",
+        "in",
+        "one",
+        "real-time",
+        "sitting.",
+        "You",
+        "can",
+        "think",
+        "before",
+        "each",
+        "move,",
+        "but",
+        "outside",
+        "engine",
+        "assistance",
+        "is",
+        "still",
+        "not",
+        "part",
+        "of",
+        "fair",
+        "play",
+        "unless",
+        "a",
+        "page",
+        "explicitly",
+        "says",
+        "it",
+        "is",
+        "a",
+        "study",
+        "tool.",
+        "Rule",
+        "sets",
+        "Omok.dev",
+        "currently",
+        "supports",
+        "Freestyle,",
+        "Renju,",
+        "and",
+        "Taraguchi-10",
+        "where",
+        "enabled.",
+        "Live",
+        "games",
+        "and",
+        "study",
+        "pages"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/faq",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\faq.png"
+    },
+    {
+      "url": "http://localhost:9663/terms-of-service",
+      "finalUrl": "http://localhost:9663/terms-of-service",
+      "label": "terms",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok.dev terms of service - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "terms",
+        "of",
+        "service",
+        "Use",
+        "Omok.dev",
+        "fairly,",
+        "respect",
+        "other",
+        "players,",
+        "and",
+        "do",
+        "not",
+        "use",
+        "automation",
+        "or",
+        "harassment",
+        "to",
+        "damage",
+        "play.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Fair",
+        "play",
+        "Do",
+        "not",
+        "use",
+        "hidden",
+        "assistance,",
+        "automation,",
+        "harassment,",
+        "or",
+        "abuse",
+        "to",
+        "spoil",
+        "live",
+        "omok",
+        "play.",
+        "Service",
+        "use",
+        "Respect",
+        "room",
+        "owners,",
+        "opponents,",
+        "and",
+        "shared",
+        "service",
+        "resources.",
+        "Public",
+        "rooms,",
+        "chat,",
+        "and",
+        "AI",
+        "tools",
+        "should",
+        "be",
+        "used",
+        "in",
+        "good",
+        "faith."
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/terms-of-service",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\terms.png"
+    },
+    {
+      "url": "http://localhost:9663/privacy",
+      "finalUrl": "http://localhost:9663/privacy",
+      "label": "privacy",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok.dev privacy - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "privacy",
+        "Omok.dev",
+        "stores",
+        "the",
+        "minimum",
+        "session",
+        "and",
+        "game",
+        "data",
+        "needed",
+        "to",
+        "run",
+        "rooms,",
+        "turns,",
+        "and",
+        "browser-side",
+        "features.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "What",
+        "is",
+        "stored",
+        "Omok.dev",
+        "stores",
+        "the",
+        "minimum",
+        "session,",
+        "room,",
+        "and",
+        "game",
+        "state",
+        "needed",
+        "to",
+        "run",
+        "live",
+        "play,",
+        "rematches,",
+        "and",
+        "browser-side",
+        "features.",
+        "Browser-side",
+        "features",
+        "Rapfi",
+        "AI",
+        "and",
+        "opening",
+        "guide",
+        "work",
+        "can",
+        "run",
+        "in",
+        "your",
+        "browser.",
+        "That",
+        "reduces",
+        "server-side",
+        "analysis",
+        "load",
+        "and",
+        "keeps",
+        "most",
+        "calculation",
+        "on",
+        "your",
+        "device."
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/privacy",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\privacy.png"
+    },
+    {
+      "url": "http://localhost:9663/source",
+      "finalUrl": "http://localhost:9663/source",
+      "label": "source",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok.dev source - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "source",
+        "This",
+        "Omok.dev",
+        "build",
+        "adds",
+        "omok",
+        "rules,",
+        "browser-side",
+        "Rapfi",
+        "AI,",
+        "and",
+        "opening",
+        "study",
+        "pages",
+        "on",
+        "top",
+        "of",
+        "the",
+        "base",
+        "service",
+        "shell.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "What",
+        "changed",
+        "Live",
+        "omok",
+        "rooms",
+        "and",
+        "rematches",
+        "Renju,",
+        "Freestyle,",
+        "and",
+        "Taraguchi",
+        "support",
+        "Browser-side",
+        "Rapfi",
+        "AI",
+        "Workbook-backed",
+        "opening",
+        "guide",
+        "Current",
+        "state",
+        "This",
+        "source",
+        "page",
+        "replaces",
+        "the",
+        "old",
+        "broken",
+        "CMS",
+        "route",
+        "and",
+        "keeps",
+        "Omok.dev",
+        "users",
+        "inside",
+        "the",
+        "omok",
+        "service",
+        "shell."
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/source",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\source.png"
+    },
+    {
+      "url": "http://localhost:9663/analysis",
+      "finalUrl": "http://localhost:9663/analysis",
+      "label": "analysis",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok review - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "review",
+        "Review",
+        "an",
+        "omok",
+        "game",
+        "without",
+        "falling",
+        "back",
+        "to",
+        "the",
+        "legacy",
+        "analysis",
+        "board.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Review",
+        "flow",
+        "This",
+        "route",
+        "is",
+        "reserved",
+        "for",
+        "Omok.dev",
+        "review",
+        "pages.",
+        "Open",
+        "an",
+        "omok",
+        "game",
+        "or",
+        "use",
+        "the",
+        "opening",
+        "guide",
+        "instead.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/analysis",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\analysis.png"
+    },
+    {
+      "url": "http://localhost:9663/dev/omok/opening-guide",
+      "finalUrl": "http://localhost:9663/dev/omok/opening-guide",
+      "label": "guide",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok opening guide - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "opening",
+        "guide",
+        "H8",
+        "is",
+        "fixed.",
+        "Place",
+        "the",
+        "2nd",
+        "and",
+        "3rd",
+        "moves,",
+        "then",
+        "this",
+        "page",
+        "shows",
+        "only",
+        "the",
+        "4th",
+        "and",
+        "5th",
+        "moves",
+        "that",
+        "exist",
+        "in",
+        "the",
+        "opening",
+        "workbook.",
+        "Coordinate",
+        "system:",
+        "A1",
+        "is",
+        "the",
+        "bottom-left",
+        "corner,",
+        "letters",
+        "increase",
+        "to",
+        "the",
+        "right,",
+        "and",
+        "numbers",
+        "increase",
+        "upward.",
+        "DOWNLOAD",
+        "OPENING",
+        "WORKBOOK",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "15",
+        "14",
+        "13",
+        "12",
+        "11",
+        "10",
+        "9",
+        "8",
+        "7",
+        "6",
+        "5",
+        "4",
+        "3",
+        "2",
+        "1",
+        "15",
+        "14",
+        "13",
+        "12",
+        "11",
+        "10",
+        "9",
+        "8",
+        "7",
+        "6",
+        "5",
+        "4",
+        "3",
+        "2",
+        "1",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "Move",
+        "2",
+        "Place"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/dev/omok/opening-guide",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Download opening workbook",
+          "href": "http://localhost:9663/assets/omok/suxingge_unified_ordered.xlsx",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Undo",
+          "cls": "button button-empty js-guide-undo",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Reset",
+          "cls": "button button-empty js-guide-reset",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\guide.png"
+    },
+    {
+      "url": "http://localhost:9663/@/Anonymous",
+      "finalUrl": "http://localhost:9663/@/Anonymous",
+      "label": "sample-profile",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok player page - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "player",
+        "page",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "even",
+        "while",
+        "the",
+        "old",
+        "profile",
+        "system",
+        "is",
+        "being",
+        "phased",
+        "out.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Player",
+        "Username",
+        "Anonymous",
+        "Section",
+        "Overview",
+        "Next",
+        "action",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev.",
+        "Use",
+        "an",
+        "invite",
+        "link,",
+        "start",
+        "a",
+        "room,",
+        "or",
+        "return",
+        "to",
+        "the",
+        "lobby",
+        "from",
+        "here.",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "CREATE",
+        "OMOK",
+        "ROOM"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/@/Anonymous",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\sample-profile.png"
+    },
+    {
+      "url": "http://localhost:9663/@/Anonymous/all",
+      "finalUrl": "http://localhost:9663/@/Anonymous/all",
+      "label": "sample-profile-games",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok player page - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "player",
+        "page",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "even",
+        "while",
+        "the",
+        "old",
+        "profile",
+        "system",
+        "is",
+        "being",
+        "phased",
+        "out.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Player",
+        "Username",
+        "Anonymous",
+        "Section",
+        "Games",
+        "Next",
+        "action",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev.",
+        "Use",
+        "an",
+        "invite",
+        "link,",
+        "start",
+        "a",
+        "room,",
+        "or",
+        "return",
+        "to",
+        "the",
+        "lobby",
+        "from",
+        "here.",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "CREATE",
+        "OMOK",
+        "ROOM"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/@/Anonymous/all",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\sample-profile-games.png"
+    },
+    {
+      "url": "http://localhost:9663/@/Anonymous/tv",
+      "finalUrl": "http://localhost:9663/@/Anonymous/tv",
+      "label": "sample-profile-tv",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok player page - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "player",
+        "page",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "even",
+        "while",
+        "the",
+        "old",
+        "profile",
+        "system",
+        "is",
+        "being",
+        "phased",
+        "out.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Player",
+        "Username",
+        "Anonymous",
+        "Section",
+        "Live",
+        "Next",
+        "action",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev.",
+        "Use",
+        "an",
+        "invite",
+        "link,",
+        "start",
+        "a",
+        "room,",
+        "or",
+        "return",
+        "to",
+        "the",
+        "lobby",
+        "from",
+        "here.",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "CREATE",
+        "OMOK",
+        "ROOM"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/@/Anonymous/tv",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\sample-profile-tv.png"
+    },
+    {
+      "url": "http://localhost:9663/@/Anonymous/perf/blitz",
+      "finalUrl": "http://localhost:9663/@/Anonymous/perf/blitz",
+      "label": "sample-profile-perf",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok player page - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "player",
+        "page",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev",
+        "even",
+        "while",
+        "the",
+        "old",
+        "profile",
+        "system",
+        "is",
+        "being",
+        "phased",
+        "out.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "Player",
+        "Username",
+        "Anonymous",
+        "Section",
+        "Stats",
+        "Next",
+        "action",
+        "Player",
+        "profile",
+        "links",
+        "stay",
+        "inside",
+        "Omok.dev.",
+        "Use",
+        "an",
+        "invite",
+        "link,",
+        "start",
+        "a",
+        "room,",
+        "or",
+        "return",
+        "to",
+        "the",
+        "lobby",
+        "from",
+        "here.",
+        "INVITE",
+        "A",
+        "PLAYER",
+        "CREATE",
+        "OMOK",
+        "ROOM"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/@/Anonymous/perf/blitz",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\sample-profile-perf.png"
+    },
+    {
+      "url": "http://localhost:9663/login",
+      "finalUrl": "http://localhost:9663/login",
+      "label": "login",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Sign in - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "Sign",
+        "in",
+        "Register",
+        "Username",
+        "or",
+        "email",
+        "Password",
+        "Password",
+        "reset",
+        "Keep",
+        "me",
+        "logged",
+        "in",
+        "Sign",
+        "in",
+        "Or",
+        "Log",
+        "in",
+        "by",
+        "email"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/login",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login",
+          "cls": "active"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": ""
+        },
+        {
+          "text": "Password reset",
+          "href": "http://localhost:9663/password/reset",
+          "cls": ""
+        },
+        {
+          "text": "Log in by email",
+          "href": "http://localhost:9663/auth/magic-link",
+          "cls": "button button-empty magic-link"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Sign in",
+          "cls": "submit button",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Sign in",
+          "cls": "submit button",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\login.png"
+    },
+    {
+      "url": "http://localhost:9663/signup",
+      "finalUrl": "http://localhost:9663/signup",
+      "label": "signup",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Register - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "Sign",
+        "in",
+        "Register",
+        "Username",
+        "Be",
+        "sure",
+        "to",
+        "choose",
+        "a",
+        "username",
+        "appropriate",
+        "for",
+        "all",
+        "ages.",
+        "You",
+        "cannot",
+        "change",
+        "it",
+        "later,",
+        "and",
+        "accounts",
+        "with",
+        "inappropriate",
+        "usernames",
+        "will",
+        "be",
+        "closed!",
+        "Password",
+        "Email",
+        "We",
+        "will",
+        "only",
+        "send",
+        "you",
+        "emails",
+        "about",
+        "your",
+        "account",
+        "and",
+        "never",
+        "share",
+        "your",
+        "email.",
+        "Computers",
+        "and",
+        "computer-assisted",
+        "players",
+        "are",
+        "not",
+        "allowed",
+        "to",
+        "play.",
+        "Please",
+        "do",
+        "not",
+        "get",
+        "assistance",
+        "from",
+        "omok",
+        "engines,",
+        "databases,",
+        "or",
+        "from",
+        "other",
+        "players",
+        "while",
+        "playing.",
+        "Also",
+        "note",
+        "that",
+        "making",
+        "multiple",
+        "accounts",
+        "is",
+        "strongly",
+        "discouraged",
+        "and",
+        "excessive",
+        "multi-accounting",
+        "will",
+        "lead",
+        "to",
+        "being",
+        "banned.",
+        "By",
+        "registering,",
+        "you",
+        "agree",
+        "to",
+        "the",
+        "Terms",
+        "of",
+        "Service.",
+        "Read",
+        "about",
+        "our",
+        "Privacy",
+        "policy.",
+        "I",
+        "agree",
+        "that",
+        "I",
+        "will",
+        "at",
+        "no",
+        "time",
+        "receive",
+        "assistance",
+        "during",
+        "my",
+        "games",
+        "(from",
+        "an"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/signup",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login",
+          "cls": ""
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "active"
+        },
+        {
+          "text": "Terms of Service",
+          "href": "http://localhost:9663/terms-of-service",
+          "cls": ""
+        },
+        {
+          "text": "Privacy policy",
+          "href": "http://localhost:9663/privacy",
+          "cls": ""
+        },
+        {
+          "text": "Terms of Service",
+          "href": "http://localhost:9663/terms-of-service",
+          "cls": ""
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Register",
+          "cls": "submit button",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\signup.png"
+    },
+    {
+      "url": "http://localhost:9663/password/reset",
+      "finalUrl": "http://localhost:9663/password/reset",
+      "label": "password-reset",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Password reset - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "Password",
+        "reset",
+        "Email",
+        "Email",
+        "me",
+        "a",
+        "link"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/password/reset",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Email me a link",
+          "cls": "submit button text",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\password-reset.png"
+    },
+    {
+      "url": "http://localhost:9663/auth/magic-link",
+      "finalUrl": "http://localhost:9663/auth/magic-link",
+      "label": "magic-link",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Log in by email - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "Log",
+        "in",
+        "by",
+        "email",
+        "We",
+        "will",
+        "send",
+        "you",
+        "an",
+        "email",
+        "containing",
+        "a",
+        "link",
+        "to",
+        "log",
+        "you",
+        "in.",
+        "Email",
+        "Email",
+        "me",
+        "a",
+        "link"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/auth/magic-link",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Email me a link",
+          "cls": "submit button text",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\magic-link.png"
+    },
+    {
+      "url": "http://localhost:9663/",
+      "finalUrl": "http://localhost:9663/",
+      "label": "home_Omok.dev",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok.dev - Free Online Omok",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "is",
+        "a",
+        "free,",
+        "open",
+        "source",
+        "omok",
+        "service",
+        "focused",
+        "on",
+        "real-time",
+        "play,",
+        "browser-side",
+        "AI,",
+        "and",
+        "opening",
+        "study.",
+        "Source",
+        "Code",
+        "OPEN",
+        "THE",
+        "OPENING",
+        "GUIDE",
+        "Quick",
+        "pairing",
+        "Lobby",
+        "Correspondence",
+        "1+0",
+        "Bullet",
+        "2+1",
+        "Bullet",
+        "3+0",
+        "Blitz",
+        "3+2",
+        "Blitz",
+        "5+0",
+        "Blitz",
+        "5+3",
+        "Blitz",
+        "10+0",
+        "Rapid",
+        "10+5",
+        "Rapid",
+        "15+10",
+        "Rapid",
+        "30+0",
+        "Classical",
+        "30+20",
+        "Classical",
+        "Custom",
+        "Create",
+        "omok",
+        "room",
+        "Invite",
+        "a",
+        "player",
+        "Play",
+        "against",
+        "Rapfi",
+        "AI",
+        "1",
+        "player",
+        "0",
+        "games",
+        "in",
+        "play",
+        "Opening",
+        "guide",
+        "Terms",
+        "of",
+        "Service",
+        "Privacy",
+        "Source",
+        "Code"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Source Code",
+          "href": "http://localhost:9663/source",
+          "cls": "blue"
+        },
+        {
+          "text": "Open the opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "1 player",
+          "href": "http://localhost:9663/player",
+          "cls": ""
+        },
+        {
+          "text": "0 games in play",
+          "href": "http://localhost:9663/games",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "Terms of Service",
+          "href": "http://localhost:9663/terms-of-service",
+          "cls": ""
+        },
+        {
+          "text": "Privacy",
+          "href": "http://localhost:9663/privacy",
+          "cls": ""
+        },
+        {
+          "text": "Source Code",
+          "href": "http://localhost:9663/source",
+          "cls": ""
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Quick pairing",
+          "cls": "active",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Lobby",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Correspondence",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "1+0Bullet",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "2+1Bullet",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "3+0Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "3+2Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "5+0Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "5+3Blitz",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "10+0Rapid",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "10+5Rapid",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "15+10Rapid",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "30+0Classical",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "30+20Classical",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "Custom",
+          "cls": "lpool",
+          "tag": "DIV"
+        },
+        {
+          "text": "Create omok room",
+          "cls": "button button-metal lobby__start__button lobby__start__button--hook",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Invite a player",
+          "cls": "button button-metal lobby__start__button lobby__start__button--friend",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "cls": "button button-metal lobby__start__button lobby__start__button--ai",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\home_Omok.dev.png"
+    },
+    {
+      "url": "http://localhost:9663/nadgeNkW0odO",
+      "finalUrl": "http://localhost:9663/nadgeNkW0odO",
+      "label": "round",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Your turn - Rapfi AI - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "∞",
+        "•",
+        "Casual",
+        "•",
+        "Correspondence",
+        "right",
+        "now",
+        "Anonymous",
+        "Rapfi",
+        "AI",
+        "Your",
+        "turn",
+        "White",
+        "to",
+        "play",
+        "/",
+        "Last",
+        "move",
+        "H8",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "OMOK.DEV",
+        "Your",
+        "turn",
+        "White",
+        "to",
+        "play",
+        "/",
+        "Last",
+        "move",
+        "H8",
+        "State:",
+        "Your",
+        "turn",
+        "Turn:",
+        "White",
+        "Ply:",
+        "1",
+        "Last",
+        "move:",
+        "H8",
+        "Rule",
+        "set:",
+        "Renju",
+        "Engine:",
+        "Thinking...",
+        "Rapfi",
+        "AI:",
+        "Black",
+        "AI",
+        "/",
+        "800ms"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "",
+          "href": "http://localhost:9663/",
+          "cls": "zen-home"
+        },
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/nadgeNkW0odO",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Correspondence",
+          "href": "http://localhost:9663/faq#correspondence",
+          "cls": "variant-link"
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/nadgeNkW/white/analysis#0",
+          "cls": "fbt analysis"
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/nadgeNkW/white/analysis#0",
+          "cls": "fbt analysis"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        },
+        {
+          "text": "Hide analysis",
+          "cls": "button-empty",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\round.png"
+    },
+    {
+      "url": "http://localhost:9663/nadgeNkW/white/analysis",
+      "finalUrl": "http://localhost:9663/nadgeNkW/white/analysis",
+      "label": "round_http_localhost_9663_nadgeNkW_white_analysis_0",
+      "status": "pass",
+      "httpStatus": 200,
+      "title": "Omok review - Omok.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok",
+        "review",
+        "Review",
+        "an",
+        "omok",
+        "game",
+        "without",
+        "falling",
+        "back",
+        "to",
+        "the",
+        "legacy",
+        "analysis",
+        "board.",
+        "nadgeNkW.",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "OPENING",
+        "GUIDE",
+        "BACK",
+        "TO",
+        "GAME",
+        "BACK",
+        "TO",
+        "LOBBY",
+        "Summary",
+        "Rule",
+        "set",
+        "Renju",
+        "State",
+        "Ongoing",
+        "Turn",
+        "White",
+        "Ply",
+        "1",
+        "Last",
+        "move",
+        "H8",
+        "Move",
+        "list",
+        "1.",
+        "H8"
+      ],
+      "leakFlags": [],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/nadgeNkW/white/analysis",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": "button button-empty"
+        },
+        {
+          "text": "Back to game",
+          "href": "http://localhost:9663/nadgeNkW",
+          "cls": "button button-metal"
+        },
+        {
+          "text": "Back to lobby",
+          "href": "http://localhost:9663/",
+          "cls": "button button-empty"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\round_http_localhost_9663_nadgeNkW_white_analysis_0.png"
+    },
+    {
+      "url": "http://localhost:9663/nadgeNkW",
+      "finalUrl": "http://localhost:9663/nadgeNkW",
+      "label": "round_http_localhost_9663_nadgeNkW_white_analysis_0_Back_to_game",
+      "status": "fail",
+      "httpStatus": 200,
+      "title": "Anon. - Stockfish level 1 • lichess.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "∞",
+        "•",
+        "Casual",
+        "•",
+        "Correspondence",
+        "right",
+        "now",
+        "Anonymous",
+        "Rapfi",
+        "AI",
+        "1",
+        "Correspondence",
+        "Chess",
+        "•",
+        "Anon.",
+        "vs",
+        "Stockfish",
+        "level",
+        "1",
+        "Anon.",
+        "is",
+        "playing",
+        "Stockfish",
+        "level",
+        "1",
+        "in",
+        "a",
+        "casual",
+        "Correspondence",
+        "game",
+        "of",
+        "chess.",
+        "Game",
+        "is",
+        "still",
+        "ongoing",
+        "after",
+        "0",
+        "moves.",
+        "Click",
+        "to",
+        "replay,",
+        "analyse,",
+        "and",
+        "discuss",
+        "the",
+        "game!",
+        "[Event",
+        "\"casual",
+        "correspondence",
+        "game\"]",
+        "[Site",
+        "\"http://localhost:9663/nadgeNkW\"]",
+        "[Date",
+        "\"2026.04.09\"]",
+        "[Round",
+        "\"-\"]",
+        "[White",
+        "\"Anonymous\"]",
+        "[Black",
+        "\"lichess",
+        "AI",
+        "level",
+        "1\"]",
+        "[Result",
+        "\"*\"]",
+        "[GameId",
+        "\"nadgeNkW\"]",
+        "[UTCDate",
+        "\"2026.04.09\"]",
+        "[UTCTime",
+        "\"09:25:04\"]",
+        "[WhiteElo",
+        "\"?\"]",
+        "[BlackElo",
+        "\"?\"]",
+        "[Variant",
+        "\"Standard\"]",
+        "[TimeControl",
+        "\"-\"]",
+        "[ECO",
+        "\"?\"]",
+        "[Opening",
+        "\"?\"]",
+        "[Termination",
+        "\"Unterminated\"]",
+        "*"
+      ],
+      "leakFlags": [
+        "lichess",
+        "stockfish",
+        "chess"
+      ],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/nadgeNkW",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Correspondence",
+          "href": "http://localhost:9663/faq#correspondence",
+          "cls": "variant-link"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\round_http_localhost_9663_nadgeNkW_white_analysis_0_Back_to_game.png"
+    }
+  ],
+  "issues": [
+    {
+      "url": "http://localhost:9663/nadgeNkW",
+      "finalUrl": "http://localhost:9663/nadgeNkW",
+      "label": "round_http_localhost_9663_nadgeNkW_white_analysis_0_Back_to_game",
+      "status": "fail",
+      "httpStatus": 200,
+      "title": "Anon. - Stockfish level 1 • lichess.dev",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "∞",
+        "•",
+        "Casual",
+        "•",
+        "Correspondence",
+        "right",
+        "now",
+        "Anonymous",
+        "Rapfi",
+        "AI",
+        "1",
+        "Correspondence",
+        "Chess",
+        "•",
+        "Anon.",
+        "vs",
+        "Stockfish",
+        "level",
+        "1",
+        "Anon.",
+        "is",
+        "playing",
+        "Stockfish",
+        "level",
+        "1",
+        "in",
+        "a",
+        "casual",
+        "Correspondence",
+        "game",
+        "of",
+        "chess.",
+        "Game",
+        "is",
+        "still",
+        "ongoing",
+        "after",
+        "0",
+        "moves.",
+        "Click",
+        "to",
+        "replay,",
+        "analyse,",
+        "and",
+        "discuss",
+        "the",
+        "game!",
+        "[Event",
+        "\"casual",
+        "correspondence",
+        "game\"]",
+        "[Site",
+        "\"http://localhost:9663/nadgeNkW\"]",
+        "[Date",
+        "\"2026.04.09\"]",
+        "[Round",
+        "\"-\"]",
+        "[White",
+        "\"Anonymous\"]",
+        "[Black",
+        "\"lichess",
+        "AI",
+        "level",
+        "1\"]",
+        "[Result",
+        "\"*\"]",
+        "[GameId",
+        "\"nadgeNkW\"]",
+        "[UTCDate",
+        "\"2026.04.09\"]",
+        "[UTCTime",
+        "\"09:25:04\"]",
+        "[WhiteElo",
+        "\"?\"]",
+        "[BlackElo",
+        "\"?\"]",
+        "[Variant",
+        "\"Standard\"]",
+        "[TimeControl",
+        "\"-\"]",
+        "[ECO",
+        "\"?\"]",
+        "[Opening",
+        "\"?\"]",
+        "[Termination",
+        "\"Unterminated\"]",
+        "*"
+      ],
+      "leakFlags": [
+        "lichess",
+        "stockfish",
+        "chess"
+      ],
+      "links": [
+        {
+          "text": "Omok.dev",
+          "href": "http://localhost:9663/",
+          "cls": "site-title"
+        },
+        {
+          "text": "PlayOmok.dev",
+          "href": "http://localhost:9663/",
+          "cls": ""
+        },
+        {
+          "text": "Create omok room",
+          "href": "http://localhost:9663/?any#hook",
+          "cls": ""
+        },
+        {
+          "text": "Invite a player",
+          "href": "http://localhost:9663/?any#friend",
+          "cls": ""
+        },
+        {
+          "text": "Play against Rapfi AI",
+          "href": "http://localhost:9663/?any#ai",
+          "cls": ""
+        },
+        {
+          "text": "Opening guide",
+          "href": "http://localhost:9663/dev/omok/opening-guide",
+          "cls": ""
+        },
+        {
+          "text": "",
+          "href": "http://localhost:9663/faq#autoplay",
+          "cls": ""
+        },
+        {
+          "text": "Sign in",
+          "href": "http://localhost:9663/login?referrer=/nadgeNkW",
+          "cls": "button button-empty signin"
+        },
+        {
+          "text": "Register",
+          "href": "http://localhost:9663/signup",
+          "cls": "button signup"
+        },
+        {
+          "text": "Correspondence",
+          "href": "http://localhost:9663/faq#correspondence",
+          "cls": "variant-link"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Accessibility - Enable blind mode",
+          "cls": "",
+          "tag": "BUTTON"
+        }
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\round_http_localhost_9663_nadgeNkW_white_analysis_0_Back_to_game.png"
+    }
+  ],
+  "crawledUrls": [
+    "http://localhost:9663/player",
+    "http://localhost:9663/player/online",
+    "http://localhost:9663/player/top/blitz",
+    "http://localhost:9663/games",
+    "http://localhost:9663/faq",
+    "http://localhost:9663/terms-of-service",
+    "http://localhost:9663/privacy",
+    "http://localhost:9663/source",
+    "http://localhost:9663/analysis",
+    "http://localhost:9663/dev/omok/opening-guide",
+    "http://localhost:9663/@/Anonymous",
+    "http://localhost:9663/@/Anonymous/all",
+    "http://localhost:9663/@/Anonymous/tv",
+    "http://localhost:9663/@/Anonymous/perf/blitz",
+    "http://localhost:9663/login",
+    "http://localhost:9663/signup",
+    "http://localhost:9663/password/reset",
+    "http://localhost:9663/auth/magic-link",
+    "http://localhost:9663/",
+    "http://localhost:9663/nadgeNkW0odO",
+    "http://localhost:9663/nadgeNkW/white/analysis",
+    "http://localhost:9663/nadgeNkW"
+  ],
+  "modals": {
+    "friend": {
+      "title": "Omok.dev - Free Online Omok",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "is",
+        "a",
+        "free,",
+        "open",
+        "source",
+        "omok",
+        "service",
+        "focused",
+        "on",
+        "real-time",
+        "play,",
+        "browser-side",
+        "AI,",
+        "and",
+        "opening",
+        "study.",
+        "Source",
+        "Code",
+        "OPEN",
+        "THE",
+        "OPENING",
+        "GUIDE",
+        "Quick",
+        "pairing",
+        "Lobby",
+        "Correspondence",
+        "1+0",
+        "Bullet",
+        "2+1",
+        "Bullet",
+        "3+0",
+        "Blitz",
+        "3+2",
+        "Blitz",
+        "5+0",
+        "Blitz",
+        "5+3",
+        "Blitz",
+        "10+0",
+        "Rapid",
+        "10+5",
+        "Rapid",
+        "15+10",
+        "Rapid",
+        "30+0",
+        "Classical",
+        "30+20",
+        "Classical",
+        "Custom",
+        "Create",
+        "omok",
+        "room",
+        "Invite",
+        "a",
+        "player",
+        "Play",
+        "against",
+        "Rapfi",
+        "AI",
+        "Omok",
+        "game",
+        "setup",
+        "?",
+        "Taraguchi-10",
+        "Renju",
+        "Freestyle",
+        "Real",
+        "time",
+        "Correspondence",
+        "Unlimited",
+        "Take",
+        "all",
+        "the",
+        "time",
+        "you",
+        "need",
+        "Side",
+        "Black",
+        "Random",
+        "side",
+        "White",
+        "Invite",
+        "a",
+        "player",
+        "1",
+        "player",
+        "0",
+        "games",
+        "in",
+        "play",
+        "Opening",
+        "guide",
+        "Terms",
+        "of",
+        "Service",
+        "Privacy",
+        "Source",
+        "Code"
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\friend_modal.png"
+    },
+    "ai": {
+      "title": "Omok.dev - Free Online Omok",
+      "bodySample": [
+        "Accessibility",
+        "-",
+        "Enable",
+        "blind",
+        "mode",
+        "Omok.dev",
+        "PLAY",
+        "SIGN",
+        "IN",
+        "REGISTER",
+        "Omok.dev",
+        "is",
+        "a",
+        "free,",
+        "open",
+        "source",
+        "omok",
+        "service",
+        "focused",
+        "on",
+        "real-time",
+        "play,",
+        "browser-side",
+        "AI,",
+        "and",
+        "opening",
+        "study.",
+        "Source",
+        "Code",
+        "OPEN",
+        "THE",
+        "OPENING",
+        "GUIDE",
+        "Quick",
+        "pairing",
+        "Lobby",
+        "Correspondence",
+        "1+0",
+        "Bullet",
+        "2+1",
+        "Bullet",
+        "3+0",
+        "Blitz",
+        "3+2",
+        "Blitz",
+        "5+0",
+        "Blitz",
+        "5+3",
+        "Blitz",
+        "10+0",
+        "Rapid",
+        "10+5",
+        "Rapid",
+        "15+10",
+        "Rapid",
+        "30+0",
+        "Classical",
+        "30+20",
+        "Classical",
+        "Custom",
+        "Create",
+        "omok",
+        "room",
+        "Invite",
+        "a",
+        "player",
+        "Play",
+        "against",
+        "Rapfi",
+        "AI",
+        "Omok",
+        "game",
+        "setup",
+        "?",
+        "Renju",
+        "Freestyle",
+        "Real",
+        "time",
+        "Correspondence",
+        "Unlimited",
+        "Take",
+        "all",
+        "the",
+        "time",
+        "you",
+        "need",
+        "R",
+        "ThreadsThink",
+        "time",
+        "(ms)Depth",
+        "limitNode",
+        "limit",
+        "Side",
+        "Black",
+        "Random",
+        "side",
+        "White",
+        "Play",
+        "against",
+        "Rapfi",
+        "AI",
+        "4",
+        "players",
+        "0",
+        "games",
+        "in",
+        "play",
+        "Opening",
+        "guide",
+        "Terms",
+        "of",
+        "Service",
+        "Privacy",
+        "Source",
+        "Code"
+      ],
+      "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\ai_modal.png"
+    },
+    "friendLeakFlags": [],
+    "aiLeakFlags": []
+  },
+  "round": {
+    "url": "http://localhost:9663/nadgeNkW0odO",
+    "title": "Your turn - Rapfi AI - Omok.dev",
+    "bodySample": [
+      "Accessibility",
+      "-",
+      "Enable",
+      "blind",
+      "mode",
+      "Omok.dev",
+      "PLAY",
+      "SIGN",
+      "IN",
+      "REGISTER",
+      "∞",
+      "•",
+      "Casual",
+      "•",
+      "Correspondence",
+      "right",
+      "now",
+      "Anonymous",
+      "Rapfi",
+      "AI",
+      "Your",
+      "turn",
+      "White",
+      "to",
+      "play",
+      "/",
+      "Last",
+      "move",
+      "H8",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "OMOK.DEV",
+      "Your",
+      "turn",
+      "White",
+      "to",
+      "play",
+      "/",
+      "Last",
+      "move",
+      "H8",
+      "State:",
+      "Your",
+      "turn",
+      "Turn:",
+      "White",
+      "Ply:",
+      "1",
+      "Last",
+      "move:",
+      "H8",
+      "Rule",
+      "set:",
+      "Renju",
+      "Engine:",
+      "G8",
+      "Rapfi",
+      "AI:",
+      "Black",
+      "AI",
+      "/",
+      "800ms"
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "http://localhost:9663/",
+        "cls": "zen-home"
+      },
+      {
+        "text": "Omok.dev",
+        "href": "http://localhost:9663/",
+        "cls": "site-title"
+      },
+      {
+        "text": "PlayOmok.dev",
+        "href": "http://localhost:9663/",
+        "cls": ""
+      },
+      {
+        "text": "Create omok room",
+        "href": "http://localhost:9663/?any#hook",
+        "cls": ""
+      },
+      {
+        "text": "Invite a player",
+        "href": "http://localhost:9663/?any#friend",
+        "cls": ""
+      },
+      {
+        "text": "Play against Rapfi AI",
+        "href": "http://localhost:9663/?any#ai",
+        "cls": ""
+      },
+      {
+        "text": "Opening guide",
+        "href": "http://localhost:9663/dev/omok/opening-guide",
+        "cls": ""
+      },
+      {
+        "text": "",
+        "href": "http://localhost:9663/faq#autoplay",
+        "cls": ""
+      },
+      {
+        "text": "Sign in",
+        "href": "http://localhost:9663/login?referrer=/nadgeNkW0odO",
+        "cls": "button button-empty signin"
+      },
+      {
+        "text": "Register",
+        "href": "http://localhost:9663/signup",
+        "cls": "button signup"
+      },
+      {
+        "text": "Correspondence",
+        "href": "http://localhost:9663/faq#correspondence",
+        "cls": "variant-link"
+      },
+      {
+        "text": "",
+        "href": "http://localhost:9663/nadgeNkW/white/analysis#0",
+        "cls": "fbt analysis"
+      },
+      {
+        "text": "",
+        "href": "http://localhost:9663/nadgeNkW/white/analysis#0",
+        "cls": "fbt analysis"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Accessibility - Enable blind mode",
+        "cls": "",
+        "tag": "BUTTON"
+      },
+      {
+        "text": "Hide analysis",
+        "cls": "button-empty",
+        "tag": "BUTTON"
+      }
+    ],
+    "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-182454\\round_live.png"
+  },
+  "finishedAt": "2026-04-09T09:25:36.212Z",
+  "status": "fail"
+}

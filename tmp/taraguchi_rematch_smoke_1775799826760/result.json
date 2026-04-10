@@ -1,0 +1,10 @@
+{
+  "outDir": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\taraguchi_rematch_smoke_1775799826760",
+  "hookId": "trFiwEW6",
+  "guestUrlAfterJoin": "http://localhost:9663/trFiwEW6",
+  "hostUrlAfterJoin": "http://localhost:9663/",
+  "hostHasTaraguchi": false,
+  "guestHasTaraguchi": false,
+  "resignActor": "guest",
+  "error": "page.evaluate: TypeError: window.lichess.socket.send is not a function\n    at eval (eval at evaluate (:302:30), <anonymous>:1:29)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at [stdin]:51:17"
+}

@@ -1,0 +1,353 @@
+.round__app[data-board-game='omok'] {
+  .main-board .cg-wrap {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.round__app__board__omok-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  padding: clamp(0.55rem, 2.5%, 1rem);
+  pointer-events: auto;
+}
+
+.round__app__board__omok-placeholder__shell {
+  --omok-frame-size: clamp(1rem, 3.6%, 1.55rem);
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--omok-frame-size) minmax(0, 1fr) var(--omok-frame-size);
+  grid-template-rows: var(--omok-frame-size) minmax(0, 1fr) var(--omok-frame-size);
+  align-items: stretch;
+  gap: clamp(0.14rem, 0.6%, 0.28rem);
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__status {
+  position: absolute;
+  inset-block-start: clamp(0.25rem, 1.2%, 0.45rem);
+  inset-inline-start: clamp(0.25rem, 1.2%, 0.45rem);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-width: min(78%, 18rem);
+  padding: 0.42rem 0.58rem;
+  border-radius: 0.85rem;
+  background: rgba(37, 28, 15, 0.76);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 20px rgba(20, 12, 3, 0.18);
+  color: rgba(255, 250, 242, 0.98);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__status.is-active {
+  background: rgba(33, 73, 41, 0.82);
+}
+
+.round__app__board__omok-placeholder__status.is-terminal {
+  background: rgba(87, 44, 20, 0.82);
+}
+
+.round__app__board__omok-placeholder__status.is-draw {
+  background: rgba(64, 64, 64, 0.8);
+}
+
+.round__app__board__omok-placeholder__status-main {
+  font-size: clamp(0.74rem, 1.8vw, 0.94rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.round__app__board__omok-placeholder__status-detail {
+  font-size: clamp(0.6rem, 1.35vw, 0.74rem);
+  line-height: 1.2;
+  color: rgba(255, 247, 233, 0.78);
+}
+
+.round__app__board__omok-placeholder__opening {
+  position: absolute;
+  inset-block-start: clamp(2.9rem, 10%, 3.45rem);
+  inset-inline: clamp(0.45rem, 1.6%, 0.75rem);
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.55rem;
+  border-radius: 0.55rem;
+  background: rgba(22, 16, 10, 0.86);
+  box-shadow: 0 0.25rem 0.7rem rgba(0, 0, 0, 0.28);
+  color: #fff3db;
+  pointer-events: auto;
+}
+
+.round__app__board__omok-placeholder__opening-text {
+  font-size: clamp(0.62rem, 1.35vw, 0.78rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.round__app__board__omok-placeholder__opening-action {
+  padding: 0.25rem 0.6rem;
+  line-height: 1.2;
+}
+
+.round__app__board__omok-placeholder__coords {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  font-size: clamp(0.54rem, 1.35vw, 0.7rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(86, 53, 18, 0.9);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__coords--top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.round__app__board__omok-placeholder__coords--bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.round__app__board__omok-placeholder__coords--left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.round__app__board__omok-placeholder__coords--right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.round__app__board__omok-placeholder__coord {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.round__app__board__omok-placeholder__board {
+  position: relative;
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  height: 100%;
+  padding: clamp(0.45rem, 1.5%, 0.75rem);
+  border-radius: calc(#{$box-radius-size} + 0.1rem);
+  background:
+    radial-gradient(circle at 16% 14%, rgba(255, 255, 255, 0.28), transparent 26%),
+    linear-gradient(140deg, #efd7a1 0%, #ddb46f 56%, #c98f4f 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(84, 52, 19, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 14px 28px rgba(35, 18, 4, 0.16);
+  pointer-events: auto;
+}
+
+.round__app__board__omok-placeholder__board.is-clickable {
+  cursor: crosshair;
+}
+
+.round__app__board__omok-placeholder__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  border-radius: calc(#{$box-radius-size} - 0.05rem);
+}
+
+.round__app__board__omok-placeholder__svg-base {
+  fill: #e5bf79;
+}
+
+.round__app__board__omok-placeholder__svg-line {
+  stroke: rgba(74, 43, 16, 0.82);
+  stroke-width: 0.46;
+  stroke-linecap: round;
+}
+
+.round__app__board__omok-placeholder__svg-star {
+  fill: rgba(74, 43, 16, 0.92);
+}
+
+.round__app__board__omok-placeholder__svg-stone {
+  stroke-width: 0.36;
+}
+
+.round__app__board__omok-placeholder__svg-stone.is-black {
+  fill: #101010;
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.round__app__board__omok-placeholder__svg-stone.is-white {
+  fill: #f6f1e7;
+  stroke: rgba(60, 46, 28, 0.14);
+}
+
+.round__app__board__omok-placeholder__svg-ghost {
+  stroke-width: 0.42;
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__svg-ghost.is-black {
+  fill: rgba(16, 16, 16, 0.48);
+  stroke: rgba(255, 244, 224, 0.48);
+}
+
+.round__app__board__omok-placeholder__svg-ghost.is-white {
+  fill: rgba(246, 241, 231, 0.84);
+  stroke: rgba(78, 60, 35, 0.34);
+}
+
+.round__app__board__omok-placeholder__svg-hover-ring {
+  fill: none;
+  stroke: rgba(18, 110, 61, 0.88);
+  stroke-width: 0.68;
+  filter: drop-shadow(0 0 0.24rem rgba(40, 131, 81, 0.4));
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__svg-last-ring {
+  fill: #d84f2a;
+  stroke: rgba(255, 244, 219, 0.92);
+  stroke-width: 0.3;
+}
+
+.round__app__board__omok-placeholder__point {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__point.is-clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.round__app__board__omok-placeholder__point.is-clickable:hover,
+.round__app__board__omok-placeholder__point.is-clickable:focus-visible {
+  background: radial-gradient(circle, rgba(255, 241, 196, 0.45) 0%, rgba(255, 241, 196, 0.12) 60%, transparent 78%);
+  box-shadow: 0 0 0 1px rgba(129, 78, 21, 0.14);
+}
+
+.round__app__board__omok-placeholder__point.is-clickable:focus-visible {
+  outline: none;
+}
+
+.round__app__board__omok-state {
+  @extend %box-shadow;
+
+  position: absolute;
+  inset-inline: 0.75rem;
+  inset-block-end: 0.75rem;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.8rem;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.65rem 0.8rem;
+  border: $border;
+  border-radius: $box-radius-size;
+  background: rgba(255, 251, 244, 0.9);
+  pointer-events: none;
+}
+
+.round__app__board__omok-state.is-active {
+  border-color: rgba(51, 114, 65, 0.28);
+  box-shadow:
+    0 12px 28px rgba(27, 43, 31, 0.16),
+    inset 0 0 0 1px rgba(51, 114, 65, 0.12);
+}
+
+.round__app__board__omok-state.is-terminal {
+  border-color: rgba(127, 75, 27, 0.28);
+}
+
+.round__app__board__omok-state.is-draw {
+  border-color: rgba(94, 94, 94, 0.24);
+}
+
+.round__app__board__omok-state__title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $c-font-dim;
+}
+
+.round__app__board__omok-state__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  color: $c-font;
+}
+
+.round__app__board__omok-state__summary.is-active {
+  background: rgba(53, 110, 69, 0.12);
+  color: #214f2d;
+}
+
+.round__app__board__omok-state__summary.is-terminal {
+  background: rgba(126, 74, 27, 0.12);
+  color: #6d3c17;
+}
+
+.round__app__board__omok-state__summary.is-draw {
+  background: rgba(72, 72, 72, 0.1);
+  color: #444;
+}
+
+.round__app__board__omok-state__summary-main {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.round__app__board__omok-state__summary-detail {
+  font-size: 0.78rem;
+  color: $c-font-dim;
+}
+
+.round__app__board__omok-state__field {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.round__app__board__omok-state__field.is-emphasis .round__app__board__omok-state__value {
+  color: inherit;
+}
+
+.round__app__board__omok-state__label {
+  color: $c-font-dim;
+}
+
+.round__app__board__omok-state__value {
+  color: $c-font;
+}
+
+

@@ -1,0 +1,25 @@
+{
+  "title": "Omok.dev - Free Online Omok",
+  "siteName": "Omok.dev",
+  "topnav": [
+    "PlayOmok.dev",
+    "Create omok room",
+    "Invite a player",
+    "Play against Rapfi AI",
+    "Opening guide"
+  ],
+  "footer": [
+    "About Omok.dev",
+    "Contact",
+    "Mobile App",
+    "Terms of Service",
+    "Privacy",
+    "Source Code"
+  ],
+  "buttons": [
+    "Create lobby game",
+    "Challenge a friend",
+    "Play against computer"
+  ],
+  "bodyText": "Accessibility - Enable blind mode\nOmok.dev\nPLAY\nDONATE\nSIGN IN\nREGISTER\n\nOmok.dev is a free, open source omok service focused on real-time play, browser-side AI, and opening study.\n\nAbout Omok.dev...\nOPEN THE OPENING GUIDE\nQuick pairing\nLobby\nCorrespondence\n1+0\nBullet\n2+1\nBullet\n3+0\nBlitz\n3+2\nBlitz\n5+0\nBlitz\n5+3\nBlitz\n10+0\nRapid\n10+5\nRapid\n15+10\nRapid\n30+0\nClassical\n30+20\nClassical\nCustom\nCreate lobby game\nChallenge a friend\nPlay against computer\n0 players\n0 games in play\nAbout Omok.dev\nContact\nMobile App\nTerms of Service\nPrivacy\nSource Code"
+}

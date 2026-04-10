@@ -1,0 +1,18 @@
+{
+  "before": {
+    "host": "Black proposes 10 fifth-move candidates (0/10).",
+    "guest": "Black proposes 10 fifth-move candidates (0/10)."
+  },
+  "hostOpening": "Black proposes 10 fifth-move candidates (0/10).",
+  "guestOpening": "Black proposes 10 fifth-move candidates (0/10).",
+  "hostButtons": [
+    "Accessibility - Enable blind mode",
+    "Chat room",
+    "Analyse with Rapfi"
+  ],
+  "guestButtons": [
+    "Accessibility - Enable blind mode",
+    "Chat room",
+    "Analyse with Rapfi"
+  ]
+}

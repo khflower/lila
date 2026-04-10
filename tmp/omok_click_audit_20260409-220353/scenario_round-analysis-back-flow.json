@@ -1,0 +1,10 @@
+{
+  "scenario": "round-analysis-back-flow",
+  "status": "fail",
+  "startTime": "2026-04-09T13:05:49.542Z",
+  "endTime": "2026-04-09T13:05:50.949Z",
+  "finalUrl": "http://localhost:9663/Y705FLIg3gS9",
+  "failureReason": "analysis entrypoint not found on round page",
+  "actionTrace": [],
+  "screenshot": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\omok_click_audit_20260409-220353\\scenario_round-analysis-back-flow.png"
+}

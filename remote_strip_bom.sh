@@ -1,0 +1,5 @@
+cd /kh_code/lila || exit 1
+files='app/Env.scala modules/omok/src/main/core.scala modules/omok/src/main/bridge.scala modules/omok/src/main/coreApi.scala modules/game/src/main/OmokGameSidecar.scala modules/round/src/main/OmokRoundRepo.scala modules/round/src/main/OmokStoredState.scala modules/round/src/main/OmokMovePlayer.scala modules/round/src/main/OmokEvent.scala modules/round/src/main/RoundAsyncActor.scala modules/round/src/main/RoundSocket.scala modules/round/src/main/actorApi.scala modules/round/src/main/OmokStartScaffold.scala modules/round/src/main/OmokDemoSeed.scala modules/round/src/main/Rematcher.scala modules/api/src/main/RoundApi.scala modules/setup/src/main/HookConfig.scala'
+for f in $files; do sed -i '1s/^\xEF\xBB\xBF//' "$f"; done
+cd /tmp/lila-ws-scan || exit 1
+sed -i '1s/^\xEF\xBB\xBF//' src/main/scala/ipc/ClientOut.scala

@@ -1,0 +1,3 @@
+cd /kh_code/lila || exit 1
+git status --short | sed -n '1,120p'
+git diff --stat -- modules/omok/src/main/core.scala modules/omok/src/main/bridge.scala modules/round/src/main/OmokRoundRepo.scala modules/round/src/main/OmokMovePlayer.scala modules/round/src/main/RoundAsyncActor.scala modules/round/src/main/RoundSocket.scala modules/round/src/main/actorApi.scala modules/round/src/main/OmokStoredState.scala modules/game/src/main/OmokGameSidecar.scala modules/api/src/main/RoundApi.scala ui/lobby/src/interfaces.ts ui/lobby/src/setupCtrl.ts ui/lobby/src/view/setup/modal.ts ui/round/src/interfaces.ts ui/round/src/ctrl.ts ui/round/src/view/omokPlaceholder.ts modules/round/src/test/OmokTaraguchiOpeningTest.scala | sed -n '1,160p'

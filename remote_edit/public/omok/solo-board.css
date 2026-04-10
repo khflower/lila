@@ -1,0 +1,194 @@
+.omok-solo-board-app {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.omok-solo-board-panel,
+.omok-solo-board-side {
+  background: #171411;
+  border: 1px solid #302a23;
+  border-radius: 1rem;
+  box-shadow: 0 0.6rem 2rem rgba(0, 0, 0, 0.18);
+}
+
+.omok-solo-board-panel {
+  padding: 1rem;
+}
+
+.omok-solo-board-side {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.omok-solo-board-status {
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: #201b15;
+  border: 1px solid #3a3228;
+}
+
+.omok-solo-board-status strong {
+  display: block;
+  color: #f3e4c2;
+  font-size: 1rem;
+}
+
+.omok-solo-board-status span {
+  display: block;
+  margin-top: 0.3rem;
+  color: #c6b697;
+  line-height: 1.45;
+}
+
+.omok-solo-board-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.omok-solo-board-sequence {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.omok-solo-board-sequence h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #f0ddbb;
+}
+
+.omok-solo-board-sequence ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.omok-solo-board-sequence li {
+  padding: 0.72rem 0.8rem;
+  border-radius: 0.8rem;
+  background: #201b15;
+  border: 1px solid #342d24;
+}
+
+.omok-solo-board-sequence strong {
+  color: #f0ddbb;
+}
+
+.omok-solo-board-sequence span {
+  display: block;
+  color: #baa789;
+  margin-top: 0.2rem;
+}
+
+.omok-solo-board-empty {
+  padding: 0.8rem 0.9rem;
+  border-radius: 0.8rem;
+  background: #1d1915;
+  border: 1px dashed #41382d;
+  color: #ac9d85;
+}
+
+.omok-solo-board-wrap {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) 1.6rem;
+  grid-template-rows: 1.6rem minmax(0, 1fr) 1.6rem;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.omok-solo-board-coords-horizontal,
+.omok-solo-board-coords-vertical {
+  display: grid;
+  color: #8d7041;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.omok-solo-board-coords-horizontal {
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+.omok-solo-board-coords-vertical {
+  grid-template-rows: repeat(15, minmax(0, 1fr));
+}
+
+.omok-solo-board-coords-horizontal span,
+.omok-solo-board-coords-vertical span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.omok-solo-board-box {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, #e3c076 0%, #d7ad62 100%);
+}
+
+.omok-solo-board-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.omok-solo-board-surface {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.omok-solo-board-grid {
+  stroke: rgba(76, 47, 23, 0.82);
+  stroke-width: 0.46;
+}
+
+.omok-solo-board-star {
+  fill: rgba(76, 47, 23, 0.9);
+}
+
+.omok-solo-board-stone-black {
+  fill: #191919;
+  stroke: rgba(255, 244, 224, 0.5);
+  stroke-width: 0.34;
+}
+
+.omok-solo-board-stone-white {
+  fill: #f3eee5;
+  stroke: rgba(78, 60, 35, 0.36);
+  stroke-width: 0.34;
+}
+
+.omok-solo-board-hover {
+  fill: none;
+  stroke: rgba(34, 118, 70, 0.95);
+  stroke-width: 0.72;
+}
+
+.omok-solo-board-preview-black {
+  fill: rgba(25, 25, 25, 0.46);
+  stroke: rgba(255, 243, 220, 0.45);
+  stroke-width: 0.34;
+}
+
+.omok-solo-board-preview-white {
+  fill: rgba(243, 238, 229, 0.82);
+  stroke: rgba(78, 60, 35, 0.32);
+  stroke-width: 0.34;
+}
+
+@media (max-width: 1080px) {
+  .omok-solo-board-app {
+    grid-template-columns: 1fr;
+  }
+}

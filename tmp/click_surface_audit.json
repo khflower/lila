@@ -1,0 +1,376 @@
+{
+  "home": [
+    {
+      "text": "Accessibility - Enable blind mode",
+      "cls": "",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "Omok.dev",
+      "href": "http://localhost:9663/",
+      "cls": "site-title",
+      "tag": "A"
+    },
+    {
+      "text": "PlayOmok.dev",
+      "href": "http://localhost:9663/",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Create omok room",
+      "href": "http://localhost:9663/?any#hook",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Invite a player",
+      "href": "http://localhost:9663/?any#friend",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Play against Rapfi AI",
+      "href": "http://localhost:9663/?any#ai",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Opening guide",
+      "href": "http://localhost:9663/dev/omok/opening-guide",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "",
+      "href": "http://localhost:9663/faq#autoplay",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Sign in",
+      "href": "http://localhost:9663/login?referrer=/",
+      "cls": "button button-empty signin",
+      "tag": "A"
+    },
+    {
+      "text": "Register",
+      "href": "http://localhost:9663/signup",
+      "cls": "button signup",
+      "tag": "A"
+    },
+    {
+      "text": "Source Code",
+      "href": "http://localhost:9663/source",
+      "cls": "blue",
+      "tag": "A"
+    },
+    {
+      "text": "Open the opening guide",
+      "href": "http://localhost:9663/dev/omok/opening-guide",
+      "cls": "button button-empty",
+      "tag": "A"
+    },
+    {
+      "text": "Quick pairing",
+      "cls": "active",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "Lobby",
+      "cls": "",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "Correspondence",
+      "cls": "",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "Create omok room",
+      "cls": "button button-metal lobby__start__button lobby__start__button--hook",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "Invite a player",
+      "cls": "button button-metal lobby__start__button lobby__start__button--friend",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "Play against Rapfi AI",
+      "cls": "button button-metal lobby__start__button lobby__start__button--ai",
+      "tag": "BUTTON"
+    },
+    {
+      "text": "0 players",
+      "href": "http://localhost:9663/player",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "0 games in play",
+      "href": "http://localhost:9663/games",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Opening guide",
+      "href": "http://localhost:9663/dev/omok/opening-guide",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Terms of Service",
+      "href": "http://localhost:9663/terms-of-service",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Privacy",
+      "href": "http://localhost:9663/privacy",
+      "cls": "",
+      "tag": "A"
+    },
+    {
+      "text": "Source Code",
+      "href": "http://localhost:9663/source",
+      "cls": "",
+      "tag": "A"
+    }
+  ],
+  "friendModal": [
+    {
+      "text": "Taraguchi-10RenjuFreestyle",
+      "tag": "SELECT",
+      "cls": ""
+    },
+    {
+      "text": "Real time",
+      "tag": "BUTTON",
+      "cls": ""
+    },
+    {
+      "text": "Correspondence",
+      "tag": "BUTTON",
+      "cls": ""
+    },
+    {
+      "text": "Unlimited",
+      "tag": "BUTTON",
+      "cls": "active"
+    },
+    {
+      "text": "Invite a player",
+      "tag": "BUTTON",
+      "cls": "button button-metal lobby__start__button lobby__start__button--friend"
+    }
+  ],
+  "aiModal": [
+    {
+      "text": "RenjuFreestyle",
+      "tag": "SELECT",
+      "cls": ""
+    },
+    {
+      "text": "Real time",
+      "tag": "BUTTON",
+      "cls": ""
+    },
+    {
+      "text": "Correspondence",
+      "tag": "BUTTON",
+      "cls": ""
+    },
+    {
+      "text": "Unlimited",
+      "tag": "BUTTON",
+      "cls": "active"
+    },
+    {
+      "text": "Play against Rapfi AI",
+      "tag": "BUTTON",
+      "cls": "button button-metal lobby__start__button lobby__start__button--ai"
+    }
+  ],
+  "round": {
+    "url": "http://localhost:9663/IrInDvCsZgon",
+    "clickable": [
+      {
+        "text": "Accessibility - Enable blind mode",
+        "cls": "",
+        "tag": "BUTTON"
+      },
+      {
+        "text": "",
+        "href": "http://localhost:9663/",
+        "cls": "zen-home",
+        "tag": "A"
+      },
+      {
+        "text": "Zen mode",
+        "href": "",
+        "cls": "text fbt active",
+        "tag": "A"
+      },
+      {
+        "text": "Omok.dev",
+        "href": "http://localhost:9663/",
+        "cls": "site-title",
+        "tag": "A"
+      },
+      {
+        "text": "PlayOmok.dev",
+        "href": "http://localhost:9663/",
+        "cls": "",
+        "tag": "A"
+      },
+      {
+        "text": "Create omok room",
+        "href": "http://localhost:9663/?any#hook",
+        "cls": "",
+        "tag": "A"
+      },
+      {
+        "text": "Invite a player",
+        "href": "http://localhost:9663/?any#friend",
+        "cls": "",
+        "tag": "A"
+      },
+      {
+        "text": "Play against Rapfi AI",
+        "href": "http://localhost:9663/?any#ai",
+        "cls": "",
+        "tag": "A"
+      },
+      {
+        "text": "Opening guide",
+        "href": "http://localhost:9663/dev/omok/opening-guide",
+        "cls": "",
+        "tag": "A"
+      },
+      {
+        "text": "",
+        "href": "http://localhost:9663/faq#autoplay",
+        "cls": "",
+        "tag": "A"
+      },
+      {
+        "text": "Sign in",
+        "href": "http://localhost:9663/login?referrer=/IrInDvCsZgon",
+        "cls": "button button-empty signin",
+        "tag": "A"
+      },
+      {
+        "text": "Register",
+        "href": "http://localhost:9663/signup",
+        "cls": "button signup",
+        "tag": "A"
+      },
+      {
+        "text": "Correspondence",
+        "href": "http://localhost:9663/faq#correspondence",
+        "cls": "variant-link",
+        "tag": "A"
+      },
+      {
+        "text": "Hide analysis",
+        "cls": "button-empty",
+        "tag": "BUTTON"
+      },
+      {
+        "text": "",
+        "href": "http://localhost:9663/IrInDvCs/black/analysis#0",
+        "cls": "fbt analysis",
+        "tag": "A"
+      }
+    ]
+  },
+  "guide": [
+    {
+      "text": "Accessibility - Enable blind mode",
+      "tag": "BUTTON",
+      "cls": ""
+    },
+    {
+      "text": "Omok.dev",
+      "tag": "A",
+      "href": "http://localhost:9663/",
+      "cls": "site-title"
+    },
+    {
+      "text": "PlayOmok.dev",
+      "tag": "A",
+      "href": "http://localhost:9663/",
+      "cls": ""
+    },
+    {
+      "text": "Create omok room",
+      "tag": "A",
+      "href": "http://localhost:9663/?any#hook",
+      "cls": ""
+    },
+    {
+      "text": "Invite a player",
+      "tag": "A",
+      "href": "http://localhost:9663/?any#friend",
+      "cls": ""
+    },
+    {
+      "text": "Play against Rapfi AI",
+      "tag": "A",
+      "href": "http://localhost:9663/?any#ai",
+      "cls": ""
+    },
+    {
+      "text": "Opening guide",
+      "tag": "A",
+      "href": "http://localhost:9663/dev/omok/opening-guide",
+      "cls": ""
+    },
+    {
+      "text": "",
+      "tag": "A",
+      "href": "http://localhost:9663/faq#autoplay",
+      "cls": ""
+    },
+    {
+      "text": "Sign in",
+      "tag": "A",
+      "href": "http://localhost:9663/login?referrer=/dev/omok/opening-guide",
+      "cls": "button button-empty signin"
+    },
+    {
+      "text": "Register",
+      "tag": "A",
+      "href": "http://localhost:9663/signup",
+      "cls": "button signup"
+    },
+    {
+      "text": "",
+      "tag": "BUTTON",
+      "cls": "toggle anon link"
+    },
+    {
+      "text": "Download opening workbook",
+      "tag": "A",
+      "href": "http://localhost:9663/assets/omok/suxingge_unified_ordered.xlsx",
+      "cls": "button button-empty"
+    },
+    {
+      "text": "Undo",
+      "tag": "BUTTON",
+      "cls": "button button-empty js-guide-undo"
+    },
+    {
+      "text": "Reset",
+      "tag": "BUTTON",
+      "cls": "button button-empty js-guide-reset"
+    },
+    {
+      "text": "",
+      "tag": "A",
+      "href": "",
+      "cls": "link text"
+    }
+  ]
+}

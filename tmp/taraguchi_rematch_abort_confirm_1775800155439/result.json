@@ -1,0 +1,4 @@
+{
+  "outDir": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\taraguchi_rematch_abort_confirm_1775800155439",
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.act-confirm button.fbt.yes')\u001b[22m\n\n    at [stdin]:47:56"
+}

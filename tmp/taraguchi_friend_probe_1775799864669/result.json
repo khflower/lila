@@ -1,0 +1,18 @@
+{
+  "outDir": "C:\\Users\\hyeon\\OneDrive\\Documents\\New project\\tmp\\taraguchi_friend_probe_1775799864669",
+  "hostWaitUrl": "http://localhost:9663/omok/friend/R1YQdRt7?host=RLxzjKhRbDEM",
+  "hostWaitBody": "Accessibility - Enable blind mode\nOmok.dev\nPLAY\nSIGN IN\nREGISTER\nInvite a player\n\nShare this invite link, wait for the other player to join, then confirm the omok room.\n\nBACK TO LOBBY\nSOLO BOARD\nInvite link\n\nOpen this link in another browser or share it directly. The room stays inside Omok.dev.\n\nCOPY LINK\nRoom settings\nRule set\nTaraguchi-10\nTime\nUnlimited\nMode\nCasual\nHost side\nWhite\nStatus\nWaiting for another player\n\nStay on this page. The confirm button unlocks when another player opens the invite link.\n\nCONFIRM ROOM\nWaiting for another player.",
+  "share": "http://localhost:9663/omok/friend/R1YQdRt7",
+  "guestWaitUrl": "http://localhost:9663/omok/friend/R1YQdRt7",
+  "guestWaitBody": "Accessibility - Enable blind mode\nOmok.dev\nPLAY\nSIGN IN\nREGISTER\nInvite a player\n\nShare this invite link, wait for the other player to join, then confirm the omok room.\n\nBACK TO LOBBY\nSOLO BOARD\nInvite link\n\nOpen this link in another browser or share it directly. The room stays inside Omok.dev.\n\nCOPY LINK\nRoom settings\nRule set\nTaraguchi-10\nTime\nUnlimited\nMode\nCasual\nHost side\nWhite\nStatus\nAnother player joined\n\nYou joined the invite. Wait here until the host confirms the omok room.\n\nCONFIRM ROOM\nOnly the host can confirm the room.",
+  "hostGameUrl": "http://localhost:9663/Q2OIrmbzy9RR",
+  "guestGameUrl": "http://localhost:9663/Q2OIrmbz8F6l",
+  "hostGameTitle": "Your turn - Opponent - Omok.dev",
+  "guestGameTitle": "Waiting for White - Opponent - Omok.dev",
+  "hostGameBody": "Accessibility - Enable blind mode\nOmok.dev\nPLAY\nSIGN IN\nREGISTER\n∞\n• Casual •\nCorrespondence\nright now\nAnonymous\nAnonymous\nChat room\nHI\nGL\nHF\nU2\nYour turn\nWhite to play / Last move H8\nWhite may swap, or place the second move within 3x3 from H8.\nSWAP\nA\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\nA\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\nOMOK.DEV\nYour turn\nWhite to play / Last move H8\nSTATE:\nYour turn\nTURN:\nWhite\nPLY:\n1\nLAST MOVE:\nH8\nRULE SET:\nTaraguchi10\nOPENING ORDER\nBlack : 1\nWhite : -\nOPENING LOG\n1. Black placed H8 (fixed center)\nENGINE:\nIdle\nAnalyse with Rapfi\nAnonymous\nYou play White. Your turn!\nAnonymous\nYour turn",
+  "guestGameBody": "Accessibility - Enable blind mode\nOmok.dev\nPLAY\nSIGN IN\nREGISTER\n∞\n• Casual •\nCorrespondence\nright now\nAnonymous\nAnonymous\nChat room\nHI\nGL\nHF\nU2\nWaiting for White\nLast move H8\nWhite may swap, or place the second move within 3x3 from H8.\nA\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\nA\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\nOMOK.DEV\nWaiting for White\nLast move H8\nSTATE:\nWaiting for White\nTURN:\nWhite\nPLY:\n1\nLAST MOVE:\nH8\nRULE SET:\nTaraguchi10\nOPENING ORDER\nBlack : 1\nWhite : -\nOPENING LOG\n1. Black placed H8 (fixed center)\nENGINE:\nIdle\nAnalyse with Rapfi\nAnonymous\nYou play Black.\nAnonymous\nWaiting for opponent",
+  "hostSocketKeys": [
+    "subscribeToMoveLatency",
+    "events"
+  ]
+}
