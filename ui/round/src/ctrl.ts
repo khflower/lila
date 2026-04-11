@@ -20,6 +20,7 @@ import notify from 'lib/notification';
 import * as poolRangeStorage from 'lib/poolRangeStorage';
 import { Replay } from 'lib/prefs';
 import { pubsub } from 'lib/pubsub';
+import { wsIsOpen } from 'lib/socket';
 import { type SocketSendOpts } from 'lib/socket';
 import { storage, once, storedBooleanProp, type LichessBooleanStorage } from 'lib/storage';
 import type { NodeCrazy } from 'lib/tree/types';
@@ -216,6 +217,7 @@ export default class RoundController implements MoveRootCtrl {
       this.redraw();
     });
 
+    pubsub.on('socket.open', this.onSocketOpen);
     pubsub.on('zen', toggleZenMode);
 
     if (!this.opts.noab && this.isPlaying()) ab.init(this);
@@ -377,6 +379,7 @@ export default class RoundController implements MoveRootCtrl {
 
   canPlaceOmok = (): boolean =>
     this.isOmokActive() &&
+    !this.data.player.spectator &&
     !isOmokTerminal(this.data) &&
     this.omokTurnColor() === this.data.player.color &&
     !this.omokPlacementPending &&
@@ -394,7 +397,7 @@ export default class RoundController implements MoveRootCtrl {
   };
 
   isOmokAiTurn = (): boolean =>
-    !!this.data.omok?.ai &&
+    !!this.omokAiColor() &&
     this.isOmokActive() &&
     !this.data.player.spectator &&
     !isOmokTerminal(this.data) &&
@@ -1065,6 +1068,12 @@ export default class RoundController implements MoveRootCtrl {
     root.__omokRapfiDebug = [...(root.__omokRapfiDebug || []).slice(-39), state];
   };
 
+  private readonly onSocketOpen = (): void => {
+    if (!this.data.omok) return;
+    this.recordOmokRapfiDebug('socket-open');
+    this.refreshOmokRapfi();
+  };
+
   private readonly refreshOmokRapfi = (): void => {
     if (!this.data.omok) return;
     this.recordOmokRapfiDebug('refresh');
@@ -1078,7 +1087,7 @@ export default class RoundController implements MoveRootCtrl {
       this.recordOmokRapfiDebug('run-ai-skip', { hasPosition: !!position });
       return;
     }
-    const key = `ai:${omokPositionKey(position)}`;
+    const key = `ai:${this.data.game.id}:${omokPositionKey(position)}`;
     if (this.omokAiPendingKey === key) {
       this.recordOmokRapfiDebug('run-ai-dup', { key });
       return;
@@ -1094,6 +1103,10 @@ export default class RoundController implements MoveRootCtrl {
         return;
       }
       if (openingAction) {
+        if (!wsIsOpen()) {
+          this.recordOmokRapfiDebug('run-ai-wait-socket', { key, source: 'taraguchi', action: openingAction.type });
+          return;
+        }
         if (openingAction.type === 'swap') {
           this.recordOmokRapfiDebug('run-ai-send-swap', { key, source: 'taraguchi' });
           this.socket.send('omok-swap');
@@ -1125,6 +1138,15 @@ export default class RoundController implements MoveRootCtrl {
         this.recordOmokRapfiDebug('run-ai-stale', { key, bestMove });
         return;
       }
+      if (!wsIsOpen()) {
+        this.recordOmokRapfiDebug('run-ai-wait-socket', {
+          key,
+          source: 'rapfi',
+          action: bestMove === 'swap' ? 'swap' : 'place',
+          bestMove: bestMove === 'swap' ? 'swap' : bestMove.key,
+        });
+        return;
+      }
       if (bestMove === 'swap') {
         this.recordOmokRapfiDebug('run-ai-send-swap', { key, source: 'rapfi' });
         this.socket.send('omok-swap');
@@ -1149,7 +1171,7 @@ export default class RoundController implements MoveRootCtrl {
   private readonly runOmokAnalysis = async (): Promise<void> => {
     const position = this.data.omok?.position;
     if (!position || !this.omokAnalysisEnabled || this.isOmokAiTurn()) return;
-    const key = `analysis:${omokPositionKey(position)}`;
+    const key = `analysis:${this.data.game.id}:${omokPositionKey(position)}`;
     if (this.omokAnalysisLoading || this.omokAnalysisKey === key) return;
     this.omokAnalysisLoading = true;
     this.omokAnalysisError = undefined;

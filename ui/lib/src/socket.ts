@@ -87,6 +87,10 @@ export function wsAverageLag(): number {
   return siteSocket?.averageLag ?? 0;
 }
 
+export function wsIsOpen(): boolean {
+  return siteSocket?.isOpen() ?? false;
+}
+
 const isOnline = () => !('onLine' in navigator) || navigator.onLine;
 
 class WsSocket {
@@ -137,6 +141,8 @@ class WsSocket {
     pubsub.on('socket.send', this.send);
     this.connect();
   }
+
+  isOpen = (): boolean => this.ws?.readyState === WebSocket.OPEN;
 
   sign = (s: string): void => {
     this._sign = s;
