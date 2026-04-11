@@ -127,7 +127,7 @@ final case class OmokOpeningState(
     if position.ruleSet != RuleSet.Taraguchi10 then ""
     else if candidateMode && !candidateSelection && candidateMoves.size < OmokOpeningState.CandidateTarget then
       s"Black proposes ${OmokOpeningState.CandidateTarget} fifth-move candidates (${candidateMoves.size}/${OmokOpeningState.CandidateTarget})."
-    else if candidateMode then "White may select one candidate, or remove candidates until one remains."
+    else if candidateMode then "White selects one candidate, then White plays the sixth move."
     else if lastSwapPly.contains(position.ply) then
       position.ply match
         case 1 => s"$seat places the second move within 3x3 from H8."
@@ -170,6 +170,9 @@ object OmokOpeningState:
   def candidateRemoveEntry(actor: OmokColor, move: OmokMove, remaining: Int): String =
     s"${colorName(actor)} removed candidate ${move.pos.key} ($remaining left)"
 
+  def candidateSelectEntry(actor: OmokColor, move: OmokMove): String =
+    s"${colorName(actor)} selected candidate ${move.pos.key}"
+
   def initialTaraguchiHistory(centerMove: OmokMove): Vector[String] =
     Vector(moveEntry(1, OmokColor.Black, centerMove, Some("fixed center")))
 
@@ -187,7 +190,7 @@ object OmokOpeningState:
         val color = if index % 2 == 0 then "b" else "w"
         val dx = move.pos.col - Center.col
         val dy = move.pos.row - Center.row
-        (color, dx, dy)
+        (index + 1, color, dx, dy)
 
     val transforms: Vector[(Int, Int) => (Int, Int)] = Vector(
       (x, y) => (x, y),
@@ -204,10 +207,9 @@ object OmokOpeningState:
       .map: transform =>
         stones
           .map:
-            case (color, dx, dy) =>
+            case (ply, color, dx, dy) =>
               val (x, y) = transform(dx, dy)
-              f"$color%s$x%+03d$y%+03d"
-          .sorted
+              f"$ply%02d:$color%s$x%+03d$y%+03d"
           .mkString("|")
       .min
 
@@ -269,11 +271,15 @@ final class OmokRoundRepo(
   private val states = TrieMap.empty[GameId, OmokRoundState]
   private val hydrations = TrieMap.empty[GameId, InflightHydration]
   private val knownRuleSets = TrieMap.empty[GameId, RuleSet]
+  private val knownAiConfigs = TrieMap.empty[GameId, OmokAiConfig]
 
   def get(gameId: GameId): Option[OmokRoundState] = states.get(gameId)
 
   def ruleSetOf(gameId: GameId): Option[RuleSet] =
     get(gameId).map(_.ruleSet).orElse(knownRuleSets.get(gameId))
+
+  def aiOf(gameId: GameId): Option[OmokAiConfig] =
+    get(gameId).flatMap(_.ai).orElse(knownAiConfigs.get(gameId))
 
   def getOrInit(gameId: GameId, ruleSet: RuleSet = RuleSet.Renju): OmokRoundState =
     val state = states.getOrElseUpdate(gameId, OmokRoundState.initial(ruleSet))
@@ -297,6 +303,7 @@ final class OmokRoundRepo(
     hydrations.remove(gameId).foreach(_.cancelled.set(true))
     clearSidecar(gameId)
     knownRuleSets.remove(gameId)
+    knownAiConfigs.remove(gameId)
     states.remove(gameId)
 
   def evict(gameId: GameId): Option[OmokRoundState] =
@@ -352,6 +359,9 @@ final class OmokRoundRepo(
 
   private def putCacheOnly(gameId: GameId, state: OmokRoundState): OmokRoundState =
     knownRuleSets.put(gameId, state.ruleSet)
+    state.ai match
+      case Some(ai) => knownAiConfigs.put(gameId, ai)
+      case None     => knownAiConfigs.remove(gameId)
     states.put(gameId, state)
     state
 
