@@ -12,7 +12,6 @@ import { plyToTurn } from 'lib/game/chess';
 import { ClockCtrl, type ClockOpts } from 'lib/game/clock/clockCtrl';
 import type { MoveRootCtrl } from 'lib/game/moveRootCtrl';
 import { PromotionCtrl, promote } from 'lib/game/promotion';
-import { game as gameRoute } from 'lib/game/router';
 import { readFen, almostSanOf, speakable } from 'lib/game/sanWriter';
 import { playing } from 'lib/game/status';
 import viewStatus from 'lib/game/view/status';
@@ -50,16 +49,68 @@ import type {
 import { init as keyboardInit } from './keyboard';
 import MoveOn from './moveOn';
 import { isOmokTerminal } from './omok';
+import {
+  OmokRapfiEngine,
+  omokPositionKey,
+  omokRapfiDefaults,
+  pickTaraguchiAiAction,
+  type OmokRapfiAnalysis,
+} from './omokRapfi';
 import Server from './server';
 import { make as makeSocket, type RoundSocket } from './socket';
 import * as title from './title';
 import TransientMove from './transientMove';
 import * as util from './util';
 import { endGameView } from './view/main';
+import { getOmokStatusSummary } from './view/omokState';
 import { userTxt } from './view/user';
 import * as xhr from './xhr';
 
 type GoneBerserk = Partial<ByColor<boolean>>;
+
+const taraguchiRangeRadius = (ply: number): number | undefined => {
+  if (ply >= 1 && ply <= 4) return ply;
+  return undefined;
+};
+
+const omokAiDisplayName = 'Rapfi AI';
+
+const taraguchiInstruction = (ply: number): string => {
+  switch (ply) {
+    case 1:
+      return 'White may swap, or place the second move within 3x3 from H8.';
+    case 2:
+      return 'Black may swap, or place the third move within 5x5 from H8.';
+    case 3:
+      return 'White may swap, or place the fourth move within 7x7 from H8.';
+    case 4:
+      return 'Black may swap, place one fifth move within 9x9, or propose 10 fifth-move candidates.';
+    case 5:
+      return 'White may make the final swap, or continue Renju play.';
+    default:
+      return 'Continue under Renju rules.';
+  }
+};
+
+const ensureTaraguchiOpening = (data: RoundData): void => {
+  const position = data.omok?.position;
+  if (!position || (position.ruleSet ?? data.omok?.ruleset) !== 'taraguchi10' || position.opening) return;
+  const turn = position.turn === 'white' || position.turn === 'black' ? position.turn : data.game.player;
+  position.opening = {
+    activeSeat: turn,
+    canSwap: position.ply >= 1 && position.ply <= 5,
+    canStartCandidates: position.ply === 4,
+    candidateMode: false,
+    candidateSelection: false,
+    forceSimpleFifth: false,
+    candidateCount: 0,
+    candidateTarget: 10,
+    candidates: [],
+    history: position.ply >= 1 ? ['1. Black placed H8 (fixed center)'] : [],
+    rangeRadius: taraguchiRangeRadius(position.ply),
+    instruction: taraguchiInstruction(position.ply),
+  };
+};
 
 export default class RoundController implements MoveRootCtrl {
   data: RoundData;
@@ -78,6 +129,8 @@ export default class RoundController implements MoveRootCtrl {
   confirmMoveToggle: Toggle;
   loading = false;
   loadingTimeout: number;
+  omokPlacementPending = false;
+  omokPlacementPendingTimeout: number;
   redirecting = false;
   transientMove?: TransientMove;
   toSubmit?: SocketMove | SocketDrop;
@@ -97,14 +150,26 @@ export default class RoundController implements MoveRootCtrl {
   server: Server;
   nvui?: NvuiPlugin;
   vibration: Prop<boolean> = storedBooleanProp('vibration', false);
+  omokRapfi?: OmokRapfiEngine;
+  omokAnalysis?: OmokRapfiAnalysis;
+  omokAnalysisLoading = false;
+  omokAnalysisEnabled = false;
+  omokAnalysisError?: string;
+  omokAiPendingKey?: string;
+  omokAnalysisKey?: string;
+  omokUiCopyObserver?: MutationObserver;
+  omokUiCopyRefreshPending = false;
 
   constructor(
     readonly opts: RoundOpts,
     readonly redraw: Redraw,
   ) {
     util.upgradeServerData(opts.data);
+    ensureTaraguchiOpening(opts.data);
+    if (opts.data.omok) opts.data.expiration = undefined;
 
     const d = (this.data = opts.data);
+    this.omokAnalysisEnabled = !!d.omok?.ai?.analysisEnabled;
 
     this.ply = util.lastPly(d);
     this.goneBerserk[d.player.color] = d.player.berserk;
@@ -141,6 +206,7 @@ export default class RoundController implements MoveRootCtrl {
     }, 200);
 
     setTimeout(this.showExpiration, 350);
+    if (d.omok) setTimeout(() => this.scheduleOmokUiCopyRefresh(), 300);
 
     if (!document.referrer?.includes('/serviceWorker.')) setTimeout(this.showYourMoveNotification, 500);
 
@@ -159,6 +225,34 @@ export default class RoundController implements MoveRootCtrl {
     if (!this.data.expiration) return;
     this.redraw();
     setTimeout(this.showExpiration, 250);
+  };
+
+  private readonly scheduleOmokUiCopyRefresh = () => {
+    if (!this.data.omok || this.omokUiCopyRefreshPending) return;
+    this.omokUiCopyRefreshPending = true;
+    requestAnimationFrame(() => {
+      this.omokUiCopyRefreshPending = false;
+      this.refreshOmokUiCopy();
+    });
+  };
+
+  private readonly ensureOmokUiCopyObserver = (): void => {
+    if (!this.data.omok) {
+      document.body.classList.remove('omok-dev-round');
+      this.omokUiCopyObserver?.disconnect();
+      this.omokUiCopyObserver = undefined;
+      return;
+    }
+
+    document.body.classList.add('omok-dev-round');
+    if (this.omokUiCopyObserver) return;
+    const root = document.querySelector('.round') || document.body;
+    this.omokUiCopyObserver = new MutationObserver(() => this.scheduleOmokUiCopyRefresh());
+    this.omokUiCopyObserver.observe(root, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
   };
 
   private readonly onUserMove = (orig: Key, dest: Key, meta: MoveMetadata) => {
@@ -271,7 +365,7 @@ export default class RoundController implements MoveRootCtrl {
   };
 
   omokTurnColor = (): Color | undefined => {
-    const turn = this.data.omok?.position.turn;
+    const turn = this.data.omok?.position.opening?.activeSeat ?? this.data.omok?.position.turn;
     return turn === 'white' || turn === 'black' ? turn : undefined;
   };
 
@@ -279,12 +373,32 @@ export default class RoundController implements MoveRootCtrl {
 
   isPlayerTurn = (): boolean => !this.data.player.spectator && this.currentTurnColor() === this.data.player.color;
 
+  isOmokActive = (): boolean => this.isPlaying() || !!this.data.omok?.ai;
+
   canPlaceOmok = (): boolean =>
-    this.isPlaying() &&
+    this.isOmokActive() &&
     !isOmokTerminal(this.data) &&
     this.omokTurnColor() === this.data.player.color &&
+    !this.omokPlacementPending &&
     !this.replaying() &&
     !this.loading;
+
+  omokAnalysisAvailable = (): boolean => !!this.data.omok;
+
+  omokRapfiStatus = (): ReturnType<OmokRapfiEngine['status']> | undefined => this.omokRapfi?.status();
+
+  omokAiColor = (): Color | undefined => {
+    const aiColor = this.data.omok?.ai?.aiColor;
+    if (aiColor === 'white' || aiColor === 'black') return aiColor;
+    return this.data.opponent.ai ? this.data.opponent.color : undefined;
+  };
+
+  isOmokAiTurn = (): boolean =>
+    !!this.data.omok?.ai &&
+    this.isOmokActive() &&
+    !this.data.player.spectator &&
+    !isOmokTerminal(this.data) &&
+    this.omokTurnColor() === this.omokAiColor();
 
   canMove = (): boolean => !this.replaying() && this.data.player.color === this.chessground.state.turnColor;
 
@@ -311,7 +425,52 @@ export default class RoundController implements MoveRootCtrl {
     this.redraw();
   };
 
-  setTitle = (): void => title.set(this);
+  private refreshOmokUiCopy = (): void => {
+    if (!this.data.omok || typeof document === 'undefined') return;
+    this.ensureOmokUiCopyObserver();
+
+    const summary = getOmokStatusSummary(this);
+    const titleLead = summary?.text || 'Play omok';
+    const normalizeText = (value: string): string => value.replace(/\s+/g, ' ').trim();
+    const titleOpponent = this.data.opponent.ai
+      ? omokAiDisplayName
+      : (() => {
+          const candidate = normalizeText(userTxt(this.data.opponent));
+          return candidate && !/^anonymous$/i.test(candidate) ? candidate : 'Opponent';
+        })();
+    document.title = `${titleLead} - ${titleOpponent} - Omok.dev`;
+
+    const renameAiNode = (selector: string): void => {
+      document.querySelectorAll<HTMLElement>(selector).forEach(el => {
+        const normalized = normalizeText(el.textContent || '');
+        if (/^Stockfish level \d+$/i.test(normalized) || /^Rapfi AI(?:\s+level)?\s*\d+$/i.test(normalized))
+          el.textContent = omokAiDisplayName;
+      });
+    };
+
+    renameAiNode('.ruser name');
+    renameAiNode('.ruser');
+    renameAiNode('.game__meta__players .user-link');
+
+    document.querySelectorAll<HTMLElement>('.message, rm6, .round__side .message, .round__app .message').forEach(el => {
+      const text = normalizeText(el.textContent || '');
+      if (!text) return;
+      if (/you play the black pieces/i.test(text)) {
+        el.textContent = /it's your turn!/i.test(text) ? 'You play Black. Your turn!' : 'You play Black.';
+        return;
+      }
+      if (/you play the white pieces/i.test(text)) {
+        el.textContent = /it's your turn!/i.test(text) ? 'You play White. Your turn!' : 'You play White.';
+        return;
+      }
+      if (/it's your turn!/i.test(text)) el.textContent = text.replace(/it's your turn!/gi, 'Your turn!');
+    });
+  };
+
+  setTitle = (): void => {
+    title.set(this);
+    if (this.data.omok) this.scheduleOmokUiCopyRefresh();
+  };
 
   actualSendMove = <moveOrDrop extends 'move' | 'drop'>(
     tpe: moveOrDrop,
@@ -534,7 +693,14 @@ export default class RoundController implements MoveRootCtrl {
     if (!omok) return;
 
     const position = o.position;
-    const turnColor = position.turn === 'white' || position.turn === 'black' ? position.turn : d.game.player;
+    ensureTaraguchiOpening({ ...d, omok: { ...omok, position } });
+    const activeSeat = position.opening?.activeSeat;
+    const turnColor =
+      activeSeat === 'white' || activeSeat === 'black'
+        ? activeSeat
+        : position.turn === 'white' || position.turn === 'black'
+          ? position.turn
+          : d.game.player;
 
     omok.position = position;
     if (defined(o.status)) omok.status = o.status;
@@ -542,11 +708,13 @@ export default class RoundController implements MoveRootCtrl {
 
     d.game.turns = position.ply;
     d.game.player = turnColor;
+    this.setOmokPlacementPending(false);
     this.setTitle();
 
     this.redraw();
     this.onChange();
     this.server.alive();
+    this.refreshOmokRapfi();
   };
 
   crazyValid = (role: Role, key: Key): boolean => crazyValid(this.data, role, key);
@@ -570,6 +738,7 @@ export default class RoundController implements MoveRootCtrl {
     if (posChanged) this.ply = util.lastPly(d);
     util.upgradeServerData(d);
     this.data = d;
+    this.omokAnalysisEnabled ||= !!d.omok?.ai?.analysisEnabled;
     this.clearJust();
     this.shouldSendMoveTime = false;
     this.updateClockCtrl();
@@ -588,8 +757,10 @@ export default class RoundController implements MoveRootCtrl {
     this.redraw();
     this.autoScroll();
     this.onChange();
+    this.setOmokPlacementPending(false);
     this.setLoading(false);
     this.pluginUpdate(util.lastStep(this.data).fen);
+    this.refreshOmokRapfi();
   };
 
   endWithData = (o: ApiEnd): void => {
@@ -628,6 +799,7 @@ export default class RoundController implements MoveRootCtrl {
     this.setTitle();
     this.moveOn.next();
     this.setQuietMode();
+    this.setOmokPlacementPending(false);
     this.setLoading(false);
     if (this.clock && o.clock)
       this.clock.setClock({
@@ -650,6 +822,7 @@ export default class RoundController implements MoveRootCtrl {
     ) {
       notify(viewStatus(this.data));
     }
+    this.refreshOmokRapfi();
   };
 
   challengeRematch = async (): Promise<void> => {
@@ -801,6 +974,21 @@ export default class RoundController implements MoveRootCtrl {
     }
   };
 
+  setOmokPlacementPending = (v: boolean, duration = 1500): void => {
+    clearTimeout(this.omokPlacementPendingTimeout);
+    if (v) {
+      this.omokPlacementPending = true;
+      this.omokPlacementPendingTimeout = setTimeout(() => {
+        this.omokPlacementPending = false;
+        this.redraw();
+      }, duration);
+      this.redraw();
+    } else if (this.omokPlacementPending) {
+      this.omokPlacementPending = false;
+      this.redraw();
+    }
+  };
+
   setRedirecting = (): void => {
     this.redirecting = true;
     site.unload.expected = true;
@@ -826,6 +1014,158 @@ export default class RoundController implements MoveRootCtrl {
 
   private readonly onChange = () => {
     if (this.opts.onChange) setTimeout(() => this.opts.onChange(this.data), 150);
+  };
+
+  toggleOmokAnalysis = (value?: boolean): void => {
+    this.omokAnalysisEnabled = value ?? !this.omokAnalysisEnabled;
+    if (!this.omokAnalysisEnabled) {
+      this.omokAnalysisLoading = false;
+      this.omokAnalysisKey = undefined;
+      this.omokAnalysis = undefined;
+      this.omokRapfi?.stop();
+    } else this.refreshOmokRapfi();
+    this.redraw();
+  };
+
+  private readonly ensureOmokRapfi = async (): Promise<OmokRapfiEngine> => {
+    this.omokRapfi ??= new OmokRapfiEngine();
+    await this.omokRapfi.init(this.data.omok?.ai?.threads);
+    return this.omokRapfi;
+  };
+
+  private readonly recordOmokRapfiDebug = (
+    stage: string,
+    extra: Record<string, unknown> = {},
+  ): void => {
+    const root = window as typeof window & {
+      __omokRapfiDebug?: unknown[];
+      __omokRapfiDebugState?: Record<string, unknown>;
+    };
+    const state = {
+      stage,
+      at: Date.now(),
+      playerColor: this.data.player.color,
+      opponentColor: this.data.opponent.color,
+      spectator: this.data.player.spectator,
+      gamePlayer: this.data.game.player,
+      isPlaying: this.isPlaying(),
+      isOmokActive: this.isOmokActive(),
+      isOmokAiTurn: this.isOmokAiTurn(),
+      omokTurnColor: this.omokTurnColor(),
+      omokAiColor: this.omokAiColor(),
+      omokRuleSet: this.data.omok?.position.ruleSet,
+      omokPly: this.data.omok?.position.ply,
+      omokStatus: this.data.omok?.status,
+      aiMode: this.data.omok?.ai?.mode,
+      pendingKey: this.omokAiPendingKey,
+      analysisEnabled: this.omokAnalysisEnabled,
+      ...extra,
+    };
+    root.__omokRapfiDebugState = state;
+    root.__omokRapfiDebug = [...(root.__omokRapfiDebug || []).slice(-39), state];
+  };
+
+  private readonly refreshOmokRapfi = (): void => {
+    if (!this.data.omok) return;
+    this.recordOmokRapfiDebug('refresh');
+    if (this.isOmokAiTurn()) void this.runOmokAiMove();
+    else if (this.omokAnalysisEnabled) void this.runOmokAnalysis();
+  };
+
+  private readonly runOmokAiMove = async (): Promise<void> => {
+    const position = this.data.omok?.position;
+    if (!position || !this.isOmokAiTurn()) {
+      this.recordOmokRapfiDebug('run-ai-skip', { hasPosition: !!position });
+      return;
+    }
+    const key = `ai:${omokPositionKey(position)}`;
+    if (this.omokAiPendingKey === key) {
+      this.recordOmokRapfiDebug('run-ai-dup', { key });
+      return;
+    }
+    this.omokAiPendingKey = key;
+    this.omokAnalysisError = undefined;
+    this.recordOmokRapfiDebug('run-ai-start', { key });
+    this.redraw();
+    try {
+      const openingAction = await pickTaraguchiAiAction(position);
+      if (this.omokAiPendingKey !== key) {
+        this.recordOmokRapfiDebug('run-ai-stale-opening', { key, openingAction });
+        return;
+      }
+      if (openingAction) {
+        if (openingAction.type === 'swap') {
+          this.recordOmokRapfiDebug('run-ai-send-swap', { key, source: 'taraguchi' });
+          this.socket.send('omok-swap');
+        } else if (openingAction.type === 'candidates') {
+          this.recordOmokRapfiDebug('run-ai-send-candidates', { key });
+          this.socket.send('omok-candidates');
+        } else {
+          this.setOmokPlacementPending(true, 3000);
+          this.recordOmokRapfiDebug('run-ai-send-place', { key, bestMove: openingAction.move.key, source: 'taraguchi' });
+          this.socket.send('place', { pos: openingAction.move.key as Key });
+        }
+        return;
+      }
+
+      const engine = await this.ensureOmokRapfi();
+      const enginePosition =
+        position.ruleSet === 'taraguchi10' && position.opening?.canSwap
+          ? {
+              ...position,
+              opening: {
+                ...position.opening,
+                canSwap: false,
+              },
+            }
+          : position;
+      this.recordOmokRapfiDebug('run-ai-engine-ready', { key, status: engine.status() });
+      const bestMove = await engine.bestMove(enginePosition, omokRapfiDefaults(this.data.omok?.ai));
+      if (this.omokAiPendingKey !== key) {
+        this.recordOmokRapfiDebug('run-ai-stale', { key, bestMove });
+        return;
+      }
+      if (bestMove === 'swap') {
+        this.recordOmokRapfiDebug('run-ai-send-swap', { key, source: 'rapfi' });
+        this.socket.send('omok-swap');
+      } else {
+        this.setOmokPlacementPending(true, 3000);
+        this.recordOmokRapfiDebug('run-ai-send-place', { key, bestMove: bestMove.key, source: 'rapfi' });
+        this.socket.send('place', { pos: bestMove.key as Key });
+      }
+    } catch (e) {
+      this.omokAnalysisError = e instanceof Error ? e.message : 'Rapfi move generation failed.';
+      this.recordOmokRapfiDebug('run-ai-error', {
+        key,
+        error: this.omokAnalysisError,
+      });
+    } finally {
+      if (this.omokAiPendingKey === key) this.omokAiPendingKey = undefined;
+      this.recordOmokRapfiDebug('run-ai-finally', { key });
+      this.redraw();
+    }
+  };
+
+  private readonly runOmokAnalysis = async (): Promise<void> => {
+    const position = this.data.omok?.position;
+    if (!position || !this.omokAnalysisEnabled || this.isOmokAiTurn()) return;
+    const key = `analysis:${omokPositionKey(position)}`;
+    if (this.omokAnalysisLoading || this.omokAnalysisKey === key) return;
+    this.omokAnalysisLoading = true;
+    this.omokAnalysisError = undefined;
+    this.redraw();
+    try {
+      const engine = await this.ensureOmokRapfi();
+      const analysis = await engine.analyse(position, omokRapfiDefaults(this.data.omok?.ai), 2);
+      if (!this.omokAnalysisEnabled) return;
+      this.omokAnalysis = analysis;
+      this.omokAnalysisKey = key;
+    } catch (e) {
+      this.omokAnalysisError = e instanceof Error ? e.message : 'Rapfi analysis failed.';
+    } finally {
+      this.omokAnalysisLoading = false;
+      this.redraw();
+    }
   };
 
   private goneTick?: number;
@@ -855,10 +1195,14 @@ export default class RoundController implements MoveRootCtrl {
     if (accept === undefined)
       return !!this.data.opponent.offeringRematch || !!this.data.player.offeringRematch;
     else if (accept) {
-      if (this.data.game.rematch) location.href = gameRoute(this.data.game.rematch, this.data.opponent.color);
-      if (!game.rematchable(this.data)) return false;
-      if (!this.data.opponent.offeringRematch) this.data.player.offeringRematch = true;
-      this.socket.send('rematch-yes');
+      if (this.data.game.rematch) {
+        this.setRedirecting();
+        this.socket.send('rematch-yes');
+      } else {
+        if (!game.rematchable(this.data)) return false;
+        if (!this.data.opponent.offeringRematch) this.data.player.offeringRematch = true;
+        this.socket.send('rematch-yes');
+      }
     } else {
       if (!this.data.opponent.offeringRematch) return false;
       this.socket.send('rematch-no');
@@ -999,6 +1343,7 @@ export default class RoundController implements MoveRootCtrl {
           this.blindfold(this.blindfoldStorage.get());
         }
         if (!d.local && d.game.speed !== 'correspondence') wakeLock.request();
+        this.refreshOmokRapfi();
       },
 
       800,
