@@ -72,11 +72,16 @@ final class Round(
       )
     yield res.enforceCrossSiteIsolation
 
+  private def allowSharedOmokAnon(pov: Pov): Boolean =
+    pov.game.userIds.isEmpty ||
+      env.round.omokRoundRepo.ruleSetOf(pov.gameId).isDefined ||
+      env.round.omokRoundRepo.get(pov.gameId).isDefined
+
   def player(fullId: GameFullId) = Open:
     env.round.proxyRepo
       .pov(fullId)
       .flatMap:
-        case Some(pov) => renderPlayer(pov)
+        case Some(pov) => renderPlayer(pov, allowSharedAnonClaim = allowSharedOmokAnon(pov))
         case None => userC.tryRedirect(fullId.into(UserStr)).getOrElse(notFound)
 
   def omokClaim(fullId: GameFullId) = Open:
