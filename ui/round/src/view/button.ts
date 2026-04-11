@@ -11,6 +11,9 @@ import type RoundController from '../ctrl';
 import type { EventsWithoutPayload, RoundData } from '../interfaces';
 import { justIcon } from '../util';
 
+const siteText = (key: string, fallback: string): string =>
+  ((i18n.site as unknown as Record<string, string | undefined>)[key] as string | undefined) || fallback;
+
 export interface ButtonState {
   enabled: boolean;
   overrideHint?: string;
@@ -26,11 +29,12 @@ function poolUrl(clock: ClockData, blocking?: PlayerUser) {
 
 function analysisButton(ctrl: RoundController): VNode | false {
   const d = ctrl.data,
-    url = gameRoute(d, analysisBoardOrientation(d)) + '#' + ctrl.ply;
+    url = gameRoute(d, analysisBoardOrientation(d)) + '#' + ctrl.ply,
+    label = d.omok ? siteText('omokReviewAction', 'Review') : i18n.site.analysis;
   return (
     replayable(d) &&
     hl(
-      'a.fbt',
+      d.omok ? 'a.fbt.analysis.text' : 'a.fbt.analysis',
       {
         attrs: { href: url },
         hook: bind(
@@ -47,7 +51,7 @@ function analysisButton(ctrl: RoundController): VNode | false {
           false,
         ),
       },
-      i18n.site.analysis,
+      label,
     )
   );
 }
@@ -84,8 +88,10 @@ function rematchButtons(ctrl: RoundController): LooseVNodes {
           'click',
           () => {
             const d = ctrl.data;
-            if (d.game.rematch) location.href = gameRoute(d.game.rematch, d.opponent.color);
-            else if (d.player.offeringRematch) {
+            if (d.game.rematch) {
+              ctrl.setRedirecting();
+              ctrl.socket.send('rematch-yes');
+            } else if (d.player.offeringRematch) {
               d.player.offeringRematch = false;
               ctrl.socket.send('rematch-no');
             } else if (d.opponent.onGame || !d.clock) {
@@ -186,7 +192,7 @@ export const claimThreefold = (ctrl: RoundController, condition: (d: RoundData) 
       },
       class: { disabled: !condition(ctrl.data).enabled },
     },
-    hl('span', '½'),
+    hl('span', '?'),
   );
 
 export function threefoldSuggestion(ctrl: RoundController): LooseVNode {
@@ -301,3 +307,5 @@ export function watcherFollowUp(ctrl: RoundController): LooseVNode {
 }
 
 const onSuggestionHook: Hooks = onInsert(el => pubsub.emit('round.suggestion', el.textContent));
+
+
