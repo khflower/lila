@@ -10,6 +10,7 @@ import lila.core.game.{ GameRepo, IdGenerator }
 import lila.core.i18n.{ I18nKey as trans, Translator, defaultLang }
 import lila.core.user.{ GameUsers, UserApi }
 import lila.game.{ AnonCookie, Event, Rematches, rematchAlternatesColor }
+import lila.omok.RuleSet
 
 import ChessColor.White
 
@@ -18,7 +19,8 @@ final private class Rematcher(
     userApi: UserApi,
     messenger: Messenger,
     onStart: lila.core.game.OnStart,
-    rematches: Rematches
+    rematches: Rematches,
+    omokRoundRepo: OmokRoundRepo
 )(using Executor, Translator, lila.core.config.RateLimit)(using idGenerator: IdGenerator):
 
   private given play.api.i18n.Lang = defaultLang
@@ -84,19 +86,24 @@ final private class Rematcher(
   private def rematchJoin(pov: Pov): Fu[Events] =
 
     def createGame(withId: Option[GameId]) = for
+      previousOmokRuleSet <- omokRuleSetOf(pov.game.id)
+      isOmokRematch = previousOmokRuleSet.isDefined || isLikelyOmok(pov.game)
+      rematchRuleSet = previousOmokRuleSet.orElse(isOmokRematch.option(RuleSet.Renju))
       nextGame <- returnGame(pov, withId).map(_.start)
       _ = rematches.accept(pov.gameId, nextGame.id)
       _ = if pov.game.variant == Chess960 && !chess960.get(pov.gameId) then chess960.put(nextGame.id)
+      _ = rematchRuleSet.foreach: ruleSet =>
+        omokRoundRepo.put(nextGame.id, OmokRoundState.initial(ruleSet))
       _ <- gameRepo.insertDenormalized(nextGame)
     yield
       messenger.volatile(pov.game, trans.site.rematchOfferAccepted.txt())
       onStart.exec(nextGame.id)
       incUserColors(nextGame)
-      redirectEvents(nextGame)
+      redirectEvents(nextGame, omok = isOmokRematch)
 
     rematches.get(pov.gameId) match
       case None => createGame(none)
-      case Some(Rematches.NextGame.Accepted(id)) => gameRepo.game(id).mapz(redirectEvents)
+      case Some(Rematches.NextGame.Accepted(id)) => gameRepo.game(id).mapz(redirectEvents(_, omok = isLikelyOmok(pov.game)))
       case Some(Rematches.NextGame.Offered(_, id)) => createGame(id.some)
 
   private def returnGame(pov: Pov, withId: Option[GameId]): Fu[Game] =
@@ -136,11 +143,24 @@ final private class Rematcher(
       case Some(ai) => lila.game.Player.makeAnon(color, ai.some)
       case None => lila.game.Player.make(color, users(fromColor))
 
-  def redirectEvents(game: Game): Events =
+  def redirectEvents(game: Game, omok: Boolean = false): Events =
+    val isOmok = omok || omokRoundRepo.get(game.id).isDefined
     val ownerRedirects = ByColor: color =>
-      Event.RedirectOwner(!color, game.fullIdOf(color), AnonCookie.json(game.pov(color)))
+      val fullId = game.fullIdOf(color)
+      Event.RedirectOwner(
+        !color,
+        fullId,
+        AnonCookie.json(game.pov(color)),
+        url = isOmok.option(s"/dev/omok/claim/$fullId")
+      )
     val spectatorRedirect = Event.RematchTaken(game.id)
     spectatorRedirect :: ownerRedirects.toList
+
+  private def omokRuleSetOf(gameId: GameId): Fu[Option[RuleSet]] =
+    fuccess(omokRoundRepo.ruleSetOf(gameId))
+
+  private def isLikelyOmok(game: Game): Boolean =
+    game.variant.standard && game.status == chess.Status.VariantEnd
 
 object Rematcher:
   // returns a new chess game with the same Board as the previous game
@@ -165,3 +185,7 @@ object Rematcher:
       ply = ply,
       startedAtPly = ply
     )
+
+
+
+
