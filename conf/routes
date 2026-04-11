@@ -110,12 +110,12 @@ GET   /dasher                          controllers.Dasher.get
 
 
 # Blog/Ublog
-GET   /blog                            controllers.Main.movedPermanently(to = "/@/Lichess/blog")
+GET   /blog                            controllers.Main.updatesFallback
 GET   /blog/topic                      controllers.Ublog.topics
 GET   /blog/topic/:topic               controllers.Ublog.topic(topic, filter: Option[BlogQualityFilter] ?= None, by: BlogsBy ?= BlogsBy.newest, page: Int ?= 1)
 GET   /blog/monthly                    controllers.Ublog.thisMonth(filter: Option[BlogQualityFilter] ?= None, by: BlogsBy ?= BlogsBy.newest, page: Int ?= 1)
 GET   /blog/monthly/:year/:month       controllers.Ublog.byMonth(year: Int, month: Int, filter: Option[BlogQualityFilter] ?= None, by: BlogsBy ?= BlogsBy.newest, page: Int ?= 1)
-GET   /blog.atom                       controllers.Main.movedPermanently(to = "/@/Lichess/blog.atom")
+GET   /blog.atom                       controllers.Main.updatesFallbackPath(path = "atom")
 GET   /api/blog/carousel               controllers.Ublog.apiCarousel
 GET   /blog/friends                    controllers.Ublog.friends(page: Int ?= 1)
 GET   /blog/liked                      controllers.Ublog.liked(page: Int ?= 1)
@@ -529,6 +529,11 @@ POST  /account/preferences/notification       controllers.Pref.notifyFormApply
 # Setup
 POST  /setup/ai                        controllers.Setup.ai
 POST  /setup/friend                    controllers.Setup.friend(user: Option[UserStr] ?= None)
+GET   /omok/friend/$id<\w{8}>         controllers.Setup.omokFriend(id: String, host: Option[String] ?= None)
+GET   /api/omok/friend/$id<\w{8}>     controllers.Setup.omokFriendState(id: String, host: Option[String] ?= None)
+POST  /api/omok/friend/$id<\w{8}>/confirm controllers.Setup.omokFriendConfirm(id: String, host: Option[String] ?= None)
+GET   /omok/solo                      controllers.Setup.omokSolo
+GET   /omok/solo2                     controllers.Setup.omokSolo2
 POST  /setup/hook/:sri/like/:gameId    controllers.Setup.like(sri: Sri, gameId: GameId)
 POST  /setup/hook/:sri                 controllers.Setup.hook(sri: Sri)
 GET   /setup/filter                    controllers.Setup.filterForm
@@ -788,6 +793,10 @@ POST  /api/challenge/$id<\w{8}>/accept controllers.Challenge.apiAccept(id: Chall
 POST  /api/challenge/$id<\w{8}>/decline controllers.Challenge.apiDecline(id: ChallengeId)
 POST  /api/challenge/$id<\w{8}>/cancel controllers.Challenge.apiCancel(id: ChallengeId)
 POST  /api/challenge/$id<\w{8}>/start-clocks  controllers.Challenge.apiStartClocks(id: GameId)
+# Native omok create/start aliases only create a fresh round; they do not accept a target fullId.
+POST  /api/omok                       controllers.Round.apiOmokCreate
+POST  /api/omok/create                controllers.Round.apiOmokCreate
+POST  /api/omok/start                 controllers.Round.apiOmokStart
 POST  /api/round/$id<\w{8}>/add-time/:seconds controllers.Round.apiAddTime(id: GameId, seconds: Int)
 GET   /api/cloud-eval                  controllers.Api.cloudEval
 POST  /api/import                      controllers.Importer.apiSendGame
@@ -936,6 +945,8 @@ POST  /run/cli                         controllers.Dev.command
 # Dev
 GET   /dev/cli                         controllers.Dev.cli
 POST  /dev/cli                         controllers.Dev.cliPost
+GET   /dev/omok/opening-guide          controllers.Dev.omokOpeningGuide
+GET   /dev/omok/claim/$fullId<[\w-]{12}>  controllers.Round.omokClaim(fullId: GameFullId)
 GET   /dev/omok/start/$fullId<[\w-]{12}>  controllers.Round.omokStart(fullId: GameFullId, ruleSet: String ?= "renju")
 GET   /dev/settings                    controllers.Dev.settings
 POST  /dev/settings/:id                controllers.Dev.settingsPost(id)

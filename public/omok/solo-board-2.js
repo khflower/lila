@@ -1,0 +1,606 @@
+const BOARD_SIZE = 15;
+const FILES = 'ABCDEFGHIJKLMNO';
+const SVG_SIZE = 100;
+const SVG_INSET = 7;
+const STEP = (SVG_SIZE - SVG_INSET * 2) / (BOARD_SIZE - 1);
+const STAR_POINTS = [3, 7, 11];
+const MAX_LABEL_LENGTH = 3;
+const FILE_FORMAT = 'omok-solo2/v1';
+
+const root = document.getElementById('omok-solo-board-2-app');
+
+if (root) {
+  const state = createInitialState();
+  render(state);
+}
+
+function createInitialState() {
+  return {
+    rootNode: createNode('root', null, null),
+    currentId: 'root',
+    nextId: 1,
+    hoverKey: null,
+    mode: 'stone',
+    pendingText: '',
+    filename: 'solo-board-2.json',
+    currentLabelDraft: '',
+    nodeIndex: new Map(),
+  };
+}
+
+function createNode(id, parentId, moveKey) {
+  return {
+    id,
+    parentId,
+    moveKey,
+    text: '',
+    boxText: '',
+    children: [],
+  };
+}
+
+function refreshIndex(state) {
+  const map = new Map();
+  walkTree(state.rootNode, node => {
+    map.set(node.id, node);
+  });
+  state.nodeIndex = map;
+}
+
+function walkTree(node, fn) {
+  fn(node);
+  node.children.forEach(child => walkTree(child, fn));
+}
+
+function getNode(state, id) {
+  return state.nodeIndex.get(id) || null;
+}
+
+function getCurrentNode(state) {
+  return getNode(state, state.currentId) || state.rootNode;
+}
+
+function pathNodes(state) {
+  const nodes = [];
+  let cursor = getCurrentNode(state);
+  while (cursor) {
+    nodes.push(cursor);
+    cursor = cursor.parentId ? getNode(state, cursor.parentId) : null;
+  }
+  return nodes.reverse();
+}
+
+function pathMoveNodes(state) {
+  return pathNodes(state).slice(1);
+}
+
+function stoneColor(moveNumber) {
+  return moveNumber % 2 === 1 ? 'black' : 'white';
+}
+
+function nodeMoveNumber(state, node) {
+  let depth = 0;
+  let cursor = node;
+  while (cursor && cursor.parentId) {
+    depth += 1;
+    cursor = getNode(state, cursor.parentId);
+  }
+  return depth;
+}
+
+function occupiedOnPath(state) {
+  return new Set(pathMoveNodes(state).map(node => node.moveKey));
+}
+
+function parseKey(key) {
+  const col = FILES.indexOf(key[0].toUpperCase());
+  const row = Number(key.slice(1)) - 1;
+  return { key, col, row };
+}
+
+function coordFor(col, row) {
+  return {
+    x: SVG_INSET + col * STEP,
+    y: SVG_INSET + (BOARD_SIZE - 1 - row) * STEP,
+  };
+}
+
+function nearestKeyFromPointer(event, svg) {
+  if (!(svg instanceof SVGElement)) return null;
+  const rect = svg.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  const x = ((event.clientX - rect.left) / rect.width) * SVG_SIZE;
+  const y = ((event.clientY - rect.top) / rect.height) * SVG_SIZE;
+  const col = clamp(Math.round((x - SVG_INSET) / STEP), 0, BOARD_SIZE - 1);
+  const rowFromTop = clamp(Math.round((y - SVG_INSET) / STEP), 0, BOARD_SIZE - 1);
+  const row = BOARD_SIZE - 1 - rowFromTop;
+  return `${FILES[col]}${row + 1}`;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatNodeLabel(state, node) {
+  if (!node.moveKey) return 'Root';
+  const moveNumber = nodeMoveNumber(state, node);
+  const suffix = node.text ? ` [${node.text}]` : '';
+  return `${moveNumber}. ${node.moveKey}${suffix}`;
+}
+
+function nextMoveNumber(state) {
+  return pathMoveNodes(state).length + 1;
+}
+
+function normalizeLabel(text) {
+  return String(text || '').trim().slice(0, MAX_LABEL_LENGTH);
+}
+
+function createChildAtCurrent(state, key, text = '') {
+  const current = getCurrentNode(state);
+  const existing = current.children.find(child => child.moveKey === key);
+  if (existing) {
+    state.currentId = existing.id;
+    state.currentLabelDraft = existing.text || '';
+    return true;
+  }
+  if (occupiedOnPath(state).has(key)) return false;
+  const id = `n${state.nextId++}`;
+  const child = createNode(id, current.id, key);
+  child.text = normalizeLabel(text);
+  current.children.push(child);
+  state.currentId = child.id;
+  state.currentLabelDraft = child.text || '';
+  return true;
+}
+
+function deleteCurrentNode(state) {
+  const current = getCurrentNode(state);
+  if (!current.parentId) return;
+  const parent = getNode(state, current.parentId);
+  parent.children = parent.children.filter(child => child.id !== current.id);
+  state.currentId = parent.id;
+  state.currentLabelDraft = parent.text || '';
+  state.hoverKey = null;
+}
+
+function goToParent(state) {
+  const current = getCurrentNode(state);
+  if (!current.parentId) return;
+  state.currentId = current.parentId;
+  state.currentLabelDraft = getCurrentNode(state).text || '';
+  state.hoverKey = null;
+}
+
+function goToFirstChild(state) {
+  const current = getCurrentNode(state);
+  if (!current.children.length) return;
+  state.currentId = current.children[0].id;
+  state.currentLabelDraft = getCurrentNode(state).text || '';
+  state.hoverKey = null;
+}
+
+function resetState(state) {
+  const fresh = createInitialState();
+  state.rootNode = fresh.rootNode;
+  state.currentId = fresh.currentId;
+  state.nextId = fresh.nextId;
+  state.hoverKey = fresh.hoverKey;
+  state.mode = fresh.mode;
+  state.pendingText = fresh.pendingText;
+  state.filename = fresh.filename;
+  state.currentLabelDraft = fresh.currentLabelDraft;
+  state.nodeIndex = fresh.nodeIndex;
+}
+
+function serializeNode(node) {
+  return {
+    moveKey: node.moveKey,
+    text: node.text || '',
+    boxText: node.boxText || '',
+    children: node.children.map(serializeNode),
+  };
+}
+
+function hydrateNode(raw, parentId, state) {
+  const id = parentId == null ? 'root' : `n${state.nextId++}`;
+  const node = createNode(id, parentId, raw.moveKey || null);
+  node.text = normalizeLabel(raw.text || '');
+  node.boxText = String(raw.boxText || '');
+  node.children = Array.isArray(raw.children) ? raw.children.map(child => hydrateNode(child, id, state)) : [];
+  return node;
+}
+
+function exportState(state) {
+  return {
+    format: FILE_FORMAT,
+    version: 1,
+    root: serializeNode(state.rootNode),
+  };
+}
+
+function importState(state, raw) {
+  if (!raw || raw.format !== FILE_FORMAT || !raw.root) {
+    throw new Error('Unsupported file');
+  }
+  const fresh = createInitialState();
+  fresh.nextId = 1;
+  fresh.rootNode = hydrateNode(raw.root, null, fresh);
+  fresh.currentId = 'root';
+  fresh.mode = 'stone';
+  fresh.pendingText = '';
+  fresh.filename = state.filename;
+  fresh.currentLabelDraft = '';
+  state.rootNode = fresh.rootNode;
+  state.currentId = fresh.currentId;
+  state.nextId = fresh.nextId;
+  state.hoverKey = null;
+  state.mode = fresh.mode;
+  state.pendingText = fresh.pendingText;
+  state.currentLabelDraft = fresh.currentLabelDraft;
+}
+
+function downloadJson(filename, content) {
+  const blob = new Blob([content], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function render(state) {
+  refreshIndex(state);
+  const current = getCurrentNode(state);
+  const currentPath = pathMoveNodes(state);
+  const childBadges = current.children.length
+    ? current.children.map(child => {
+        const label = child.text || child.moveKey;
+        return `<button class="omok-solo2__branch${child.id === state.currentId ? ' omok-solo2__branch--active' : ''}" type="button" data-action="goto-node" data-node-id="${escapeHtml(child.id)}">${escapeHtml(label)}</button>`;
+      }).join('')
+    : '<div class="omok-solo2__empty">No child branches yet. Click the board to extend the line, or switch to text mode to add a labeled branch.</div>';
+
+  root.className = 'omok-solo2';
+  root.innerHTML = `
+    <section class="omok-solo2__panel">
+      <div class="omok-solo2__toolbar">
+        <div class="omok-solo2__toolbar-group">
+          <button class="button button-empty" type="button" data-action="go-root">Root</button>
+          <button class="button button-empty" type="button" data-action="go-parent"${current.parentId ? '' : ' disabled'}>Back</button>
+          <button class="button button-empty" type="button" data-action="go-child"${current.children.length ? '' : ' disabled'}>Forward</button>
+          <button class="button button-empty" type="button" data-action="delete-current"${current.parentId ? '' : ' disabled'}>Delete move</button>
+          <button class="button button-empty" type="button" data-action="reset-file">New file</button>
+        </div>
+        <div class="omok-solo2__toolbar-group omok-solo2__toolbar-group--grow">
+          <button class="button ${state.mode === 'text' ? 'button-metal' : 'button-empty'}" type="button" data-action="toggle-mode">${state.mode === 'text' ? 'Text mode' : 'Stone mode'}</button>
+          <button class="button button-empty" type="button" data-action="save-file">Save JSON</button>
+          <button class="button button-empty" type="button" data-action="load-file">Load JSON</button>
+        </div>
+      </div>
+
+      <div class="omok-solo2__status">
+        <div class="omok-solo2__status-card">
+          <strong>Current move</strong>
+          <span>${escapeHtml(formatNodeLabel(state, current))}</span>
+        </div>
+        <div class="omok-solo2__status-card">
+          <strong>Next stone</strong>
+          <span>${stoneColor(nextMoveNumber(state)) === 'black' ? 'Black' : 'White'}</span>
+        </div>
+      </div>
+
+      ${boardHtml(state)}
+      <div class="omok-solo2__footer-note">Text mode creates a labeled child branch at the clicked point. Short labels are shown on next-branch markers and in the tree.</div>
+    </section>
+
+    <aside class="omok-solo2__side">
+      <section class="omok-solo2__section">
+        <h2>Branches from here</h2>
+        <div class="omok-solo2__branch-list">${childBadges}</div>
+        <div class="omok-solo2__hint">Current line length: ${currentPath.length} moves. Child markers also appear directly on the board.</div>
+      </section>
+
+      <section class="omok-solo2__section">
+        <h2>Text mode</h2>
+        <div class="omok-solo2__fields">
+          <div class="omok-solo2__field">
+            <label for="solo2-pending-text">New branch label</label>
+            <input id="solo2-pending-text" class="js-solo2-pending-text" type="text" maxlength="${MAX_LABEL_LENGTH}" value="${escapeHtml(state.pendingText)}" placeholder="ABC" />
+          </div>
+          <div class="omok-solo2__field">
+            <label for="solo2-current-label">Current move label</label>
+            <input id="solo2-current-label" class="js-solo2-current-label" type="text" maxlength="${MAX_LABEL_LENGTH}" value="${escapeHtml(state.currentLabelDraft)}" placeholder="Optional" ${current.parentId ? '' : 'disabled'} />
+          </div>
+          <div class="omok-solo2__row">
+            <button class="button button-empty" type="button" data-action="apply-current-label"${current.parentId ? '' : ' disabled'}>Apply label</button>
+            <button class="button button-empty" type="button" data-action="clear-current-label"${current.parentId ? '' : ' disabled'}>Clear label</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="omok-solo2__section">
+        <h2>Text box</h2>
+        <div class="omok-solo2__field">
+          <label for="solo2-box-text">Notes for this node</label>
+          <textarea id="solo2-box-text" class="js-solo2-box-text" placeholder="Write notes for the current node here.">${escapeHtml(current.boxText || '')}</textarea>
+        </div>
+      </section>
+
+      <section class="omok-solo2__section">
+        <h2>Save and load</h2>
+        <div class="omok-solo2__fields">
+          <div class="omok-solo2__field">
+            <label for="solo2-file-name">Filename</label>
+            <input id="solo2-file-name" class="js-solo2-filename" type="text" value="${escapeHtml(state.filename)}" />
+          </div>
+          <div class="omok-solo2__hint">This first pass saves a site JSON file with the move tree, branch labels, and per-node text box content.</div>
+          <input class="js-solo2-file-input" type="file" accept="application/json,.json" hidden />
+        </div>
+      </section>
+
+      <section class="omok-solo2__section">
+        <h2>Current line</h2>
+        ${sequenceHtml(state)}
+      </section>
+
+      <section class="omok-solo2__section">
+        <h2>Move tree</h2>
+        ${treeHtml(state, state.rootNode)}
+      </section>
+    </aside>
+  `;
+
+  bindEvents(state);
+}
+
+function bindEvents(state) {
+  root.querySelectorAll('[data-action="goto-node"]').forEach(button => {
+    button.addEventListener('click', () => {
+      state.currentId = button.getAttribute('data-node-id') || 'root';
+      state.currentLabelDraft = getCurrentNode(state).text || '';
+      state.hoverKey = null;
+      render(state);
+    });
+  });
+
+  root.querySelector('[data-action="go-root"]')?.addEventListener('click', () => {
+    state.currentId = 'root';
+    state.currentLabelDraft = '';
+    state.hoverKey = null;
+    render(state);
+  });
+
+  root.querySelector('[data-action="go-parent"]')?.addEventListener('click', () => {
+    goToParent(state);
+    render(state);
+  });
+
+  root.querySelector('[data-action="go-child"]')?.addEventListener('click', () => {
+    goToFirstChild(state);
+    render(state);
+  });
+
+  root.querySelector('[data-action="delete-current"]')?.addEventListener('click', () => {
+    deleteCurrentNode(state);
+    render(state);
+  });
+
+  root.querySelector('[data-action="reset-file"]')?.addEventListener('click', () => {
+    resetState(state);
+    render(state);
+  });
+
+  root.querySelector('[data-action="toggle-mode"]')?.addEventListener('click', () => {
+    state.mode = state.mode === 'stone' ? 'text' : 'stone';
+    render(state);
+  });
+
+  root.querySelector('[data-action="apply-current-label"]')?.addEventListener('click', () => {
+    const current = getCurrentNode(state);
+    if (!current.parentId) return;
+    current.text = normalizeLabel(state.currentLabelDraft);
+    render(state);
+  });
+
+  root.querySelector('[data-action="clear-current-label"]')?.addEventListener('click', () => {
+    const current = getCurrentNode(state);
+    if (!current.parentId) return;
+    current.text = '';
+    state.currentLabelDraft = '';
+    render(state);
+  });
+
+  root.querySelector('[data-action="save-file"]')?.addEventListener('click', () => {
+    const filename = normalizeFilename(state.filename || 'solo-board-2.json');
+    state.filename = filename;
+    downloadJson(filename, `${JSON.stringify(exportState(state), null, 2)}\n`);
+    render(state);
+  });
+
+  root.querySelector('[data-action="load-file"]')?.addEventListener('click', () => {
+    root.querySelector('.js-solo2-file-input')?.click();
+  });
+
+  root.querySelector('.js-solo2-pending-text')?.addEventListener('input', event => {
+    state.pendingText = normalizeLabel(event.target.value);
+    if (event.target.value !== state.pendingText) event.target.value = state.pendingText;
+  });
+
+  root.querySelector('.js-solo2-current-label')?.addEventListener('input', event => {
+    state.currentLabelDraft = normalizeLabel(event.target.value);
+    if (event.target.value !== state.currentLabelDraft) event.target.value = state.currentLabelDraft;
+  });
+
+  root.querySelector('.js-solo2-box-text')?.addEventListener('input', event => {
+    getCurrentNode(state).boxText = event.target.value;
+  });
+
+  root.querySelector('.js-solo2-filename')?.addEventListener('input', event => {
+    state.filename = event.target.value;
+  });
+
+  root.querySelector('.js-solo2-file-input')?.addEventListener('change', async event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      importState(state, JSON.parse(text));
+      state.filename = file.name || state.filename;
+      render(state);
+    } catch (error) {
+      window.alert('Failed to load file. Use a Solo Board 2 JSON export.');
+    } finally {
+      event.target.value = '';
+    }
+  });
+
+  const svg = root.querySelector('.js-solo2-svg');
+  const surface = root.querySelector('.js-solo2-surface');
+  const taken = occupiedOnPath(state);
+  const current = getCurrentNode(state);
+  const childKeys = new Set(current.children.map(child => child.moveKey));
+
+  surface?.addEventListener('mousemove', event => {
+    const key = nearestKeyFromPointer(event, svg);
+    const next = key && !taken.has(key) ? key : null;
+    if (state.hoverKey === next) return;
+    state.hoverKey = next;
+    render(state);
+  });
+
+  surface?.addEventListener('mouseleave', () => {
+    if (state.hoverKey == null) return;
+    state.hoverKey = null;
+    render(state);
+  });
+
+  surface?.addEventListener('pointerdown', event => {
+    event.preventDefault();
+    const key = nearestKeyFromPointer(event, svg);
+    if (!key) return;
+    if (childKeys.has(key)) {
+      const child = current.children.find(node => node.moveKey === key);
+      if (child) {
+        state.currentId = child.id;
+        state.currentLabelDraft = child.text || '';
+        state.hoverKey = null;
+        render(state);
+      }
+      return;
+    }
+    if (taken.has(key)) return;
+    const label = state.mode === 'text' ? state.pendingText : '';
+    if (createChildAtCurrent(state, key, label)) {
+      state.hoverKey = null;
+      render(state);
+    }
+  });
+}
+
+function normalizeFilename(name) {
+  const trimmed = String(name || '').trim() || 'solo-board-2.json';
+  return trimmed.endsWith('.json') ? trimmed : `${trimmed}.json`;
+}
+
+function boardHtml(state) {
+  const current = getCurrentNode(state);
+  const path = pathMoveNodes(state);
+  const lines = [];
+  for (let i = 0; i < BOARD_SIZE; i += 1) {
+    const pos = SVG_INSET + i * STEP;
+    lines.push(`<line class="omok-solo2__grid" x1="${SVG_INSET}" y1="${pos}" x2="${SVG_SIZE - SVG_INSET}" y2="${pos}"></line>`);
+    lines.push(`<line class="omok-solo2__grid" x1="${pos}" y1="${SVG_INSET}" x2="${pos}" y2="${SVG_SIZE - SVG_INSET}"></line>`);
+  }
+
+  const stars = STAR_POINTS.flatMap(row =>
+    STAR_POINTS.map(col => {
+      const pt = coordFor(col, row);
+      return `<circle class="omok-solo2__star" cx="${pt.x}" cy="${pt.y}" r="0.62"></circle>`;
+    }),
+  ).join('');
+
+  const stones = path.map(node => {
+    const moveNumber = nodeMoveNumber(state, node);
+    const pos = parseKey(node.moveKey);
+    const pt = coordFor(pos.col, pos.row);
+    const color = stoneColor(moveNumber);
+    const stoneClass = color === 'black' ? 'omok-solo2__stone-black' : 'omok-solo2__stone-white';
+    const textClass = color === 'black' ? 'omok-solo2__stone-text-black' : 'omok-solo2__stone-text-white';
+    return `<g><circle class="${stoneClass}" cx="${pt.x}" cy="${pt.y}" r="2.86"></circle><text class="${textClass}" x="${pt.x}" y="${pt.y}">${moveNumber}</text></g>`;
+  }).join('');
+
+  const childMarkers = current.children.map(child => {
+    const pos = parseKey(child.moveKey);
+    const pt = coordFor(pos.col, pos.row);
+    const label = escapeHtml(child.text || String(nextMoveNumber(state)));
+    if (child.text) {
+      return `<g><rect class="omok-solo2__child-rect" x="${pt.x - 3.55}" y="${pt.y - 2.4}" width="7.1" height="4.8" rx="1.4" ry="1.4"></rect><text class="omok-solo2__child-text" x="${pt.x}" y="${pt.y}">${label}</text></g>`;
+    }
+    return `<g><circle class="omok-solo2__child-circle" cx="${pt.x}" cy="${pt.y}" r="2.7"></circle><text class="omok-solo2__child-text" x="${pt.x}" y="${pt.y}">${label}</text></g>`;
+  }).join('');
+
+  const preview = state.hoverKey && !occupiedOnPath(state).has(state.hoverKey) ? (() => {
+    const pos = parseKey(state.hoverKey);
+    const pt = coordFor(pos.col, pos.row);
+    const isExistingChild = current.children.some(child => child.moveKey === state.hoverKey);
+    if (isExistingChild) return '';
+    const previewClass = stoneColor(nextMoveNumber(state)) === 'black' ? 'omok-solo2__preview-black' : 'omok-solo2__preview-white';
+    const previewText = state.mode === 'text' && state.pendingText ? `<text class="omok-solo2__preview-text" x="${pt.x}" y="${pt.y}">${escapeHtml(state.pendingText)}</text>` : '';
+    return `<g><circle class="${previewClass}" cx="${pt.x}" cy="${pt.y}" r="2.86"></circle>${previewText}<circle class="omok-solo2__preview-ring" cx="${pt.x}" cy="${pt.y}" r="3.32"></circle></g>`;
+  })() : '';
+
+  const topCoords = [...FILES].map(ch => `<span>${ch}</span>`).join('');
+  const sideCoords = Array.from({ length: BOARD_SIZE }, (_, i) => `<span>${BOARD_SIZE - i}</span>`).join('');
+
+  return `
+    <div class="omok-solo2__board-wrap">
+      <div></div>
+      <div class="omok-solo2__coords-horizontal">${topCoords}</div>
+      <div></div>
+      <div class="omok-solo2__coords-vertical">${sideCoords}</div>
+      <div class="omok-solo2__board-box">
+        <svg class="omok-solo2__board-svg js-solo2-svg" viewBox="0 0 ${SVG_SIZE} ${SVG_SIZE}" preserveAspectRatio="none" aria-label="Omok solo board 2">
+          <rect x="0" y="0" width="${SVG_SIZE}" height="${SVG_SIZE}" rx="2.8" ry="2.8" fill="transparent"></rect>
+          ${lines.join('')}
+          ${stars}
+          ${stones}
+          ${childMarkers}
+          ${preview}
+          <rect class="omok-solo2__surface js-solo2-surface" x="0" y="0" width="${SVG_SIZE}" height="${SVG_SIZE}" rx="2.8" ry="2.8"></rect>
+        </svg>
+      </div>
+      <div class="omok-solo2__coords-vertical">${sideCoords}</div>
+      <div></div>
+      <div class="omok-solo2__coords-horizontal">${topCoords}</div>
+      <div></div>
+    </div>
+  `;
+}
+
+function sequenceHtml(state) {
+  const path = pathMoveNodes(state);
+  if (!path.length) return '<div class="omok-solo2__empty">No moves yet.</div>';
+  return `<ol class="omok-solo2__sequence">${path.map(node => `<li>${escapeHtml(formatNodeLabel(state, node))}${node.boxText ? ` - ${escapeHtml(node.boxText.slice(0, 36))}` : ''}</li>`).join('')}</ol>`;
+}
+
+function treeHtml(state, node) {
+  const children = node.children.map(child => {
+    const isCurrent = child.id === state.currentId;
+    const branch = treeHtml(state, child);
+    return `<li><button class="omok-solo2__tree-button${isCurrent ? ' omok-solo2__tree-button--current' : ''}" type="button" data-action="goto-node" data-node-id="${escapeHtml(child.id)}">${escapeHtml(formatNodeLabel(state, child))}</button>${branch}</li>`;
+  }).join('');
+  if (!children) return '';
+  return `<ul class="omok-solo2__tree">${children}</ul>`;
+}

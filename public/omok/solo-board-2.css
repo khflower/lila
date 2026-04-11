@@ -1,0 +1,319 @@
+.omok-solo2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(20rem, 0.9fr);
+  gap: 1.5rem;
+}
+
+.omok-solo2__panel,
+.omok-solo2__side {
+  border: 1px solid rgba(58, 48, 27, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 28px rgba(27, 19, 6, 0.08);
+}
+
+.omok-solo2__panel {
+  padding: 1rem;
+}
+
+.omok-solo2__side {
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.omok-solo2__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.omok-solo2__toolbar .button {
+  min-width: 0;
+}
+
+.omok-solo2__toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.omok-solo2__toolbar-group--grow {
+  flex: 1 1 16rem;
+}
+
+.omok-solo2__status {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.omok-solo2__status-card {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.8rem;
+  background: rgba(246, 240, 224, 0.9);
+}
+
+.omok-solo2__status-card strong,
+.omok-solo2__section h2,
+.omok-solo2__section h3 {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.omok-solo2__section {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.omok-solo2__section + .omok-solo2__section {
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(58, 48, 27, 0.1);
+}
+
+.omok-solo2__hint {
+  color: #6b6152;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.omok-solo2__fields {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.omok-solo2__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.omok-solo2__field label {
+  font-weight: 600;
+  color: #4a3c26;
+}
+
+.omok-solo2__field input,
+.omok-solo2__field textarea {
+  width: 100%;
+  border: 1px solid rgba(74, 60, 38, 0.18);
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.omok-solo2__field textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.omok-solo2__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.omok-solo2__badge-row,
+.omok-solo2__branch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.omok-solo2__badge,
+.omok-solo2__branch,
+.omok-solo2__tree-button {
+  border: 1px solid rgba(74, 60, 38, 0.16);
+  border-radius: 999px;
+  padding: 0.45rem 0.7rem;
+  background: rgba(250, 246, 238, 0.96);
+  color: #3e3220;
+  font: inherit;
+  cursor: pointer;
+}
+
+.omok-solo2__branch--active,
+.omok-solo2__tree-button--current {
+  background: #e5c07b;
+  border-color: rgba(122, 82, 18, 0.35);
+}
+
+.omok-solo2__tree {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.omok-solo2__tree li {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.omok-solo2__sequence {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.omok-solo2__empty {
+  padding: 0.9rem;
+  border-radius: 0.8rem;
+  background: rgba(246, 240, 224, 0.9);
+  color: #6b6152;
+}
+
+.omok-solo2__board-wrap {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) 1.6rem;
+  grid-template-rows: 1.5rem minmax(0, 1fr) 1.5rem;
+  gap: 0.3rem;
+}
+
+.omok-solo2__coords-horizontal,
+.omok-solo2__coords-vertical {
+  display: grid;
+  color: #6d5a36;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.omok-solo2__coords-horizontal {
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+.omok-solo2__coords-vertical {
+  grid-template-rows: repeat(15, minmax(0, 1fr));
+}
+
+.omok-solo2__coords-horizontal span,
+.omok-solo2__coords-vertical span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.omok-solo2__board-box {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ebcb8b 0%, #ddb36a 100%);
+  box-shadow: inset 0 0 0 1px rgba(60, 41, 12, 0.14);
+}
+
+.omok-solo2__board-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.omok-solo2__surface {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.omok-solo2__grid {
+  stroke: rgba(66, 49, 20, 0.8);
+  stroke-width: 0.32;
+}
+
+.omok-solo2__star {
+  fill: rgba(48, 33, 9, 0.82);
+}
+
+.omok-solo2__stone-black {
+  fill: #121212;
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 0.18;
+}
+
+.omok-solo2__stone-white {
+  fill: #f9f7f2;
+  stroke: rgba(33, 28, 19, 0.45);
+  stroke-width: 0.18;
+}
+
+.omok-solo2__stone-text-black,
+.omok-solo2__stone-text-white,
+.omok-solo2__child-text,
+.omok-solo2__preview-text {
+  font-size: 3px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.omok-solo2__stone-text-black {
+  fill: #f7f4ec;
+}
+
+.omok-solo2__stone-text-white {
+  fill: #252019;
+}
+
+.omok-solo2__child-circle {
+  fill: rgba(255, 248, 232, 0.94);
+  stroke: rgba(69, 53, 24, 0.75);
+  stroke-width: 0.22;
+}
+
+.omok-solo2__child-rect {
+  fill: rgba(255, 248, 232, 0.95);
+  stroke: rgba(69, 53, 24, 0.72);
+  stroke-width: 0.22;
+}
+
+.omok-solo2__child-text {
+  fill: #3c311f;
+}
+
+.omok-solo2__preview-black,
+.omok-solo2__preview-white {
+  opacity: 0.55;
+}
+
+.omok-solo2__preview-black {
+  fill: #121212;
+}
+
+.omok-solo2__preview-white {
+  fill: #f9f7f2;
+  stroke: rgba(33, 28, 19, 0.4);
+  stroke-width: 0.18;
+}
+
+.omok-solo2__preview-ring {
+  fill: none;
+  stroke: rgba(61, 104, 199, 0.78);
+  stroke-width: 0.26;
+}
+
+.omok-solo2__footer-note {
+  margin-top: 0.75rem;
+  color: #6b6152;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 1100px) {
+  .omok-solo2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .omok-solo2__panel,
+  .omok-solo2__side {
+    padding: 0.8rem;
+  }
+
+  .omok-solo2__status {
+    grid-template-columns: 1fr;
+  }
+}

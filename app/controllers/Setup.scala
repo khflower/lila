@@ -1,13 +1,18 @@
 package controllers
 
+import java.time.Instant
+import scala.concurrent.duration.*
+
 import chess.format.Fen
 import play.api.libs.json.Json
 import play.api.mvc.{ EssentialAction, Result }
 
 import lila.app.{ *, given }
 import lila.common.HTTPRequest
+import lila.core.id.GameFullId
 import lila.core.socket.Sri
 import lila.game.AnonCookie
+import lila.omok.RuleSet
 import lila.setup.Processor.HookResult
 import lila.setup.ValidFen
 
@@ -26,10 +31,12 @@ final class Setup(
           doubleJsonFormError,
           config =>
             processor.ai(config).flatMap { pov =>
-              negotiateApi(
-                html = redirectPov(pov),
-                api = _ => env.api.roundApi.player(pov, scalalib.data.Preload.none, none).map(Created(_))
-              )
+              seedOmokAiIfNeeded(pov, config).flatMap { _ =>
+                negotiateApi(
+                  html = redirectPov(pov, omok = config.isOmok),
+                  api = _ => env.api.roundApi.player(pov, scalalib.data.Preload.none, none).map(Created(_))
+                )
+              }
             }
         )
 
@@ -39,56 +46,123 @@ final class Setup(
         bindForm(forms.friend)(
           doubleJsonFormError,
           config =>
-            for
-              origUser <- ctx.user.traverse(env.user.perfsRepo.withPerf(_, config.perfType))
-              destUser <- userId.so(env.user.api.enabledWithPerf(_, config.perfType))
-              denied <- destUser.so(u => env.challenge.granter.isDenied(u.user, config.perfKey.some))
-              result <- denied match
-                case Some(denied) =>
-                  val message = lila.challenge.ChallengeDenied.translated(denied)
-                  negotiate(
-                    // 403 tells setupCtrl.ts to close the setup modal
-                    forbiddenJson(message), // TODO test
-                    JsonBadRequest(message)
-                  )
-                case None =>
-                  import lila.challenge.Challenge.*
-                  (origUser, ctx.req.sid)
-                    .match
-                      case (Some(orig), _) => toRegistered(orig).some
-                      case (_, Some(sid)) => Challenger.Anonymous(sid).some
-                      case _ if HTTPRequest.isLichobile(ctx.req) => Challenger.Open.some
-                      case _ => none
-                    .so: challenger =>
-                      val timeControl = makeTimeControl(config.makeClock, config.makeDaysPerTurn)
-                      val challenge = lila.challenge.Challenge.make(
-                        variant = config.variant,
-                        initialFen = config.fen,
-                        timeControl = timeControl,
-                        rated = config.rated,
-                        color = config.color.name,
-                        challenger = challenger,
-                        destUser = destUser,
-                        rematchOf = none
-                      )
-                      env.challenge.api
-                        .create(challenge)
-                        .flatMap:
-                          if _ then
-                            negotiate(
-                              Redirect(routes.Round.watcher(challenge.gameId, Color.white)),
-                              challengeC.showChallenge(challenge, justCreated = true)
-                            )
-                          else
-                            negotiate(
-                              Redirect(routes.Lobby.home),
-                              JsonBadRequest("Challenge not created")
-                            )
-            yield result
+            val normalizedRuleSet = config.omokRuleSet.map(parseOmokRuleSet).getOrElse(RuleSet.Taraguchi10)
+            val creatorColor = config.creatorColor
+            val normalizedColor =
+              if creatorColor == Color.white then lila.lobby.TriColor.White
+              else lila.lobby.TriColor.Black
+            val session = Setup.OmokFriendInviteStore.create(
+              config = config.copy(color = normalizedColor, omokRuleSet = normalizedRuleSet.toString.toLowerCase.some),
+              ruleSet = normalizedRuleSet,
+              hostUserId = ctx.userId,
+              hostSid = ctx.req.sid,
+              requestedUser = userId.map(_.value)
+            )
+            fuccess(Redirect(routes.Setup.omokFriend(session.id, session.hostToken.some)))
         )
 
+  def omokFriend(id: String, host: Option[String]) = Open: ctx ?=>
+    Setup.OmokFriendInviteStore.view(id, host, ctx.req.sid, ctx.userId) match
+      case Some(view) =>
+        view.redirectFullId match
+          case Some(fullId) =>
+            env.round.proxyRepo
+              .pov(fullId)
+              .flatMap:
+                case Some(pov) => redirectPov(pov, omok = true)
+                case None      => fuccess(Redirect(routes.Round.omokClaim(fullId)))
+          case None =>
+            val shareUrl = s"${if ctx.req.secure then "https" else "http"}://${ctx.req.host}${view.sharePath}"
+            Ok.page(
+              views.omokPages.friendInvite(
+                sessionId = view.session.id,
+                shareUrl = shareUrl,
+                stateUrl = routes.Setup.omokFriendState(view.session.id, host).url,
+                confirmUrl = routes.Setup.omokFriendConfirm(view.session.id, host).url,
+                isHost = view.isHost,
+                guestJoined = view.session.guestJoined,
+                ruleSet = renderFriendRuleSet(view.session.ruleSet),
+                timeControl = renderFriendTimeControl(view.session.config),
+                gameMode = if view.session.config.rated.yes then "Rated" else "Casual",
+                side = view.session.config.color.name.capitalize,
+                requestedUser = view.session.requestedUser
+              )
+            )
+      case None =>
+        NotFound.page(
+          views.omokPages.practiceHub("This invite link is missing or expired. Start a fresh omok invite from the lobby.")
+        )
+
+  def omokFriendState(id: String, host: Option[String]) = Open: ctx ?=>
+    Setup.OmokFriendInviteStore.view(id, host, ctx.req.sid, ctx.userId).fold[Fu[Result]](fuccess(notFoundJson())): view =>
+      val res = JsonOk(
+        Json.obj(
+          "ok" -> true,
+          "isHost" -> view.isHost,
+          "guestJoined" -> view.session.guestJoined,
+          "canConfirm" -> (view.isHost && view.session.guestJoined && !view.session.starting && view.session.started.isEmpty),
+          "starting" -> view.session.starting,
+          "started" -> view.session.started.nonEmpty,
+          "redirectUrl" -> view.redirectFullId.map(routes.Round.omokClaim(_).url),
+          "ruleSet" -> renderFriendRuleSet(view.session.ruleSet),
+          "timeControl" -> renderFriendTimeControl(view.session.config),
+          "gameMode" -> (if view.session.config.rated.yes then "Rated" else "Casual"),
+          "side" -> view.session.config.color.name.capitalize,
+          "requestedUser" -> view.session.requestedUser
+        )
+      )
+      view.redirectFullId.fold(fuccess(res))(fullId => withOmokAnonCookie(fullId, res))
+
+  def omokFriendConfirm(id: String, host: Option[String]) = OpenBody: ctx ?=>
+    Setup.OmokFriendInviteStore.prepareStart(id, host).fold(
+      err => JsonBadRequest(err).toFuccess,
+      view =>
+        view.redirectFullId match
+          case Some(fullId) =>
+            withOmokAnonCookie(
+              fullId,
+              JsonOk(Json.obj("ok" -> true, "redirectUrl" -> routes.Round.omokClaim(fullId).url))
+            )
+          case None =>
+            processor
+              .friendOmok(view.session.config, view.session.ruleSet)
+              .flatMap: game =>
+                env.round.omokRoundRepo.put(game.game.id, lila.round.OmokRoundState.initial(view.session.ruleSet))
+                val started = Setup.OmokFriendStarted(
+                  hostFullId = game.host.fullId,
+                  guestFullId = game.guest.fullId
+                )
+                Setup.OmokFriendInviteStore.completeStart(view.session.id, started)
+                withOmokAnonCookie(
+                  game.host.fullId,
+                  JsonOk(
+                    Json.obj(
+                      "ok" -> true,
+                      "redirectUrl" -> routes.Round.omokClaim(game.host.fullId).url
+                    )
+                  )
+                )
+              .recoverWith {
+                case err =>
+                  Setup.OmokFriendInviteStore.resetStarting(view.session.id)
+                  JsonBadRequest(Option(err.getMessage).filter(_.nonEmpty).getOrElse("Failed to create omok room")).toFuccess
+              }
+    )
+
+  def omokSolo = Open: ctx ?=>
+    Ok.page(views.omokPages.soloBoard)
+
+  def omokSolo2 = Open: ctx ?=>
+    Ok.page(views.omokSolo2)
+
   private def hookResponse(res: HookResult) = res match
-    case HookResult.Created(id) =>
+    case HookResult.CreatedHook(hook) =>
+      JsonOk:
+        Json.obj(
+          "ok" -> true,
+          "hook" -> hook.render
+        )
+    case HookResult.CreatedSeek(id) =>
       JsonOk:
         Json.obj(
           "ok" -> true,
@@ -109,10 +183,12 @@ final class Setup(
                   given Perf = me.fold(lila.rating.Perf.default)(_.perfs(userConfig.perfType))
                   blocking <- ctx.userId.so(env.relation.api.fetchBlocking)
                   res <- processor.hook(
-                    userConfig.withinLimits,
+                    userConfig.withinLimits.copy(color = lila.lobby.TriColor.Random),
                     sri,
                     req.sid,
-                    lila.core.pool.Blocking(blocking)
+                    lila.core.pool.Blocking(blocking),
+                    omok = true,
+                    omokRuleSet = userConfig.omokRuleSet
                   )(using me)
                 yield hookResponse(res)
         )
@@ -177,7 +253,8 @@ final class Setup(
                         case Right(me) =>
                           env.setup.processor.createSeekIfAllowed(seek, me.id).map {
                             case HookResult.Refused => JsonBadRequest("Already playing too many games")
-                            case HookResult.Created(id) => Ok(Json.obj("id" -> id))
+                            case HookResult.CreatedSeek(id) => Ok(Json.obj("id" -> id))
+                            case HookResult.CreatedHook(hook) => Ok(Json.obj("id" -> hook.id))
                           }
                     case Right(None) => notFoundJson().toFuccess
           yield res
@@ -227,8 +304,52 @@ final class Setup(
           )
   }
 
-  private[controllers] def redirectPov(pov: Pov)(using ctx: Context) =
-    val redir = Redirect(routes.Round.watcher(pov.gameId, Color.white))
+  private def seedOmokAiIfNeeded(pov: Pov, config: lila.setup.AiConfig): Fu[Unit] =
+    if !config.isOmok then fuccess(())
+    else
+      val ruleSet = config.omokRuleSet.map(parseOmokAiRuleSet).getOrElse(RuleSet.Renju)
+      val aiColor = if pov.color == Color.white then Color.black else Color.white
+      env.round.omokRoundRepo.put(pov.gameId, lila.round.OmokRoundState.initial(ruleSet, config.omokAiConfig(aiColor)))
+      fuccess(())
+
+  private def parseOmokAiRuleSet(raw: String): RuleSet =
+    raw.trim.toLowerCase match
+      case "freestyle" => RuleSet.Freestyle
+      case "taraguchi10" | "taraguchi-10" | "taraguchi" => RuleSet.Taraguchi10
+      case _           => RuleSet.Renju
+
+  private def parseOmokRuleSet(raw: String): RuleSet =
+    raw.trim.toLowerCase match
+      case "freestyle" => RuleSet.Freestyle
+      case "renju"     => RuleSet.Renju
+      case _           => RuleSet.Taraguchi10
+
+  private def renderFriendRuleSet(ruleSet: RuleSet): String =
+    ruleSet.toString match
+      case "Taraguchi10" => "Taraguchi-10"
+      case value         => value
+
+  private def renderFriendTimeControl(config: lila.setup.FriendConfig): String =
+    config.makeClock
+      .map(_.show)
+      .orElse(config.makeDaysPerTurn.map(days => s"${days.value} days / turn"))
+      .getOrElse("Unlimited")
+
+  private def withOmokAnonCookie(fullId: GameFullId, res: Result)(using ctx: Context): Fu[Result] =
+    fuccess:
+      if ctx.isAuth then res
+      else
+        res.withCookies(
+          env.security.lilaCookie.cookie(
+            AnonCookie.name,
+            fullId.playerId.value,
+            maxAge = AnonCookie.maxAge.some,
+            httpOnly = false.some
+          )
+        )
+
+  private[controllers] def redirectPov(pov: Pov, omok: Boolean = false)(using ctx: Context) =
+    val redir = Redirect(if omok then routes.Round.omokClaim(pov.fullId) else routes.Round.watcher(pov.gameId, Color.white))
     if ctx.isAuth then redir
     else
       redir.withCookies(
@@ -239,3 +360,117 @@ final class Setup(
           httpOnly = false.some
         )
       )
+
+object Setup:
+
+  final case class OmokFriendStarted(
+      hostFullId: GameFullId,
+      guestFullId: GameFullId
+  )
+
+  final case class OmokFriendInviteSession(
+      id: String,
+      hostToken: String,
+      config: lila.setup.FriendConfig,
+      ruleSet: RuleSet,
+      hostUserId: Option[UserId],
+      hostSid: Option[String],
+      requestedUser: Option[String],
+      guestJoined: Boolean,
+      guestUserId: Option[UserId],
+      guestSid: Option[String],
+      started: Option[OmokFriendStarted],
+      starting: Boolean,
+      createdAt: Instant
+  ):
+    def sharePath: String = s"/omok/friend/$id"
+    def hostPath: String = s"$sharePath?host=$hostToken"
+
+  final case class OmokFriendInviteView(session: OmokFriendInviteSession, isHost: Boolean):
+    def sharePath: String = session.sharePath
+    def redirectFullId: Option[GameFullId] =
+      session.started.map(start => if isHost then start.hostFullId else start.guestFullId)
+
+  object OmokFriendInviteStore:
+    private val sessions = collection.mutable.Map.empty[String, OmokFriendInviteSession]
+    private val ttl = 12.hours
+
+    def create(
+        config: lila.setup.FriendConfig,
+        ruleSet: RuleSet,
+        hostUserId: Option[UserId],
+        hostSid: Option[String],
+        requestedUser: Option[String]
+    ): OmokFriendInviteSession = synchronized {
+      prune()
+      val session = OmokFriendInviteSession(
+        id = randomId(8),
+        hostToken = randomId(12),
+        config = config,
+        ruleSet = ruleSet,
+        hostUserId = hostUserId,
+        hostSid = hostSid,
+        requestedUser = requestedUser,
+        guestJoined = false,
+        guestUserId = none,
+        guestSid = none,
+        started = none,
+        starting = false,
+        createdAt = nowInstant
+      )
+      sessions.update(session.id, session)
+      session
+    }
+
+    def view(
+        id: String,
+        hostToken: Option[String],
+        sid: Option[String],
+        userId: Option[UserId]
+    ): Option[OmokFriendInviteView] = synchronized {
+      prune()
+      sessions.get(id).map: session =>
+        val isHost = hostToken.contains(session.hostToken)
+        val updated =
+          if isHost then session
+          else
+            session.copy(
+              guestJoined = true,
+              guestUserId = userId.orElse(session.guestUserId),
+              guestSid = sid.orElse(session.guestSid)
+            )
+        sessions.update(id, updated)
+        OmokFriendInviteView(updated, isHost)
+    }
+
+    def prepareStart(id: String, hostToken: Option[String]): Either[String, OmokFriendInviteView] = synchronized {
+      prune()
+      sessions.get(id).toRight("Invite session not found").flatMap: session =>
+        if !hostToken.contains(session.hostToken) then Left("Only the inviter can start this omok room")
+        else if session.started.nonEmpty then Right(OmokFriendInviteView(session, isHost = true))
+        else if session.starting then Left("This omok room is already starting")
+        else if !session.guestJoined then Left("Wait for another player to open the invite link first")
+        else
+          val updated = session.copy(starting = true)
+          sessions.update(id, updated)
+          Right(OmokFriendInviteView(updated, isHost = true))
+    }
+
+    def completeStart(id: String, started: OmokFriendStarted): Unit = synchronized {
+      sessions.get(id).foreach: session =>
+        sessions.update(id, session.copy(started = started.some, starting = false))
+    }
+
+    def resetStarting(id: String): Unit = synchronized {
+      sessions.get(id).foreach: session =>
+        sessions.update(id, session.copy(starting = false))
+    }
+
+    private def prune(): Unit =
+      val threshold = nowInstant.minusSeconds(ttl.toSeconds)
+      sessions.keys.foreach: id =>
+        sessions.get(id).foreach: session =>
+          if session.createdAt.isBefore(threshold) then sessions.remove(id)
+
+    private def randomId(length: Int): String =
+      scalalib.ThreadLocalRandom.nextString(length)
