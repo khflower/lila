@@ -50,6 +50,23 @@ run
 
 The Wiki describes [how to setup a development environment](https://github.com/lichess-org/lila/wiki/Lichess-Development-Onboarding).
 
+## Omok fork quick start
+
+This fork contains Omok-specific gameplay, lobby, AI, friend-invite, rematch, and Solo Board work that is not covered by the upstream README alone.
+
+If you want the shortest path from fresh clone to a working Omok server, start here:
+
+- [docs/omok/STARTING_GUIDE.md](docs/omok/STARTING_GUIDE.md)
+- local support stack: `docker compose -f docker-compose.omok-dev.yml up -d`
+
+That guide covers:
+
+- local MongoDB + Redis bootstrap
+- app startup on `localhost:9663`
+- optional `lila-ws` startup on `localhost:9664`
+- `/ko` verification steps
+- common Omok-specific startup traps
+
 ## HTTP API
 
 Feel free to use the [Lichess API](https://lichess.org/api) in your applications and websites.
