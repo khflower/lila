@@ -262,7 +262,24 @@ const weightedChoice = <T>(items: T[], weightOf: (item: T) => number): T | undef
 
 const isBlackAdvantageOrBetter = (evalIndex?: number): boolean => (evalIndex ?? 9) <= 3;
 
+const currentOpeningSeat = (position: OmokRoundPosition): Color | undefined => {
+  const seat = position.opening?.activeSeat ?? position.turn;
+  return seat === 'white' || seat === 'black' ? seat : undefined;
+};
+
 const shouldSwapOpening = (opening: OmokRoundPosition['opening']): boolean => !!opening?.canSwap && Math.random() < 0.5;
+
+const shouldSwapFinalFifth = (position: OmokRoundPosition, prefix4: OpeningGuideFifthItem[]): boolean => {
+  if (!position.opening?.canSwap) return false;
+  const actor = currentOpeningSeat(position);
+  const lastMoveKey = position.lastMove?.key || position.moves?.[4]?.key;
+  const fifth = lastMoveKey ? prefix4.find(item => item.move === lastMoveKey) : undefined;
+  const evalIndex = fifth?.evalIndex;
+  if (evalIndex === undefined || !actor) return Math.random() < 0.5;
+  if (evalIndex < 4) return actor !== 'black';
+  if (evalIndex > 4) return actor !== 'white';
+  return Math.random() < 0.5;
+};
 
 const shouldStartCandidates = (items: OpeningGuideFifthItem[]): boolean =>
   items.length >= 10 && items.slice(0, 10).every(item => isBlackAdvantageOrBetter(item.evalIndex));
@@ -346,7 +363,7 @@ export const pickTaraguchiAiAction = async (
       return fallback ? { type: 'place', move: fallback } : undefined;
     }
     case 5:
-      if (shouldSwapOpening(opening)) return { type: 'swap' };
+      if (shouldSwapFinalFifth(position, prefix4)) return { type: 'swap' };
       return;
     default:
       return;
