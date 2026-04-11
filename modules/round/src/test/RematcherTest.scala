@@ -4,6 +4,8 @@ import chess.*
 import chess.format.Fen
 import chess.variant.*
 
+import lila.game.Rematches
+
 import Rematcher.*
 
 class RematcherTest extends munit.FunSuite:
@@ -30,3 +32,24 @@ class RematcherTest extends munit.FunSuite:
       .foreach: variant =>
         val x = returnChessGame(variant, none, none, false)
         assertEquals(x.position, variant.initialPosition)
+
+  test("accepted rematch redirects instead of creating a fresh offer"):
+    val nextId = lila.core.id.GameId("abcdefgh")
+    val action = decideAction(
+      existing = Some(Rematches.NextGame.Accepted(nextId)),
+      color = Color.White,
+      opponentIsAi = false,
+      declined = false,
+      canOffer = true
+    )
+    assertEquals(action, YesAction.RedirectAccepted(nextId))
+
+  test("opponent offer joins existing rematch"):
+    val action = decideAction(
+      existing = Some(Rematches.NextGame.Offered(Color.Black, lila.core.id.GameId("abcdefgh"))),
+      color = Color.White,
+      opponentIsAi = false,
+      declined = false,
+      canOffer = true
+    )
+    assertEquals(action, YesAction.JoinExisting)

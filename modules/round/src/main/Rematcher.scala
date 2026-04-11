@@ -51,11 +51,18 @@ final private class Rematcher(
   def yes(pov: Pov): Fu[Events] =
     pov match
       case Pov(game, color) if couldRematch(game) =>
-        if isOffering(!pov.ref) || game.opponent(color).isAi
-        then rematches.getAcceptedId(game.id).fold(rematchJoin(pov))(rematchExists(pov))
-        else if !declined.get(pov.flip.fullId) && rateLimit.zero(pov.fullId)(true)
-        then rematchCreate(pov)
-        else fuccess(List(Event.RematchOffer(by = none)))
+        Rematcher
+          .decideAction(
+            existing = rematches.get(game.id),
+            color = color,
+            opponentIsAi = game.opponent(color).isAi,
+            declined = declined.get(pov.flip.fullId),
+            canOffer = rateLimit.zero(pov.fullId)(true)
+          ) match
+          case Rematcher.YesAction.RedirectAccepted(nextId) => rematchExists(pov)(nextId)
+          case Rematcher.YesAction.JoinExisting            => rematchJoin(pov)
+          case Rematcher.YesAction.CreateOffer            => rematchCreate(pov)
+          case Rematcher.YesAction.Noop                   => fuccess(List(Event.RematchOffer(by = none)))
       case _ => fuccess(List(Event.ReloadOwner))
 
   def no(pov: Pov): Fu[Events] =
@@ -163,6 +170,26 @@ final private class Rematcher(
     game.variant.standard && game.status == chess.Status.VariantEnd
 
 object Rematcher:
+
+  enum YesAction:
+    case RedirectAccepted(nextId: GameId)
+    case JoinExisting
+    case CreateOffer
+    case Noop
+
+  def decideAction(
+      existing: Option[Rematches.NextGame],
+      color: ChessColor,
+      opponentIsAi: Boolean,
+      declined: Boolean,
+      canOffer: Boolean
+  ): YesAction =
+    existing match
+      case Some(Rematches.NextGame.Accepted(nextId)) => YesAction.RedirectAccepted(nextId)
+      case Some(Rematches.NextGame.Offered(by, _)) if by != color || opponentIsAi => YesAction.JoinExisting
+      case _ if !declined && canOffer => YesAction.CreateOffer
+      case _ => YesAction.Noop
+
   // returns a new chess game with the same Board as the previous game
   // except for Chess960, where if shouldRepeatChess960Position is true,
   // the same position is returned otherwise a new random position is returned
