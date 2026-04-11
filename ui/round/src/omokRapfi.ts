@@ -284,16 +284,25 @@ const shouldSwapFinalFifth = (position: OmokRoundPosition, prefix4: OpeningGuide
 const shouldStartCandidates = (items: OpeningGuideFifthItem[]): boolean =>
   items.length >= 10 && items.slice(0, 10).every(item => isBlackAdvantageOrBetter(item.evalIndex));
 
-const chooseRemovalTarget = (
+export const chooseSelectedCandidate = (
   current: OmokRoundMove[],
   reference: Map<string, OpeningGuideFifthItem>,
 ): OmokRoundMove | undefined =>
-  [...current]
+  current
+    .map((move, index) => ({ move, index }))
     .sort((a, b) => {
-      const aRef = reference.get(a.key);
-      const bRef = reference.get(b.key);
-      return (bRef?.evalIndex ?? -1) - (aRef?.evalIndex ?? -1) || (bRef?.rank ?? 999) - (aRef?.rank ?? 999) || a.key.localeCompare(b.key);
-    })[0];
+      const aRef = reference.get(a.move.key);
+      const bRef = reference.get(b.move.key);
+      const aUnknown = aRef ? 0 : 1;
+      const bUnknown = bRef ? 0 : 1;
+      return (
+        bUnknown - aUnknown ||
+        (bRef?.evalIndex ?? -1) - (aRef?.evalIndex ?? -1) ||
+        (aRef?.rank ?? 999) - (bRef?.rank ?? 999) ||
+        a.index - b.index ||
+        a.move.key.localeCompare(b.move.key)
+      );
+    })[0]?.move;
 
 const occupiedMoveKeys = (position: OmokRoundPosition): Set<string> => new Set((position.moves || []).map(move => move.key));
 
@@ -336,8 +345,8 @@ export const pickTaraguchiAiAction = async (
     }
     const currentCandidates = opening.candidates || [];
     const reference = new Map(prefix4.map(item => [item.move, item]));
-    const remove = chooseRemovalTarget(currentCandidates, reference);
-    return remove ? { type: 'place', move: remove } : undefined;
+    const selected = chooseSelectedCandidate(currentCandidates, reference);
+    return selected ? { type: 'place', move: selected } : undefined;
   }
 
   switch (position.ply) {
@@ -389,8 +398,23 @@ const normalizeLimits = (config?: Partial<OmokAiConfigData> | OmokRapfiLimits): 
   nodes: config?.nodes && config.nodes > 0 ? config.nodes : undefined,
 });
 
-const positionKey = (position: OmokRoundPosition): string =>
-  `${position.ruleSet}|${position.ply}|${(position.moves || []).map(m => m.key).join(',')}`;
+const positionKey = (position: OmokRoundPosition): string => {
+  const opening = position.opening;
+  const openingKey = opening
+    ? [
+        opening.activeSeat,
+        opening.canSwap ? 1 : 0,
+        opening.canStartCandidates ? 1 : 0,
+        opening.candidateMode ? 1 : 0,
+        opening.candidateSelection ? 1 : 0,
+        opening.forceSimpleFifth ? 1 : 0,
+        opening.candidateCount,
+        opening.candidateTarget,
+        (opening.candidates || []).map(move => move.key).join(','),
+      ].join('|')
+    : '-';
+  return `${position.ruleSet}|${position.ply}|${(position.moves || []).map(m => m.key).join(',')}|${openingKey}`;
+};
 
 export class OmokRapfiEngine {
   private worker?: Worker;
