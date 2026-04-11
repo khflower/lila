@@ -1,6 +1,7 @@
 .round__app[data-board-game='omok'] {
   .main-board .cg-wrap {
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
   }
 }
@@ -8,14 +9,14 @@
 .round__app__board__omok-placeholder {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   padding: clamp(0.55rem, 2.5%, 1rem);
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .round__app__board__omok-placeholder__shell {
-  --omok-frame-size: clamp(1.2rem, 4.2%, 1.8rem);
+  --omok-frame-size: clamp(1rem, 3.6%, 1.55rem);
 
   position: relative;
   width: 100%;
@@ -24,71 +25,176 @@
   grid-template-columns: var(--omok-frame-size) minmax(0, 1fr) var(--omok-frame-size);
   grid-template-rows: var(--omok-frame-size) minmax(0, 1fr) var(--omok-frame-size);
   align-items: stretch;
-  gap: clamp(0.2rem, 0.8%, 0.4rem);
-  padding: clamp(0.3rem, 1.25%, 0.55rem);
-  border-radius: $box-radius-size;
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 36%),
-    linear-gradient(145deg, #ddc48f 0%, #cfa567 52%, #bc884c 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(87, 55, 20, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    0 12px 28px rgba(38, 21, 3, 0.12);
+  gap: clamp(0.14rem, 0.6%, 0.28rem);
+  pointer-events: none;
 }
 
 .round__app__board__omok-placeholder__status {
   position: absolute;
-  inset-block-start: clamp(0.45rem, 1.8%, 0.8rem);
-  inset-inline-start: clamp(0.45rem, 1.8%, 0.8rem);
-  z-index: 3;
+  inset-block-start: clamp(0.25rem, 1.2%, 0.45rem);
+  inset-inline-start: clamp(0.25rem, 1.2%, 0.45rem);
+  z-index: 5;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  max-width: min(72%, 18rem);
-  padding: 0.45rem 0.65rem;
-  border-radius: 0.8rem;
-  background: rgba(33, 24, 12, 0.74);
+  max-width: min(78%, 18rem);
+  padding: 0.42rem 0.58rem;
+  border-radius: 0.85rem;
+  background: rgba(37, 28, 15, 0.76);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
     0 8px 20px rgba(20, 12, 3, 0.18);
   color: rgba(255, 250, 242, 0.98);
   backdrop-filter: blur(6px);
+  pointer-events: none;
 }
 
 .round__app__board__omok-placeholder__status.is-active {
-  background: rgba(37, 71, 43, 0.82);
+  background: rgba(33, 73, 41, 0.82);
 }
 
 .round__app__board__omok-placeholder__status.is-terminal {
-  background: rgba(73, 35, 18, 0.82);
+  background: rgba(87, 44, 20, 0.82);
 }
 
 .round__app__board__omok-placeholder__status.is-draw {
-  background: rgba(64, 64, 64, 0.78);
+  background: rgba(64, 64, 64, 0.8);
 }
 
 .round__app__board__omok-placeholder__status-main {
-  font-size: clamp(0.76rem, 1.9vw, 0.96rem);
+  font-size: clamp(0.74rem, 1.8vw, 0.94rem);
   font-weight: 700;
   line-height: 1.15;
 }
 
 .round__app__board__omok-placeholder__status-detail {
-  font-size: clamp(0.62rem, 1.5vw, 0.76rem);
+  font-size: clamp(0.6rem, 1.35vw, 0.74rem);
   line-height: 1.2;
   color: rgba(255, 247, 233, 0.78);
+}
+
+.round__app__board__omok-placeholder__opening {
+  position: absolute;
+  inset-block-start: clamp(2.9rem, 10%, 3.45rem);
+  inset-inline: clamp(0.45rem, 1.6%, 0.75rem);
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.55rem;
+  border-radius: 0.55rem;
+  background: rgba(22, 16, 10, 0.86);
+  box-shadow: 0 0.25rem 0.7rem rgba(0, 0, 0, 0.28);
+  color: #fff3db;
+  pointer-events: auto;
+}
+
+.round__app__board__omok-placeholder__opening-text {
+  font-size: clamp(0.62rem, 1.35vw, 0.78rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.round__app__board__omok-placeholder__opening-mode {
+  font-size: clamp(0.58rem, 1.2vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 240, 214, 0.78);
+}
+
+.round__app__board__omok-placeholder__opening-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.round__app__board__omok-placeholder__opening-action {
+  padding: 0.25rem 0.6rem;
+  line-height: 1.2;
+
+  &.is-active {
+    background: rgba(39, 106, 63, 0.28);
+    box-shadow:
+      inset 0 0 0 1px rgba(126, 224, 166, 0.5),
+      0 0 0.45rem rgba(49, 133, 81, 0.18);
+    color: #fffdf8;
+  }
+}
+
+@media (width <= 900px) {
+  .round__app__board__omok-placeholder {
+    padding: 0.28rem;
+  }
+
+  .round__app__board__omok-placeholder__shell {
+    --omok-frame-size: 0.58rem;
+  }
+
+  .round__app__board__omok-placeholder__status {
+    max-width: min(62%, 12rem);
+    padding: 0.34rem 0.48rem;
+    border-radius: 0.7rem;
+  }
+
+  .round__app__board__omok-placeholder__status-main {
+    font-size: 0.72rem;
+  }
+
+  .round__app__board__omok-placeholder__status-detail {
+    font-size: 0.6rem;
+  }
+
+  .round__app__board__omok-placeholder__opening {
+    inset-block-start: auto;
+    inset-block-end: 0.3rem;
+    inset-inline: 0.3rem;
+    gap: 0.35rem;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .round__app__board__omok-placeholder__opening-text {
+    flex-basis: 100%;
+    font-size: 0.66rem;
+  }
+
+  .round__app__board__omok-placeholder__opening-mode {
+    font-size: 0.56rem;
+  }
+
+  .round__app__board__omok-placeholder__opening-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .round__app__board__omok-placeholder__opening-action {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 2.1rem;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.8rem;
+  }
+
+  .round__app__board__omok-placeholder__coords--left,
+  .round__app__board__omok-placeholder__coords--right,
+  .round__app__board__omok-placeholder__coords--bottom {
+    display: none;
+  }
 }
 
 .round__app__board__omok-placeholder__coords {
   display: grid;
   align-items: center;
   justify-items: center;
-  font-size: clamp(0.58rem, 1.6vw, 0.74rem);
+  font-size: clamp(0.54rem, 1.35vw, 0.7rem);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(82, 49, 14, 0.88);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: rgba(86, 53, 18, 0.9);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
+  pointer-events: none;
 }
 
 .round__app__board__omok-placeholder__coords--top {
@@ -123,75 +229,146 @@
   position: relative;
   grid-column: 2;
   grid-row: 2;
-  display: grid;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  border-radius: calc(#{$box-radius-size} - 0.15rem);
-  background: linear-gradient(180deg, #e7cd95 0%, #d5af6d 100%);
+  padding: clamp(0.45rem, 1.5%, 0.75rem);
+  border-radius: calc(#{$box-radius-size} + 0.1rem);
+  background:
+    radial-gradient(circle at 16% 14%, rgba(255, 255, 255, 0.28), transparent 26%),
+    linear-gradient(140deg, #efd7a1 0%, #ddb46f 56%, #c98f4f 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(87, 55, 20, 0.2),
-    inset 1px 1px 0 rgba(87, 55, 20, 0.34),
-    0 10px 22px rgba(38, 21, 3, 0.12);
+    inset 0 0 0 1px rgba(84, 52, 19, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 14px 28px rgba(35, 18, 4, 0.16);
+  pointer-events: auto;
 }
 
-.round__app__board__omok-placeholder__cell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  min-height: 0;
-  box-shadow: inset -1px -1px 0 rgba(87, 55, 20, 0.34);
+.round__app__board__omok-placeholder__board.is-clickable {
+  cursor: crosshair;
 }
 
-.round__app__board__omok-placeholder__cell.is-last-move {
-  background: radial-gradient(circle, rgba(248, 236, 183, 0.62) 0%, rgba(248, 236, 183, 0.2) 62%, transparent 100%);
+.round__app__board__omok-placeholder__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  border-radius: calc(#{$box-radius-size} - 0.05rem);
 }
 
-.round__app__board__omok-placeholder__stone {
-  width: 66%;
-  height: 66%;
+.round__app__board__omok-placeholder__svg-base {
+  fill: #e5bf79;
+}
+
+.round__app__board__omok-placeholder__svg-line {
+  stroke: rgba(74, 43, 16, 0.82);
+  stroke-width: 0.46;
+  stroke-linecap: round;
+}
+
+.round__app__board__omok-placeholder__svg-star {
+  fill: rgba(74, 43, 16, 0.92);
+}
+
+.round__app__board__omok-placeholder__svg-stone {
+  stroke-width: 0.36;
+}
+
+.round__app__board__omok-placeholder__svg-stone.is-black {
+  fill: #101010;
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.round__app__board__omok-placeholder__svg-stone.is-white {
+  fill: #f6f1e7;
+  stroke: rgba(60, 46, 28, 0.14);
+}
+
+.round__app__board__omok-placeholder__svg-ghost {
+  stroke-width: 0.42;
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__svg-ghost.is-black {
+  fill: rgba(16, 16, 16, 0.48);
+  stroke: rgba(255, 244, 224, 0.48);
+}
+
+.round__app__board__omok-placeholder__svg-ghost.is-white {
+  fill: rgba(246, 241, 231, 0.84);
+  stroke: rgba(78, 60, 35, 0.34);
+}
+
+.round__app__board__omok-placeholder__svg-candidate-badge {
+  fill: rgba(247, 238, 223, 0.97);
+  stroke: rgba(113, 67, 26, 0.82);
+  stroke-width: 0.32;
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__svg-candidate-label {
+  fill: rgba(52, 30, 9, 0.96);
+  font-size: 3.2px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  paint-order: stroke;
+  stroke: rgba(255, 248, 235, 0.94);
+  stroke-width: 0.18px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.round__app__board__omok-placeholder__svg-hover-ring {
+  fill: none;
+  stroke: rgba(18, 110, 61, 0.88);
+  stroke-width: 0.68;
+  filter: drop-shadow(0 0 0.24rem rgba(40, 131, 81, 0.4));
+  pointer-events: none;
+}
+
+.round__app__board__omok-placeholder__svg-last-ring {
+  fill: #d84f2a;
+  stroke: rgba(255, 244, 219, 0.92);
+  stroke-width: 0.3;
+}
+
+.round__app__board__omok-placeholder__point {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 3px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 
-.round__app__board__omok-placeholder__cell.is-black .round__app__board__omok-placeholder__stone {
-  background: radial-gradient(circle at 35% 30%, #737373 0%, #2f2f2f 44%, #111 100%);
+.round__app__board__omok-placeholder__point.is-clickable {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
-.round__app__board__omok-placeholder__cell.is-white .round__app__board__omok-placeholder__stone {
-  background: radial-gradient(circle at 35% 30%, #fff 0%, #f4efe4 56%, #d8cdbb 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 3px 8px rgba(0, 0, 0, 0.12);
+.round__app__board__omok-placeholder__point.is-clickable:hover,
+.round__app__board__omok-placeholder__point.is-clickable:focus-visible {
+  background: radial-gradient(circle, rgba(255, 241, 196, 0.45) 0%, rgba(255, 241, 196, 0.12) 60%, transparent 78%);
+  box-shadow: 0 0 0 1px rgba(129, 78, 21, 0.14);
 }
 
-.round__app__board__omok-placeholder__cell.is-last-move .round__app__board__omok-placeholder__stone {
-  box-shadow:
-    0 0 0 2px rgba(158, 87, 12, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 3px 8px rgba(0, 0, 0, 0.2);
+.round__app__board__omok-placeholder__point.is-clickable:focus-visible {
+  outline: none;
 }
 
 .round__app__board__omok-state {
   @extend %box-shadow;
 
-  position: absolute;
-  inset-inline: 0.75rem;
-  inset-block-end: 0.75rem;
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.8rem;
-  max-width: calc(100% - 1.5rem);
-  padding: 0.65rem 0.8rem;
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.65rem 0.85rem;
+  width: 100%;
+  max-width: none;
+  padding: 0.85rem 1rem;
   border: $border;
-  border-radius: $box-radius-size;
-  background: $c-bg-box;
+  border-radius: 0.8rem;
+  background: rgba(248, 241, 225, 0.94);
+  color: #47331a;
   pointer-events: none;
 }
 
@@ -210,27 +387,47 @@
   border-color: rgba(94, 94, 94, 0.24);
 }
 
+.round__app__board__omok-state.is-taraguchi {
+  width: 100%;
+  max-width: none;
+  background: rgba(26, 23, 18, 0.94);
+  color: #f6ebd8;
+}
+
+.round__app__board__omok-state__title,
+.round__app__board__omok-state__summary,
+.round__app__board__omok-state__history-wrap,
+.round__app__board__omok-state__rapfi {
+  grid-column: 1 / -1;
+}
+
 .round__app__board__omok-state__title {
+  display: block;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: $c-font-dim;
+  color: rgba(92, 68, 37, 0.78);
+}
+
+.round__app__board__omok-state.is-taraguchi .round__app__board__omok-state__title {
+  color: rgba(246, 235, 216, 0.76);
 }
 
 .round__app__board__omok-state__summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-height: 2rem;
-  padding: 0.3rem 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
-  color: $c-font;
+  background: rgba(95, 72, 42, 0.08);
+  color: #47331a;
 }
 
 .round__app__board__omok-state__summary.is-active {
-  background: rgba(53, 110, 69, 0.12);
+  background: rgba(53, 110, 69, 0.14);
   color: #214f2d;
 }
 
@@ -245,31 +442,122 @@
 }
 
 .round__app__board__omok-state__summary-main {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .round__app__board__omok-state__summary-detail {
-  font-size: 0.78rem;
-  color: $c-font-dim;
+  font-size: 0.8rem;
+  color: rgba(92, 68, 37, 0.78);
+}
+
+.round__app__board__omok-state.is-taraguchi .round__app__board__omok-state__summary-detail {
+  color: rgba(246, 235, 216, 0.72);
 }
 
 .round__app__board__omok-state__field {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.35em;
-  white-space: nowrap;
-  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+  font-size: 0.92rem;
 }
 
 .round__app__board__omok-state__field.is-emphasis .round__app__board__omok-state__value {
+  font-size: 1rem;
   color: inherit;
 }
 
 .round__app__board__omok-state__label {
-  color: $c-font-dim;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(92, 68, 37, 0.76);
+}
+
+.round__app__board__omok-state.is-taraguchi .round__app__board__omok-state__label {
+  color: rgba(246, 235, 216, 0.7);
 }
 
 .round__app__board__omok-state__value {
-  color: $c-font;
+  display: block;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  color: inherit;
 }
+
+.round__app__board__omok-state__rapfi {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.85rem;
+  padding-top: 0.15rem;
+}
+
+.round__app__board__omok-state__analysis-lines,
+.round__app__board__omok-state__actions {
+  grid-column: 1 / -1;
+}
+
+.round__app__board__omok-state__analysis-lines,
+.round__app__board__omok-state__opening-summary,
+.round__app__board__omok-state__history,
+.round__app__board__omok-state__history-wrap {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.round__app__board__omok-state__history-wrap {
+  gap: 0.8rem;
+}
+
+.round__app__board__omok-state__history-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.round__app__board__omok-state__opening-row,
+.round__app__board__omok-state__history-item,
+.round__app__board__omok-state__analysis-line {
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.round__app__board__omok-state__analysis-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  align-items: baseline;
+}
+
+.round__app__board__omok-state__analysis-line em {
+  color: rgba(92, 68, 37, 0.78);
+}
+
+.round__app__board__omok-state.is-taraguchi .round__app__board__omok-state__analysis-line em {
+  color: rgba(246, 235, 216, 0.72);
+}
+
+.round__app__board__omok-state__history-list {
+  margin: 0;
+  padding-inline-start: 1.2rem;
+}
+
+.round__app__board__omok-state__actions {
+  pointer-events: auto;
+}
+
+@include mq-is-col1 {
+  .round__app__board__omok-state {
+    margin-top: 0.75rem;
+  }
+
+  .round__app__board__omok-state.is-taraguchi {
+    width: auto;
+    max-width: none;
+  }
+}
+
+

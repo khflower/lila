@@ -1,4 +1,4 @@
-#main-wrap {
+﻿#main-wrap {
   ---main-max-width: auto;
 
   @include mq-is-col1 {
@@ -64,6 +64,20 @@
   @include mq-is-col2-squeeze {
     .crosstable {
       display: none;
+    }
+  }
+}
+
+body.omok-dev-round {
+  @media (width <= 900px) {
+    .round {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto;
+      grid-template-areas: 'app' 'under' 'side' 'uchat';
+    }
+
+    .round__app {
+      justify-self: stretch;
     }
   }
 }
