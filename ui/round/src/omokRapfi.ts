@@ -233,18 +233,18 @@ const loadOpeningGuide = async (): Promise<OpeningGuideData> => {
 const randomChoice = <T>(items: T[]): T | undefined =>
   items.length ? items[Math.floor(Math.random() * items.length)] : undefined;
 
-const weightedEval = (evalIndex?: number): number =>
+const weightedEqualishEval = (evalIndex?: number): number =>
   ({
-    0: 1,
-    1: 2,
-    2: 5,
-    3: 9,
-    4: 16,
-    5: 9,
-    6: 5,
-    7: 2,
-    8: 1,
-  })[evalIndex ?? 4] || 1;
+    0: 0.01,
+    1: 0.03,
+    2: 0.08,
+    3: 0.32,
+    4: 1,
+    5: 0.32,
+    6: 0.08,
+    7: 0.03,
+    8: 0.01,
+  })[evalIndex ?? 4] || 0.01;
 
 const weightedChoice = <T>(items: T[], weightOf: (item: T) => number): T | undefined => {
   const weighted = items
@@ -261,6 +261,8 @@ const weightedChoice = <T>(items: T[], weightOf: (item: T) => number): T | undef
 };
 
 const isBlackAdvantageOrBetter = (evalIndex?: number): boolean => (evalIndex ?? 9) <= 3;
+
+const shouldSwapOpening = (opening: OmokRoundPosition['opening']): boolean => !!opening?.canSwap && Math.random() < 0.5;
 
 const shouldStartCandidates = (items: OpeningGuideFifthItem[]): boolean =>
   items.length >= 10 && items.slice(0, 10).every(item => isBlackAdvantageOrBetter(item.evalIndex));
@@ -324,12 +326,12 @@ export const pickTaraguchiAiAction = async (
   switch (position.ply) {
     case 1:
     case 2: {
-      if (opening.canSwap && Math.random() < 0.5) return { type: 'swap' };
+      if (shouldSwapOpening(opening)) return { type: 'swap' };
       const pick = fallbackTaraguchiPlacement(position);
       return pick ? { type: 'place', move: pick } : undefined;
     }
     case 3: {
-      if (opening.canSwap && Math.random() < 0.5) return { type: 'swap' };
+      if (shouldSwapOpening(opening)) return { type: 'swap' };
       const pick = randomChoice(prefix3);
       if (pick) return { type: 'place', move: roundMoveFromKey(pick.move) };
       const fallback = fallbackTaraguchiPlacement(position);
@@ -337,14 +339,14 @@ export const pickTaraguchiAiAction = async (
     }
     case 4: {
       if (opening.canStartCandidates && shouldStartCandidates(prefix4)) return { type: 'candidates' };
-      if (opening.canSwap && Math.random() < 0.5) return { type: 'swap' };
-      const pick = weightedChoice(prefix4, item => weightedEval(item.evalIndex));
+      if (shouldSwapOpening(opening)) return { type: 'swap' };
+      const pick = weightedChoice(prefix4, item => weightedEqualishEval(item.evalIndex));
       if (pick) return { type: 'place', move: roundMoveFromKey(pick.move) };
       const fallback = fallbackTaraguchiPlacement(position);
       return fallback ? { type: 'place', move: fallback } : undefined;
     }
     case 5:
-      if (opening.canSwap && Math.random() < 0.5) return { type: 'swap' };
+      if (shouldSwapOpening(opening)) return { type: 'swap' };
       return;
     default:
       return;
