@@ -24,7 +24,7 @@ final class Round(
 ) extends LilaController(env)
     with lila.web.TheftPrevention:
 
-  private def renderPlayer(pov: Pov)(using ctx: Context): Fu[Result] =
+  private def renderPlayer(pov: Pov, allowSharedAnonClaim: Boolean = false)(using ctx: Context): Fu[Result] =
     pov.game.playableByAi.so(env.fishnet.player(pov.game))
     for
       tour <- env.tournament.api.gameView.player(pov)
@@ -34,7 +34,7 @@ final class Round(
         html =
           if !pov.game.started then notFound
           else
-            PreventTheft(pov):
+            val render =
               for
                 (simul, chatOption, crosstable, playing, bookmarked, data) <-
                   (
@@ -59,9 +59,10 @@ final class Round(
                   )
                 )
               yield Ok(page).noCache
+            if allowSharedAnonClaim then render else PreventTheft(pov)(render)
         ,
         api = _ =>
-          if isTheft(pov) then theftResponse
+          if !allowSharedAnonClaim && isTheft(pov) then theftResponse
           else
             for
               data <- env.api.roundApi.player(pov, Preload(users), tour)
@@ -78,17 +79,54 @@ final class Round(
         case Some(pov) => renderPlayer(pov)
         case None => userC.tryRedirect(fullId.into(UserStr)).getOrElse(notFound)
 
+  def omokClaim(fullId: GameFullId) = Open:
+    env.round.proxyRepo
+      .pov(fullId)
+      .flatMap:
+        case Some(pov) =>
+          env.round.omokRoundRepo.get(pov.gameId).getOrElse {
+            env.round.omokRoundRepo.put(
+              pov.gameId,
+              lila.round.OmokRoundState.initial(lila.omok.RuleSet.Renju)
+            )
+          }
+          // Keep both claimed seats usable in one browser session.
+          renderPlayer(pov, allowSharedAnonClaim = true)
+        case None => userC.tryRedirect(fullId.into(UserStr)).getOrElse(notFound)
 
   def omokStart(fullId: GameFullId, ruleSet: String) = Secure(_.Cli) { _ ?=> _ ?=>
     Found(env.round.proxyRepo.pov(fullId)): pov =>
       if !pov.game.playable then notFound
       else
-        env.round.omokStartScaffold.start(fullId.value, Some(ruleSet)) match
+        env.round.omokStartScaffold.startFromInput(fullId, Some(ruleSet)).map:
           case Right(started) =>
-            Redirect(routes.Round.player(started.fullId)).flashSuccess(started.message).toFuccess
+            Redirect(routes.Round.player(started.fullId)).flashSuccess(started.message)
           case Left(err) =>
-            Redirect(routes.Round.player(fullId)).flashFailure(err.message).toFuccess
+            Redirect(routes.Round.player(fullId)).flashFailure(err.message)
   }
+
+  def apiOmokStart = Scoped(_.Board.Play, _.Bot.Play) { _ ?=> _ ?=>
+    apiOmokCreateResult
+  }
+
+  def apiOmokCreate = Scoped(_.Board.Play, _.Bot.Play) { _ ?=> _ ?=>
+    apiOmokCreateResult
+  }
+
+  private def apiOmokCreateResult(using Context): Fu[Result] =
+    apiOmokCreateInput.fold(
+      err => fuccess(JsonBadRequest(err)),
+      rawRuleSet =>
+        env.round.omokStartScaffold.startNew(rawRuleSet).map:
+          case Right(started) => JsonOk(started.apiJson)
+          case Left(err) => JsonBadRequest(err.message)
+    )
+
+  private def apiOmokCreateInput(using Context): Either[String, Option[String]] =
+    get("fullId").fold(Right(get("ruleSet"))): _ =>
+      Left(
+        "fullId is not supported on /api/omok, /api/omok/create, or /api/omok/start; these endpoints only create a new omok round"
+      )
 
   private def otherPovs(game: GameModel)(using ctx: Context) =
     ctx.me.so: user =>
