@@ -153,7 +153,7 @@ final class Setup(
     Ok.page(views.omokPages.soloBoard)
 
   def omokSolo2 = Open: ctx ?=>
-    Ok.page(views.omokSolo2)
+    Ok.page(views.omokPages.soloBoard2)
 
   private def hookResponse(res: HookResult) = res match
     case HookResult.CreatedHook(hook) =>
