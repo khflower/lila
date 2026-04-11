@@ -129,8 +129,7 @@ class OmokMovePlayerTest extends munit.FunSuite:
     assert(preview.state.opening.history.exists(_.contains("White selected candidate I7")))
     assert(preview.state.opening.history.exists(_.contains("5. Black placed I7 (selected from candidates)")))
 
-  test("candidate symmetry keeps move-order distinctions instead of merging different fifth-move roles"):
-    val repo = OmokRoundRepo()
+  test("candidate symmetry ignores move order and rejects geometric duplicates"):
     val gameId = GameId("candsym1")
     val moves = Vector(
       move(7, 7), // H8
@@ -151,11 +150,9 @@ class OmokMovePlayerTest extends munit.FunSuite:
       )
     )
 
-    val preview = OmokMovePlayer.preview(gameId, state, move(5, 8).pos).toOption.get // I6
+    val error = OmokMovePlayer.preview(gameId, state, move(5, 8).pos).left.toOption.get // I6
 
-    assertEquals(preview.move.pos.key, "I6")
-    assertEquals(preview.state.opening.candidateMoves.map(_.pos.key), Vector("G6", "I6"))
-    assert(preview.state.opening.history.exists(_.contains("Candidate 2. Black proposed I6")))
+    assertEquals(error.cause, lila.omok.MoveError.Forbidden(lila.omok.ForbiddenReason.DoubleThree))
 
   test("preview keeps terminal omok status for a winning move"):
     val gameId = GameId("terminal")

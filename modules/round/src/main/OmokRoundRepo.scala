@@ -190,7 +190,7 @@ object OmokOpeningState:
         val color = if index % 2 == 0 then "b" else "w"
         val dx = move.pos.col - Center.col
         val dy = move.pos.row - Center.row
-        (index + 1, color, dx, dy)
+        (color, dx, dy)
 
     val transforms: Vector[(Int, Int) => (Int, Int)] = Vector(
       (x, y) => (x, y),
@@ -207,9 +207,10 @@ object OmokOpeningState:
       .map: transform =>
         stones
           .map:
-            case (ply, color, dx, dy) =>
+            case (color, dx, dy) =>
               val (x, y) = transform(dx, dy)
-              f"$ply%02d:$color%s$x%+03d$y%+03d"
+              f"$color%s$x%+03d$y%+03d"
+          .sorted
           .mkString("|")
       .min
 
