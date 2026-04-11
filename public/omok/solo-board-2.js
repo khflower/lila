@@ -6,6 +6,8 @@ const STEP = (SVG_SIZE - SVG_INSET * 2) / (BOARD_SIZE - 1);
 const STAR_POINTS = [3, 7, 11];
 const MAX_LABEL_LENGTH = 3;
 const FILE_FORMAT = 'omok-solo2/v1';
+const BINARY_IMPORT_URL = '/api/omok/solo2/import';
+const BINARY_EXPORT_URL = '/api/omok/solo2/export';
 
 const root = document.getElementById('omok-solo-board-2-app');
 
@@ -22,7 +24,7 @@ function createInitialState() {
     hoverKey: null,
     mode: 'stone',
     pendingText: '',
-    filename: 'solo-board-2.json',
+    filename: 'solo-board-2',
     currentLabelDraft: '',
     nodeIndex: new Map(),
   };
@@ -224,22 +226,33 @@ function exportState(state) {
   return {
     format: FILE_FORMAT,
     version: 1,
+    currentPath: pathMoveNodes(state).map(node => node.moveKey),
     root: serializeNode(state.rootNode),
   };
 }
 
-function importState(state, raw) {
+function resolveCurrentIdFromPath(state, currentPath) {
+  let cursor = state.rootNode;
+  for (const moveKey of Array.isArray(currentPath) ? currentPath : []) {
+    const next = cursor.children.find(child => child.moveKey === moveKey);
+    if (!next) break;
+    cursor = next;
+  }
+  return cursor.id;
+}
+
+function applyImportedState(state, raw) {
   if (!raw || raw.format !== FILE_FORMAT || !raw.root) {
     throw new Error('Unsupported file');
   }
   const fresh = createInitialState();
   fresh.nextId = 1;
   fresh.rootNode = hydrateNode(raw.root, null, fresh);
-  fresh.currentId = 'root';
+  fresh.currentId = resolveCurrentIdFromPath(fresh, raw.currentPath);
   fresh.mode = 'stone';
   fresh.pendingText = '';
   fresh.filename = state.filename;
-  fresh.currentLabelDraft = '';
+  fresh.currentLabelDraft = (getNode(fresh, fresh.currentId) || fresh.rootNode).text || '';
   state.rootNode = fresh.rootNode;
   state.currentId = fresh.currentId;
   state.nextId = fresh.nextId;
@@ -247,10 +260,10 @@ function importState(state, raw) {
   state.mode = fresh.mode;
   state.pendingText = fresh.pendingText;
   state.currentLabelDraft = fresh.currentLabelDraft;
+  state.nodeIndex = fresh.nodeIndex;
 }
 
-function downloadJson(filename, content) {
-  const blob = new Blob([content], { type: 'application/json' });
+function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -259,6 +272,41 @@ function downloadJson(filename, content) {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function downloadJson(filename, content) {
+  downloadBlob(filename, new Blob([content], { type: 'application/json' }));
+}
+
+async function exportBinaryFile(state) {
+  const filename = normalizeFilename(state.filename || 'solo-board-2');
+  const response = await fetch(`${BINARY_EXPORT_URL}?filename=${encodeURIComponent(filename)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/octet-stream',
+    },
+    body: JSON.stringify(exportState(state)),
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || 'Failed to export app file');
+  }
+  downloadBlob(filename, await response.blob());
+}
+
+async function importBinaryFile(file) {
+  const form = new FormData();
+  form.append('file', file, file.name || 'solo-board-2');
+  const response = await fetch(BINARY_IMPORT_URL, {
+    method: 'POST',
+    body: form,
+    headers: { Accept: 'application/json' },
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || !payload?.ok || !payload?.data) {
+    throw new Error(payload?.error || 'Failed to load app file');
+  }
+  return payload.data;
 }
 
 function render(state) {
@@ -285,8 +333,10 @@ function render(state) {
         </div>
         <div class="omok-solo2__toolbar-group omok-solo2__toolbar-group--grow">
           <button class="button ${state.mode === 'text' ? 'button-metal' : 'button-empty'}" type="button" data-action="toggle-mode">${state.mode === 'text' ? 'Text mode' : 'Stone mode'}</button>
-          <button class="button button-empty" type="button" data-action="save-file">Save JSON</button>
-          <button class="button button-empty" type="button" data-action="load-file">Load JSON</button>
+          <button class="button button-metal" type="button" data-action="save-app-file">Save app file</button>
+          <button class="button button-empty" type="button" data-action="load-app-file">Load app file</button>
+          <button class="button button-empty" type="button" data-action="save-json-file">Save JSON backup</button>
+          <button class="button button-empty" type="button" data-action="load-json-file">Load JSON backup</button>
         </div>
       </div>
 
@@ -345,8 +395,9 @@ function render(state) {
             <label for="solo2-file-name">Filename</label>
             <input id="solo2-file-name" class="js-solo2-filename" type="text" value="${escapeHtml(state.filename)}" />
           </div>
-          <div class="omok-solo2__hint">This first pass saves a site JSON file with the move tree, branch labels, and per-node text box content.</div>
-          <input class="js-solo2-file-input" type="file" accept="application/json,.json" hidden />
+          <div class="omok-solo2__hint">Primary save/load now uses the renju-edit-v2 style serialized app file through the JVM backend. JSON remains as a backup/debug format.</div>
+          <input class="js-solo2-binary-file-input" type="file" hidden />
+          <input class="js-solo2-json-file-input" type="file" accept="application/json,.json" hidden />
         </div>
       </section>
 
@@ -422,15 +473,28 @@ function bindEvents(state) {
     render(state);
   });
 
-  root.querySelector('[data-action="save-file"]')?.addEventListener('click', () => {
-    const filename = normalizeFilename(state.filename || 'solo-board-2.json');
-    state.filename = filename;
-    downloadJson(filename, `${JSON.stringify(exportState(state), null, 2)}\n`);
-    render(state);
+  root.querySelector('[data-action="save-app-file"]')?.addEventListener('click', async () => {
+    try {
+      state.filename = normalizeFilename(state.filename || 'solo-board-2');
+      await exportBinaryFile(state);
+      render(state);
+    } catch (error) {
+      window.alert('Failed to export app file.');
+      console.error(error);
+    }
   });
 
-  root.querySelector('[data-action="load-file"]')?.addEventListener('click', () => {
-    root.querySelector('.js-solo2-file-input')?.click();
+  root.querySelector('[data-action="load-app-file"]')?.addEventListener('click', () => {
+    root.querySelector('.js-solo2-binary-file-input')?.click();
+  });
+
+  root.querySelector('[data-action="save-json-file"]')?.addEventListener('click', () => {
+    const filename = `${normalizeFilename(state.filename || 'solo-board-2')}.json`;
+    downloadJson(filename, `${JSON.stringify(exportState(state), null, 2)}\n`);
+  });
+
+  root.querySelector('[data-action="load-json-file"]')?.addEventListener('click', () => {
+    root.querySelector('.js-solo2-json-file-input')?.click();
   });
 
   root.querySelector('.js-solo2-pending-text')?.addEventListener('input', event => {
@@ -451,16 +515,32 @@ function bindEvents(state) {
     state.filename = event.target.value;
   });
 
-  root.querySelector('.js-solo2-file-input')?.addEventListener('change', async event => {
+  root.querySelector('.js-solo2-binary-file-input')?.addEventListener('change', async event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    try {
+      applyImportedState(state, await importBinaryFile(file));
+      state.filename = file.name || state.filename;
+      render(state);
+    } catch (error) {
+      window.alert('Failed to load app file.');
+      console.error(error);
+    } finally {
+      event.target.value = '';
+    }
+  });
+
+  root.querySelector('.js-solo2-json-file-input')?.addEventListener('change', async event => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
     const text = await file.text();
     try {
-      importState(state, JSON.parse(text));
-      state.filename = file.name || state.filename;
+      applyImportedState(state, JSON.parse(text));
+      state.filename = (file.name || state.filename).replace(/\.json$/i, '');
       render(state);
     } catch (error) {
-      window.alert('Failed to load file. Use a Solo Board 2 JSON export.');
+      window.alert('Failed to load JSON backup. Use a Solo Board 2 JSON export.');
+      console.error(error);
     } finally {
       event.target.value = '';
     }
@@ -510,8 +590,7 @@ function bindEvents(state) {
 }
 
 function normalizeFilename(name) {
-  const trimmed = String(name || '').trim() || 'solo-board-2.json';
-  return trimmed.endsWith('.json') ? trimmed : `${trimmed}.json`;
+  return String(name || '').trim() || 'solo-board-2';
 }
 
 function boardHtml(state) {

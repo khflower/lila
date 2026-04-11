@@ -245,7 +245,7 @@ lazy val user = module("user",
 )
 
 lazy val game = module("game",
-  Seq(tree, rating, memo),
+  Seq(tree, rating, memo, omok),
   Seq(compression) ++ tests.bundle ++ Seq(scalacheck, munitCheck, chess.testKit)
 )
 
@@ -291,8 +291,8 @@ lazy val lobby = module("lobby",
 )
 
 lazy val setup = module("setup",
-  Seq(lobby),
-  Seq()
+  Seq(lobby, omok),
+  tests.bundle
 )
 
 lazy val insight = module("insight",

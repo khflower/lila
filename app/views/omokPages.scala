@@ -9,8 +9,8 @@ object omokPages:
   private val friendRoomScript = s"${staticAssetUrl("omok/friend-room.js")}?v=20260410a"
   private val soloStyleAsset = s"${staticAssetUrl("omok/solo-board.css")}?v=20260410a"
   private val soloScriptAsset = s"${staticAssetUrl("omok/solo-board.js")}?v=20260410a"
-  private val solo2StyleAsset = s"${staticAssetUrl("omok/solo-board-2.css")}?v=20260411a"
-  private val solo2ScriptAsset = s"${staticAssetUrl("omok/solo-board-2.js")}?v=20260411a"
+  private val solo2StyleAsset = s"${staticAssetUrl("omok/solo-board-2.css")}?v=20260411b"
+  private val solo2ScriptAsset = s"${staticAssetUrl("omok/solo-board-2.js")}?v=20260411b"
   private val brandName = "Omok.dev"
   private val backToLobbyLabel = "Back to lobby"
   private val openingGuideLabel = "Opening guide"
@@ -547,8 +547,8 @@ object omokPages:
           div(cls := "omok-page__hero")(
             h1(cls := "box__top")("Invite a player"),
             p(cls := "omok-page__lead")(
-              requestedUser.fold("Share this invite link, wait for the other player to join, then confirm the omok room.") { user =>
-                s"Share this invite link with $user, wait for them to join, then confirm the omok room."
+              requestedUser.fold("Share this invite link. The first other player to open it will be matched immediately and the room will start automatically.") { user =>
+                s"Share this invite link with $user. As soon as they open it, the omok room starts automatically."
               }
             ),
             div(cls := "omok-page__actions")(
@@ -584,25 +584,19 @@ object omokPages:
                 div(cls := "omok-page__kv")(span("Host side"), strong(side))
               ),
               card("Status")(
-                div(id := "omok-friend-status-pill", cls := "omok-page__status-pill")(if guestJoined then "Another player joined" else "Waiting for another player"),
+                div(id := "omok-friend-status-pill", cls := "omok-page__status-pill")(if guestJoined then "Starting room" else "Waiting for another player"),
                 p(id := "omok-friend-status-text")(
                   if isHost then
-                    if guestJoined then "The other player is here. Confirm the room to start the omok game."
-                    else "Stay on this page. The confirm button unlocks when another player opens the invite link."
-                  else "You joined the invite. Wait here until the host confirms the omok room."
+                    if guestJoined then "The other player opened the invite link. The omok room is starting automatically."
+                    else "Stay on this page. The first other player to open the invite link will be matched immediately."
+                  else "Joining the room. This should redirect automatically in a moment."
                 ),
                 div(cls := "omok-page__actions omok-page__actions--inline")(
-                  button(
-                    id := "omok-friend-confirm",
-                    cls := "button button-metal",
-                    attr("type") := "button",
-                    disabled := (!isHost || !guestJoined)
-                  )("Confirm room"),
                   span(id := "omok-friend-confirm-note", cls := "omok-page__hint")(
                     if isHost then
-                      if guestJoined then "Ready to start."
-                      else "Waiting for another player."
-                    else "Only the host can confirm the room."
+                      if guestJoined then "Starting automatically."
+                      else "No extra confirm step."
+                    else "No extra confirm step."
                   )
                 )
               )
@@ -651,7 +645,7 @@ object omokPages:
           div(cls := "omok-page__hero")(
             h1(cls := "box__top")("Solo board 2 beta"),
             p(cls := "omok-page__lead")(
-              "Build move trees, choose branches, attach short text labels, and save or load a working board file without replacing the original solo board yet."
+              "Build move trees, choose branches, attach short text labels, and now import or export the renju-edit-v2 style serialized board file through the server-side JVM bridge."
             ),
             div(cls := "omok-page__actions")(
               a(cls := "button button-metal", href := "/")(backToLobbyLabel),

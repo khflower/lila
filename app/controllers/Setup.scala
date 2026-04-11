@@ -1,7 +1,7 @@
 package controllers
 
+import java.nio.file.Files
 import java.time.Instant
-import scala.concurrent.duration.*
 
 import chess.format.Fen
 import play.api.libs.json.Json
@@ -10,9 +10,11 @@ import play.api.mvc.{ EssentialAction, Result }
 import lila.app.{ *, given }
 import lila.common.HTTPRequest
 import lila.core.id.GameFullId
+import lila.core.round.StartClock
 import lila.core.socket.Sri
 import lila.game.AnonCookie
 import lila.omok.RuleSet
+import lila.setup.OmokSoloCompat
 import lila.setup.Processor.HookResult
 import lila.setup.ValidFen
 
@@ -62,36 +64,42 @@ final class Setup(
         )
 
   def omokFriend(id: String, host: Option[String]) = Open: ctx ?=>
-    Setup.OmokFriendInviteStore.view(id, host, ctx.req.sid, ctx.userId) match
-      case Some(view) =>
-        view.redirectFullId match
-          case Some(fullId) =>
-            env.round.proxyRepo
-              .pov(fullId)
-              .flatMap:
-                case Some(pov) => redirectPov(pov, omok = true)
-                case None      => fuccess(Redirect(routes.Round.omokClaim(fullId)))
+    host match
+      case Some(_) =>
+        Setup.OmokFriendInviteStore.view(id, host, ctx.req.sid, ctx.userId) match
+          case Some(view) =>
+            view.redirectFullId match
+              case Some(fullId) =>
+                env.round.proxyRepo
+                  .pov(fullId)
+                  .flatMap:
+                    case Some(pov) => redirectPov(pov, omok = true)
+                    case None      => fuccess(Redirect(routes.Round.omokClaim(fullId)))
+              case None => renderOmokFriendInvitePage(view, host)
           case None =>
-            val shareUrl = s"${if ctx.req.secure then "https" else "http"}://${ctx.req.host}${view.sharePath}"
-            Ok.page(
-              views.omokPages.friendInvite(
-                sessionId = view.session.id,
-                shareUrl = shareUrl,
-                stateUrl = routes.Setup.omokFriendState(view.session.id, host).url,
-                confirmUrl = routes.Setup.omokFriendConfirm(view.session.id, host).url,
-                isHost = view.isHost,
-                guestJoined = view.session.guestJoined,
-                ruleSet = renderFriendRuleSet(view.session.ruleSet),
-                timeControl = renderFriendTimeControl(view.session.config),
-                gameMode = if view.session.config.rated.yes then "Rated" else "Casual",
-                side = view.session.config.color.name.capitalize,
-                requestedUser = view.session.requestedUser
-              )
+            NotFound.page(
+              views.omokPages.practiceHub("This invite link is missing or expired. Start a fresh omok invite from the lobby.")
             )
       case None =>
-        NotFound.page(
-          views.omokPages.practiceHub("This invite link is missing or expired. Start a fresh omok invite from the lobby.")
-        )
+        if !HTTPRequest.isHuman(ctx.req) then
+          NotFound.page(
+            views.omokPages.practiceHub("Open this invite link in a browser to join the omok room.")
+          )
+        else
+          Setup.OmokFriendInviteStore.joinGuest(id, ctx.req.sid, ctx.userId).fold[Fu[Result]](
+            err =>
+              NotFound.page(
+                views.omokPages.practiceHub(err)
+              ),
+            (view, shouldStart) =>
+              if shouldStart then
+                startOmokFriendRoom(view).flatMap: started =>
+                  withOmokAnonCookie(started.guestFullId, Redirect(routes.Round.omokClaim(started.guestFullId)))
+              else
+                view.redirectFullId match
+                  case Some(fullId) => withOmokAnonCookie(fullId, Redirect(routes.Round.omokClaim(fullId)))
+                  case None         => renderOmokFriendInvitePage(view, host)
+          )
 
   def omokFriendState(id: String, host: Option[String]) = Open: ctx ?=>
     Setup.OmokFriendInviteStore.view(id, host, ctx.req.sid, ctx.userId).fold[Fu[Result]](fuccess(notFoundJson())): view =>
@@ -100,7 +108,7 @@ final class Setup(
           "ok" -> true,
           "isHost" -> view.isHost,
           "guestJoined" -> view.session.guestJoined,
-          "canConfirm" -> (view.isHost && view.session.guestJoined && !view.session.starting && view.session.started.isEmpty),
+          "canConfirm" -> false,
           "starting" -> view.session.starting,
           "started" -> view.session.started.nonEmpty,
           "redirectUrl" -> view.redirectFullId.map(routes.Round.omokClaim(_).url),
@@ -124,27 +132,19 @@ final class Setup(
               JsonOk(Json.obj("ok" -> true, "redirectUrl" -> routes.Round.omokClaim(fullId).url))
             )
           case None =>
-            processor
-              .friendOmok(view.session.config, view.session.ruleSet)
-              .flatMap: game =>
-                env.round.omokRoundRepo.put(game.game.id, lila.round.OmokRoundState.initial(view.session.ruleSet))
-                val started = Setup.OmokFriendStarted(
-                  hostFullId = game.host.fullId,
-                  guestFullId = game.guest.fullId
-                )
-                Setup.OmokFriendInviteStore.completeStart(view.session.id, started)
+            startOmokFriendRoom(view)
+              .flatMap: started =>
                 withOmokAnonCookie(
-                  game.host.fullId,
+                  started.hostFullId,
                   JsonOk(
                     Json.obj(
                       "ok" -> true,
-                      "redirectUrl" -> routes.Round.omokClaim(game.host.fullId).url
+                      "redirectUrl" -> routes.Round.omokClaim(started.hostFullId).url
                     )
                   )
                 )
               .recoverWith {
                 case err =>
-                  Setup.OmokFriendInviteStore.resetStarting(view.session.id)
                   JsonBadRequest(Option(err.getMessage).filter(_.nonEmpty).getOrElse("Failed to create omok room")).toFuccess
               }
     )
@@ -154,6 +154,72 @@ final class Setup(
 
   def omokSolo2 = Open: ctx ?=>
     Ok.page(views.omokPages.soloBoard2)
+
+  def omokSolo2Import = OpenBodyOf(parse.multipartFormData): ctx ?=>
+    ctx.body.body
+      .file("file")
+      .fold(BadRequest(jsonError("missing file")).as(JSON).toFuccess): file =>
+        OmokSoloCompat
+          .readBinary(Files.readAllBytes(file.ref.path))
+          .fold(
+            err => BadRequest(jsonError(err)).as(JSON).toFuccess,
+            data => JsonOk(Json.obj("ok" -> true, "data" -> Json.toJson(data)))
+          )
+
+  def omokSolo2Export = OpenBodyOf(parse.json): ctx ?=>
+    ctx.body.body
+      .validate[OmokSoloCompat.SoloFile]
+      .fold(
+        err => BadRequest(jsonError(err.toString)).as(JSON).toFuccess,
+        file =>
+          OmokSoloCompat
+            .writeBinary(file)
+            .fold(
+              err => BadRequest(jsonError(err)).as(JSON).toFuccess,
+              bytes =>
+                fuccess(
+                  Ok(bytes)
+                    .as(OmokSoloCompat.BinaryContentType)
+                    .asAttachment(suggestSolo2Filename(ctx.req.getQueryString("filename")))
+                )
+            )
+      )
+
+  private def renderOmokFriendInvitePage(view: Setup.OmokFriendInviteView, host: Option[String])(using Context): Fu[Result] =
+    val shareUrl = s"${if ctx.req.secure then "https" else "http"}://${ctx.req.host}${view.sharePath}"
+    Ok.page(
+      views.omokPages.friendInvite(
+        sessionId = view.session.id,
+        shareUrl = shareUrl,
+        stateUrl = routes.Setup.omokFriendState(view.session.id, host).url,
+        confirmUrl = routes.Setup.omokFriendConfirm(view.session.id, host).url,
+        isHost = view.isHost,
+        guestJoined = view.session.guestJoined,
+        ruleSet = renderFriendRuleSet(view.session.ruleSet),
+        timeControl = renderFriendTimeControl(view.session.config),
+        gameMode = if view.session.config.rated.yes then "Rated" else "Casual",
+        side = view.session.config.color.name.capitalize,
+        requestedUser = view.session.requestedUser
+      )
+    )
+
+  private def startOmokFriendRoom(view: Setup.OmokFriendInviteView): Fu[Setup.OmokFriendStarted] =
+    processor
+      .friendOmok(view.session.config, view.session.ruleSet)
+      .flatMap: game =>
+        env.round.omokRoundRepo.put(game.game.id, lila.round.OmokRoundState.initial(view.session.ruleSet))
+        env.round.roundApi.tell(game.game.id, StartClock)
+        val started = Setup.OmokFriendStarted(
+          hostFullId = game.host.fullId,
+          guestFullId = game.guest.fullId
+        )
+        Setup.OmokFriendInviteStore.completeStart(view.session.id, started)
+        fuccess(started)
+      .recoverWith {
+        case err =>
+          Setup.OmokFriendInviteStore.resetStarting(view.session.id)
+          fufail(err)
+      }
 
   private def hookResponse(res: HookResult) = res match
     case HookResult.CreatedHook(hook) =>
@@ -329,6 +395,9 @@ final class Setup(
       case "Taraguchi10" => "Taraguchi-10"
       case value         => value
 
+  private def suggestSolo2Filename(raw: Option[String]): String =
+    raw.map(_.trim).filter(_.nonEmpty).getOrElse("solo-board-2")
+
   private def renderFriendTimeControl(config: lila.setup.FriendConfig): String =
     config.makeClock
       .map(_.show)
@@ -429,18 +498,37 @@ object Setup:
         userId: Option[UserId]
     ): Option[OmokFriendInviteView] = synchronized {
       prune()
-      sessions.get(id).map: session =>
+      sessions.get(id).flatMap: session =>
         val isHost = hostToken.contains(session.hostToken)
-        val updated =
-          if isHost then session
-          else
-            session.copy(
-              guestJoined = true,
-              guestUserId = userId.orElse(session.guestUserId),
-              guestSid = sid.orElse(session.guestSid)
-            )
-        sessions.update(id, updated)
-        OmokFriendInviteView(updated, isHost)
+        if isHost then OmokFriendInviteView(session, isHost = true).some
+        else isSameGuest(session, sid, userId).option(OmokFriendInviteView(session, isHost = false))
+    }
+
+    def joinGuest(
+        id: String,
+        sid: Option[String],
+        userId: Option[UserId]
+    ): Either[String, (OmokFriendInviteView, Boolean)] = synchronized {
+      prune()
+      sessions.get(id).toRight("This invite link is missing or expired. Start a fresh omok invite from the lobby.").flatMap: session =>
+        if session.started.nonEmpty then
+          if isSameGuest(session, sid, userId) then Right(OmokFriendInviteView(session, isHost = false) -> false)
+          else Left("This invite link was already used by another player. Ask for a fresh omok invite.")
+        else if session.starting then
+          if isSameGuest(session, sid, userId) then Right(OmokFriendInviteView(session, isHost = false) -> false)
+          else Left("This invite link is already being used by another player.")
+        else if session.guestJoined then
+          if isSameGuest(session, sid, userId) then Right(OmokFriendInviteView(session, isHost = false) -> false)
+          else Left("This invite link was already claimed by another player.")
+        else
+          val updated = session.copy(
+            guestJoined = true,
+            guestUserId = userId,
+            guestSid = sid,
+            starting = true
+          )
+          sessions.update(id, updated)
+          Right(OmokFriendInviteView(updated, isHost = false) -> true)
     }
 
     def prepareStart(id: String, hostToken: Option[String]): Either[String, OmokFriendInviteView] = synchronized {
@@ -465,6 +553,9 @@ object Setup:
       sessions.get(id).foreach: session =>
         sessions.update(id, session.copy(starting = false))
     }
+
+    private def isSameGuest(session: OmokFriendInviteSession, sid: Option[String], userId: Option[UserId]): Boolean =
+      session.guestUserId.exists(userId.contains) || session.guestSid.exists(sid.contains)
 
     private def prune(): Unit =
       val threshold = nowInstant.minusSeconds(ttl.toSeconds)

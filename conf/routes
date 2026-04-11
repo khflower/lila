@@ -534,6 +534,8 @@ GET   /api/omok/friend/$id<\w{8}>     controllers.Setup.omokFriendState(id: Stri
 POST  /api/omok/friend/$id<\w{8}>/confirm controllers.Setup.omokFriendConfirm(id: String, host: Option[String] ?= None)
 GET   /omok/solo                      controllers.Setup.omokSolo
 GET   /omok/solo2                     controllers.Setup.omokSolo2
+POST  /api/omok/solo2/import          controllers.Setup.omokSolo2Import
+POST  /api/omok/solo2/export          controllers.Setup.omokSolo2Export
 POST  /setup/hook/:sri/like/:gameId    controllers.Setup.like(sri: Sri, gameId: GameId)
 POST  /setup/hook/:sri                 controllers.Setup.hook(sri: Sri)
 GET   /setup/filter                    controllers.Setup.filterForm
