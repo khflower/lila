@@ -187,6 +187,7 @@ object Rematcher:
     existing match
       case Some(Rematches.NextGame.Accepted(nextId)) => YesAction.RedirectAccepted(nextId)
       case Some(Rematches.NextGame.Offered(by, _)) if by != color || opponentIsAi => YesAction.JoinExisting
+      case None if opponentIsAi => YesAction.JoinExisting
       case _ if !declined && canOffer => YesAction.CreateOffer
       case _ => YesAction.Noop
 

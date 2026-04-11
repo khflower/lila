@@ -53,3 +53,13 @@ class RematcherTest extends munit.FunSuite:
       canOffer = true
     )
     assertEquals(action, YesAction.JoinExisting)
+
+  test("ai rematch joins immediately without waiting for an offer"):
+    val action = decideAction(
+      existing = None,
+      color = Color.White,
+      opponentIsAi = true,
+      declined = false,
+      canOffer = true
+    )
+    assertEquals(action, YesAction.JoinExisting)
