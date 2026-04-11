@@ -6,6 +6,7 @@ import type { LobbyOpts } from './interfaces';
 import main from './main';
 
 export function initModule(opts: LobbyOpts) {
+  (window as any).__lobbyBooted = true;
   opts.appElement = document.querySelector('.lobby__app') as HTMLElement;
   opts.tableElement = document.querySelector('.lobby__table') as HTMLElement;
   opts.pools = [

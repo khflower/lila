@@ -21,3 +21,19 @@ function layout() {
 
 layout();
 window.addEventListener('resize', layout);
+
+function attachBootFallback(selector: string, hash: string) {
+  const button = document.querySelector<HTMLElement>(selector);
+  if (!button) return;
+  button.addEventListener('click', () => {
+    if ((window as any).__lobbyBooted) return;
+    const site = (window as any).site;
+    if (!site?.asset?.loadEsmPage) return;
+    location.hash = hash;
+    site.asset.loadEsmPage('lobby');
+  });
+}
+
+attachBootFallback('.lobby__start__button--hook', 'hook');
+attachBootFallback('.lobby__start__button--friend', 'friend');
+attachBootFallback('.lobby__start__button--ai', 'ai');
