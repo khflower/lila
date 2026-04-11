@@ -292,7 +292,7 @@ const chooseRemovalTarget = (
     .sort((a, b) => {
       const aRef = reference.get(a.key);
       const bRef = reference.get(b.key);
-      return (aRef?.evalIndex ?? -1) - (bRef?.evalIndex ?? -1) || (aRef?.rank ?? 999) - (bRef?.rank ?? 999) || a.key.localeCompare(b.key);
+      return (bRef?.evalIndex ?? -1) - (aRef?.evalIndex ?? -1) || (bRef?.rank ?? 999) - (aRef?.rank ?? 999) || a.key.localeCompare(b.key);
     })[0];
 
 const occupiedMoveKeys = (position: OmokRoundPosition): Set<string> => new Set((position.moves || []).map(move => move.key));
