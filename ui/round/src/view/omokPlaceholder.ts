@@ -10,7 +10,6 @@ const boardFiles = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const placeCooldownMs = 300;
 const lastPlaceAt = new WeakMap<RoundController, number>();
 const hoveredPos = new WeakMap<RoundController, { row: number; col: number; key: Key } | null>();
-const candidateActionMode = new WeakMap<RoundController, 'remove' | 'select'>();
 const svgSize = 100;
 const svgInset = 7;
 const boardExtent = svgSize - svgInset * 2;
@@ -19,7 +18,10 @@ const normalizeBoardRows = (boardRows: string[], boardSize: number): string[] =>
   Array.from({ length: boardSize }, (_, row) => (boardRows[row] || '').padEnd(boardSize, '.').slice(0, boardSize));
 
 const fileLabel = (col: number): string => boardFiles[col] || String(col + 1);
+const rankLabel = (rowFromTop: number, boardSize: number): string => String(boardSize - rowFromTop);
 const posKey = (row: number, col: number): string => `${fileLabel(col)}${row + 1}`;
+const displayRow = (row: number, boardSize: number): number => boardSize - 1 - row;
+const boardCoordY = (row: number, boardSize: number): number => coord(displayRow(row, boardSize), boardSize);
 
 const taraguchiRangeRadius = (ply: number): number | undefined => (ply >= 1 && ply <= 4 ? ply : undefined);
 
@@ -74,14 +76,6 @@ const setHoveredPos = (ctrl: RoundController, next: { row: number; col: number; 
   ctrl.redraw();
 };
 
-const getCandidateMode = (ctrl: RoundController): 'remove' | 'select' => candidateActionMode.get(ctrl) || 'remove';
-
-const setCandidateMode = (ctrl: RoundController, mode: 'remove' | 'select'): void => {
-  if (candidateActionMode.get(ctrl) === mode) return;
-  candidateActionMode.set(ctrl, mode);
-  ctrl.redraw();
-};
-
 const makePlacePayload = (pos: Key): SocketPlace => {
   const place: SocketPlace = { pos };
   if (blur.get()) place.b = 1;
@@ -99,22 +93,6 @@ const sendPlace = (ctrl: RoundController, pos: Key): void => {
   lastPlaceAt.set(ctrl, now);
   ctrl.setOmokPlacementPending(true);
   sendPlaceNow(ctrl, pos);
-};
-
-const sendCandidateSelection = (ctrl: RoundController, opening: OmokOpening, selected: Key): void => {
-  const removals = (opening.candidates || [])
-    .filter(candidate => candidate.key !== selected)
-    .map(candidate => candidate.key as Key);
-  if (!removals.length) return;
-
-  const now = Date.now();
-  if (now - (lastPlaceAt.get(ctrl) || 0) < placeCooldownMs) return;
-
-  lastPlaceAt.set(ctrl, now);
-  ctrl.setOmokPlacementPending(true, 3000);
-  removals.forEach((key, index) => {
-    window.setTimeout(() => sendPlaceNow(ctrl, key), index * 40);
-  });
 };
 
 const coord = (index: number, boardSize: number): number =>
@@ -170,7 +148,8 @@ const bindBoardPlacement = (el: HTMLDivElement, ctrl: RoundController, boardSize
     const relX = rect.width <= 0 ? 0 : Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
     const relY = rect.height <= 0 ? 0 : Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
     const col = resolveBoardIndex(relX, boardSize);
-    const row = resolveBoardIndex(relY, boardSize);
+    const rowFromTop = resolveBoardIndex(relY, boardSize);
+    const row = displayRow(rowFromTop, boardSize);
     return { row, col, key: posKey(row, col) as Key };
   };
 
@@ -196,14 +175,9 @@ const bindBoardPlacement = (el: HTMLDivElement, ctrl: RoundController, boardSize
 
   el.addEventListener('click', event => {
     if (!ctrl.canPlaceOmok()) return;
-    const opening = getCurrentOpening(ctrl);
     const hovered = getHoveredPos(ctrl) || resolveHover(event);
     if (!canPlacePoint(hovered.row, hovered.col)) return;
     setHoveredPos(ctrl, hovered);
-    if (opening?.candidateMode && opening.candidateSelection && getCandidateMode(ctrl) === 'select') {
-      sendCandidateSelection(ctrl, opening, hovered.key);
-      return;
-    }
     sendPlace(ctrl, hovered.key);
   });
 };
@@ -227,7 +201,6 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
   };
   const ruleSet = position.ruleSet || omok.ruleset;
   const opening = position.opening ?? getTaraguchiOpeningFallback(position, omok.ruleset);
-  const candidateMode = opening?.candidateMode && opening.candidateSelection ? getCandidateMode(ctrl) : 'remove';
   if (boardSize) attrs['data-board-size'] = boardSize;
   if (ruleSet) attrs['data-omok-rule-set'] = ruleSet;
   if (lastMove?.key) attrs['data-omok-last-move'] = lastMove.key;
@@ -235,7 +208,6 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
     attrs['data-omok-active-seat'] = opening.activeSeat;
     attrs['data-omok-candidate-mode'] = opening.candidateMode ? 'true' : 'false';
     attrs['data-omok-candidate-selection'] = opening.candidateSelection ? 'true' : 'false';
-    attrs['data-omok-candidate-action'] = candidateMode;
     if (typeof opening.rangeRadius === 'number') attrs['data-omok-range-radius'] = opening.rangeRadius;
   }
 
@@ -250,7 +222,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
   const canActInOpening = canPlace;
   const openingText =
     opening?.candidateMode && opening.candidateSelection
-      ? 'Select one candidate, or remove candidates until one remains.'
+      ? 'Select one candidate. Black keeps the fifth move, then White plays the sixth move.'
       : opening?.instruction;
   const starIndexes = starPointIndexes(boardSize);
   const stoneRadius = Math.max(1.9, Math.min(3.15, boardExtent / (boardSize - 1) / 2.12));
@@ -314,7 +286,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
       if (cell !== 'b' && cell !== 'w') continue;
       const isLastMove = lastMove?.row === rowIndex && lastMove.col === colIndex;
       const cx = coord(colIndex, boardSize);
-      const cy = coord(rowIndex, boardSize);
+      const cy = boardCoordY(rowIndex, boardSize);
       boardSvgChildren.push(
         hl(`circle.round__app__board__omok-placeholder__svg-stone.${cell === 'b' ? 'is-black' : 'is-white'}`, {
           attrs: { cx, cy, r: stoneRadius },
@@ -339,7 +311,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
 
   for (const [candidateIndex, candidate] of opening?.candidates?.entries() || []) {
     const cx = coord(candidate.col, boardSize);
-    const cy = coord(candidate.row, boardSize);
+    const cy = boardCoordY(candidate.row, boardSize);
     const badgeOffset = candidateBadgeOffset(stoneRadius);
     const badgeRadius = candidateBadgeRadius(stoneRadius);
     boardSvgChildren.push(
@@ -381,7 +353,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
         hl(`circle.round__app__board__omok-placeholder__svg-ghost.${hoverStoneClass}`, {
           attrs: {
             cx: coord(hovered.col, boardSize),
-            cy: coord(hovered.row, boardSize),
+            cy: boardCoordY(hovered.row, boardSize),
             r: stoneRadius,
           },
         }),
@@ -390,7 +362,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
         hl('circle.round__app__board__omok-placeholder__svg-hover-ring', {
           attrs: {
             cx: coord(hovered.col, boardSize),
-            cy: coord(hovered.row, boardSize),
+            cy: boardCoordY(hovered.row, boardSize),
             r: Math.max(1.05, stoneRadius * 1.14),
           },
         }),
@@ -414,17 +386,6 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
       label,
     );
 
-  const renderCandidateModeButton = (mode: 'select' | 'remove', label: string): VNode =>
-    renderOpeningAction(
-      label,
-      () => setCandidateMode(ctrl, mode),
-      { 'is-active': candidateMode === mode },
-      {
-        type: 'button',
-        'aria-pressed': candidateMode === mode ? 'true' : 'false',
-      },
-    );
-
   return hl('div.round__app__board__omok-placeholder', { attrs }, [
     hl('div.round__app__board__omok-placeholder__shell', [
       hl(
@@ -446,16 +407,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
       opening
         ? hl('div.round__app__board__omok-placeholder__opening', [
               hl('span.round__app__board__omok-placeholder__opening-text', openingText),
-            opening.candidateMode && opening.candidateSelection && canActInOpening
-                ? hl('span.round__app__board__omok-placeholder__opening-mode', `Mode: ${candidateMode}`)
-                : undefined,
             hl('div.round__app__board__omok-placeholder__opening-actions', [
-              opening.candidateMode && opening.candidateSelection && canActInOpening
-                ? renderCandidateModeButton('select', 'Select')
-                : undefined,
-              opening.candidateMode && opening.candidateSelection && canActInOpening
-                ? renderCandidateModeButton('remove', 'Remove')
-                : undefined,
               opening.canSwap && canActInOpening
                 ? renderOpeningAction('Swap', () => ctrl.socket.send('omok-swap'))
                 : undefined,
@@ -476,7 +428,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
         'div.round__app__board__omok-placeholder__coords.round__app__board__omok-placeholder__coords--left',
         { style: verticalCoordStyle },
         Array.from({ length: boardSize }, (_, row) =>
-          hl('span.round__app__board__omok-placeholder__coord', String(row + 1)),
+          hl('span.round__app__board__omok-placeholder__coord', rankLabel(row, boardSize)),
         ),
       ),
       hl(
@@ -509,7 +461,7 @@ export const renderOmokPlaceholder = (ctrl: RoundController): VNode | undefined 
         'div.round__app__board__omok-placeholder__coords.round__app__board__omok-placeholder__coords--right',
         { style: verticalCoordStyle },
         Array.from({ length: boardSize }, (_, row) =>
-          hl('span.round__app__board__omok-placeholder__coord', String(row + 1)),
+          hl('span.round__app__board__omok-placeholder__coord', rankLabel(row, boardSize)),
         ),
       ),
       hl(
