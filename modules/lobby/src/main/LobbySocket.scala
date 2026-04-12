@@ -90,8 +90,8 @@ final class LobbySocket(
 
       case JoinHook(sri, hook, game, creatorColor) =>
         lila.mon.lobby.hook.join.increment()
-        send.exec(P.Out.tellSri(hook.sri, gameStartRedirect(game.pov(creatorColor))))
-        send.exec(P.Out.tellSri(sri, gameStartRedirect(game.pov(!creatorColor))))
+        send.exec(P.Out.tellSri(hook.sri, gameStartRedirect(game.pov(creatorColor), omok = hook.omok)))
+        send.exec(P.Out.tellSri(sri, gameStartRedirect(game.pov(!creatorColor), omok = hook.omok)))
 
       case JoinSeek(userId, seek, game, creatorColor) =>
         lila.mon.lobby.seek.join.increment()
@@ -126,12 +126,12 @@ final class LobbySocket(
       send.exec(P.Out.tellSris(hookSubscriberSris.diff(idleSris).map { Sri(_) }, msg))
 
     import lila.common.Json.given
-    private def gameStartRedirect(pov: Pov) = makeMessage(
+    private def gameStartRedirect(pov: Pov, omok: Boolean = false) = makeMessage(
       "redirect",
       Json
         .obj(
           "id" -> pov.fullId,
-          "url" -> s"/${pov.fullId}"
+          "url" -> (if omok then s"/dev/omok/claim/${pov.fullId}" else s"/${pov.fullId}")
         )
         .add("cookie" -> gameApi.anonCookieJson(pov))
     )
