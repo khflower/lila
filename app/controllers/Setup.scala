@@ -186,7 +186,7 @@ final class Setup(
       )
 
   private def renderOmokFriendInvitePage(view: Setup.OmokFriendInviteView, host: Option[String])(using Context): Fu[Result] =
-    val shareUrl = s"${if ctx.req.secure then "https" else "http"}://${ctx.req.host}${view.sharePath}"
+    val shareUrl = s"${env.net.baseUrl}${view.sharePath}"
     Ok.page(
       views.omokPages.friendInvite(
         sessionId = view.session.id,

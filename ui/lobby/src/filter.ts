@@ -75,7 +75,9 @@ export default class Filter {
         ) {
           hidden++;
         } else {
-          const hash = hook.ra + variant + hook.t + hook.rating;
+          const hash = hook.omokRuleSet
+            ? [hook.id, hook.omokRuleSet, hook.ra || 0, variant, hook.t, hook.rating || ''].join(':')
+            : hook.ra + variant + hook.t + hook.rating;
           if (!seen.includes(hash)) visible.push(hook);
           seen.push(hash);
         }
