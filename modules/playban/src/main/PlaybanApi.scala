@@ -23,6 +23,8 @@ final class PlaybanApi(
     messenger: MsgApi
 )(using ec: Executor, mode: play.api.Mode):
 
+  private val playbanDisabled = mode.notProd
+
   private given BSONHandler[Outcome] = tryHandler(
     { case BSONInteger(v) => Outcome(v).toTry(s"No such playban outcome: $v") },
     x => BSONInteger(x.id)
@@ -188,17 +190,19 @@ final class PlaybanApi(
   private val cleanUserIds = scalalib.cache.ExpireSetMemo[UserId](30.minutes)
 
   def currentBan[U: UserIdOf](user: U): Fu[Option[TempBan]] =
-    (!cleanUserIds.get(user.id)).so:
-      coll
-        .find(
-          $doc("_id" -> user.id, "b.0".$exists(true)),
-          $doc("_id" -> false, "b" -> $doc("$slice" -> -1)).some
-        )
-        .one[Bdoc]
-        .dmap:
-          _.flatMap(_.getAsOpt[List[TempBan]]("b")).so(_.find(_.inEffect))
-        .addEffect: ban =>
-          if ban.isEmpty then cleanUserIds.put(user.id)
+    if playbanDisabled then fuccess(none)
+    else
+      (!cleanUserIds.get(user.id)).so:
+        coll
+          .find(
+            $doc("_id" -> user.id, "b.0".$exists(true)),
+            $doc("_id" -> false, "b" -> $doc("$slice" -> -1)).some
+          )
+          .one[Bdoc]
+          .dmap:
+            _.flatMap(_.getAsOpt[List[TempBan]]("b")).so(_.find(_.inEffect))
+          .addEffect: ban =>
+            if ban.isEmpty then cleanUserIds.put(user.id)
 
   val hasCurrentPlayban: lila.core.playban.HasCurrentPlayban = userId => currentBan(userId).map(_.isDefined)
 
@@ -268,28 +272,33 @@ final class PlaybanApi(
     yield ()
   }.void.logFailure(lila.log("playban"))
 
-  private def legiferate(record: UserRecord, age: Days, source: Option[Source]): Fu[UserRecord] = for
-    trust <- userTrustApi.get(record.userId)
-    newRec <- record
-      .bannable(age, trust)
-      .ifFalse(record.banInEffect)
-      .so: ban =>
-        lila.mon.playban.ban.count.increment()
-        lila.mon.playban.ban.mins.record(ban.mins)
-        Bus.pub(lila.core.playban.Playban(record.userId, ban.mins, inTournament = source.has(Source.Arena)))
-        coll
-          .findAndUpdateSimplified[UserRecord](
-            selector = $id(record.userId),
-            update = $unset("o") ++ $push(
-              "b" -> $doc(
-                "$each" -> List(ban),
-                "$slice" -> -30
+  private def legiferate(record: UserRecord, age: Days, source: Option[Source]): Fu[UserRecord] =
+    if playbanDisabled then
+      cleanUserIds.put(record.userId)
+      fuccess(record)
+    else
+      for
+        trust <- userTrustApi.get(record.userId)
+        newRec <- record
+          .bannable(age, trust)
+          .ifFalse(record.banInEffect)
+          .so: ban =>
+            lila.mon.playban.ban.count.increment()
+            lila.mon.playban.ban.mins.record(ban.mins)
+            Bus.pub(lila.core.playban.Playban(record.userId, ban.mins, inTournament = source.has(Source.Arena)))
+            coll
+              .findAndUpdateSimplified[UserRecord](
+                selector = $id(record.userId),
+                update = $unset("o") ++ $push(
+                  "b" -> $doc(
+                    "$each" -> List(ban),
+                    "$slice" -> -30
+                  )
+                ),
+                fetchNewObject = true
               )
-            ),
-            fetchNewObject = true
-          )
-    _ = cleanUserIds.remove(record.userId)
-  yield newRec | record
+        _ = cleanUserIds.remove(record.userId)
+      yield newRec | record
 
   private def registerRageSit(record: UserRecord, update: RageSit.Update): Funit =
     update match
