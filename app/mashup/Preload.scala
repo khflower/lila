@@ -26,6 +26,7 @@ final class Preload(
     playbanApi: lila.playban.PlaybanApi,
     lightUserApi: LightUserApi,
     roundProxy: lila.round.GameProxyRepo,
+    omokRoundRepo: lila.round.OmokRoundRepo,
     simulIsFeaturable: SimulIsFeaturable,
     getLastUpdates: lila.feed.Feed.GetLastUpdates,
     ublogApi: lila.ublog.UblogApi,
@@ -47,22 +48,7 @@ final class Preload(
     nbNotifications <- ctx.me.so(notifyApi.unreadCount(_))
     withPerfs <- ctx.user.traverse(perfsRepo.withPerfs)
     given Option[UserWithPerfs] = withPerfs
-    (
-      (
-        (
-          (
-            (
-              (((((((data, povs), tours), events), simuls), feat), entries), puzzle),
-              streams
-            ),
-            playban
-          ),
-          blindGames
-        ),
-        ublogPosts
-      ),
-      lichessMsg
-    ) <- lobbyApi.get
+    lobby <- lobbyApi.get
       .mon(_.lobby.segment("lobbyApi"))
       .zip(tours.mon(_.lobby.segment("tours")))
       .zip(events.mon(_.lobby.segment("events")))
@@ -77,41 +63,95 @@ final class Preload(
             .mon(_.lobby.segment("streams"))
       .zip((ctx.userId.so(playbanApi.currentBan)).mon(_.lobby.segment("playban")))
       .zip(ctx.blind.so(ctx.me).so(roundProxy.urgentGames))
+      .zip(fetchOngoingOmokGames)
       .zip(ublogApi.myCarousel)
       .zip:
         ctx.userId
           .ifTrue(nbNotifications > 0)
           .filterNot(liveStreamApi.isStreaming)
           .so(unreadCount.hasLichessMsg)
+      .map { payload =>
+        val p1 = payload._1
+        val lichessMsg = payload._2
+        val p2 = p1._1
+        val ublogPosts = p1._2
+        val p3 = p2._1
+        val ongoingOmokGames = p2._2
+        val p4 = p3._1
+        val blindGames = p3._2
+        val p5 = p4._1
+        val playban = p4._2
+        val p6 = p5._1
+        val streams = p5._2
+        val p7 = p6._1
+        val puzzle = p6._2
+        val p8 = p7._1
+        val entries = p7._2
+        val p9 = p8._1
+        val feat = p8._2
+        val p10 = p9._1
+        val simuls = p9._2
+        val p11 = p10._1
+        val events = p10._2
+        val p12 = p11._1
+        val tours = p11._2
+        val data = p12._1
+        val povs = p12._2
+        LobbyPayload(
+          data = data,
+          povs = povs,
+          tours = tours,
+          events = events,
+          simuls = simuls,
+          feat = feat,
+          entries = entries,
+          puzzle = puzzle,
+          streams = streams,
+          playban = playban,
+          blindGames = blindGames,
+          ongoingOmokGames = ongoingOmokGames,
+          ublogPosts = ublogPosts,
+          lichessMsg = lichessMsg
+        )
+      }
     (currentGame, _) <- ctx.me
-      .soUse(currentGameMyTurn(povs, lightUserApi.sync))
+      .soUse(currentGameMyTurn(lobby.povs, lightUserApi.sync))
       .mon(_.lobby.segment("currentGame"))
       .zip:
         lightUserApi
-          .preloadMany(entries.flatMap(_.userIds).toList)
+          .preloadMany(lobby.entries.flatMap(_.userIds).toList)
           .mon(_.lobby.segment("lightUsers"))
     classes <- ctx.myId.so(me => clasApi.isStudent(me).so(clasApi.clas.ofStudent(me, 4)))
   yield Homepage(
-    data,
-    entries,
-    tours,
+    lobby.data,
+    lobby.entries,
+    lobby.tours,
     swiss,
-    events,
+    lobby.events,
     relayHome.spotlight.get,
-    simuls,
-    feat,
-    puzzle,
-    streams.excludeUsers(events.flatMap(_.hostedBy)),
-    playban,
+    lobby.simuls,
+    lobby.feat,
+    lobby.puzzle,
+    lobby.streams.excludeUsers(lobby.events.flatMap(_.hostedBy)),
+    lobby.playban,
     currentGame,
     simulIsFeaturable,
-    blindGames,
+    lobby.blindGames,
+    lobby.ongoingOmokGames,
     getLastUpdates(),
-    ublogPosts,
+    lobby.ublogPosts,
     classes,
     withPerfs,
-    hasUnreadLichessMessage = lichessMsg
+    hasUnreadLichessMessage = lobby.lichessMsg
   )
+
+  private def fetchOngoingOmokGames: Fu[List[Game]] =
+    val ids = omokRoundRepo.snapshot.keys.toList
+    ids.nonEmpty.so:
+      gameRepo
+        .gamesFromSecondary(ids)
+        .flatMap(roundProxy.upgradeIfPresent)
+        .dmap(_.filter(_.playable).sortBy(game => -game.movedAt.toMillis).take(12))
 
   def currentGameMyTurn(using me: Me): Fu[Option[CurrentGame]] =
     gameRepo
@@ -133,6 +173,23 @@ final class Preload(
 
 object Preload:
 
+  private case class LobbyPayload(
+      data: JsObject,
+      povs: List[Pov],
+      tours: List[Tournament],
+      events: List[Event],
+      simuls: List[Simul],
+      feat: Option[Game],
+      entries: Vector[Entry],
+      puzzle: Option[lila.puzzle.DailyPuzzle.WithHtml],
+      streams: LiveStreams.WithTitles,
+      playban: Option[TempBan],
+      blindGames: List[Pov],
+      ongoingOmokGames: List[Game],
+      ublogPosts: List[UblogPost.PreviewPost],
+      lichessMsg: Boolean
+  )
+
   case class Homepage(
       data: JsObject,
       userTimeline: Vector[Entry],
@@ -148,6 +205,7 @@ object Preload:
       currentGame: Option[Preload.CurrentGame],
       isFeaturable: Simul => Boolean,
       blindGames: List[Pov],
+      ongoingOmokGames: List[Game],
       lastUpdates: List[lila.feed.Feed.Update],
       ublogPosts: List[UblogPost.PreviewPost],
       classes: List[lila.clas.Clas],

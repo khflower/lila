@@ -80,6 +80,8 @@ final private class LobbySyncActor(
 
     case msg @ JoinHook(_, hook, game, _) =>
       onStart.exec(game.id)
+      game.clock.foreach: _ =>
+        Bus.pub(lila.core.round.TellMany(Seq(game.id), lila.core.round.StartClock))
       socket ! msg
       remove(hook)
 

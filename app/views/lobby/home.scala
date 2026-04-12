@@ -11,7 +11,7 @@ object home:
   def apply(homepage: Homepage)(using ctx: Context) =
     import homepage.*
     Page("")
-      .copy(fullTitle = s"$siteName • ${trans.site.freeOnlineChess.txt()}".some)
+      .copy(fullTitle = "Omok.dev".some)
       .i18n(_.variant)
       .js(
         PageModule(
@@ -29,14 +29,14 @@ object home:
       .css("lobby")
       .graph(
         OpenGraph(
-          image = staticAssetUrl("logo/lichess-tile-wide.png").some,
-          title = "The best free, adless Chess server",
+          image = None,
+          title = "Omok.dev",
           url = netBaseUrl.into(Url),
-          description = trans.site.siteDescription.txt()
+          description = "Free online omok with custom rooms, Rapfi AI, and opening study tools."
         )
       )
       .hrefLangs(lila.ui.LangPath("/")):
-        given Option[UserWithPerfs] = homepage.me
+        given _root_.scala.Option[UserWithPerfs] = homepage.me
         main(
           cls := List(
             "lobby" -> true,
@@ -44,51 +44,14 @@ object home:
           )
         )(
           div(cls := "lobby__side")(
-            ctx.blind.option(h2(trans.nvui.featuredEvents())),
-            ctx.kid.no.option(views.streamer.bits.liveStreams(streams)),
-            div(cls := "lobby__spotlights"):
-              val eventTags = events.map(bits.spotlight)
-              val relayTags = views.relay.ui.spotlight(relays)
-              frag(
-                eventTags,
-                relayTags,
-                ctx.noBot.option {
-                  val nbManual = eventTags.size + relayTags.size
-                  val simulBBB = simuls.find(isFeaturable(_) && nbManual < 4)
-                  val nbForced = nbManual + simulBBB.size.toInt
-                  val tourBBBs = if nbForced > 3 then 0 else if nbForced == 3 then 1 else 3 - nbForced
-                  frag(
-                    lila.tournament.Spotlight.select(tours, tourBBBs).map {
-                      views.tournament.list.homepageSpotlight(_)
-                    },
-                    swiss.ifTrue(nbForced < 3).map(views.swiss.ui.homepageSpotlight),
-                    simulBBB.map(views.simul.ui.homepageSpotlight)
-                  )
-                }
-              )
-            ,
-            classes.nonEmpty.option:
-              div(cls := "lobby__classes"):
-                classes.map: clas =>
-                  a(href := routes.Clas.show(clas.id), dataIcon := Icon.Group)(clas.name)
-            ,
-            if ctx.isAuth then
-              div(cls := "lobby__timeline")(
-                ctx.blind.option(h2(trans.site.timeline())),
-                views.timeline.entries(userTimeline),
-                userTimeline.nonEmpty.option:
-                  a(cls := "more", href := routes.Timeline.home)(trans.site.more(), " »")
-              )
-            else
-              div(cls := "about-side")(
-                ctx.blind.option(h2(trans.site.about())),
-                trans.site.xIsAFreeYLibreOpenSourceChessServer(
-                  "Lichess",
-                  a(cls := "blue", href := routes.Plan.features)(trans.site.really.txt())
-                ),
-                " ",
-                a(href := "/about")(trans.site.aboutX("Lichess"), "...")
-              )
+            div(cls := "about-side")(
+              ctx.blind.option(h2(trans.site.about())),
+              p("Omok.dev is a free, open source omok service focused on real-time play, browser-side AI, and opening study."),
+              a(cls := "blue", href := "/source")(trans.site.sourceCode()),
+              br,
+              a(cls := "button button-empty", href := "/dev/omok/opening-guide")("Open the opening guide"),
+              a(cls := "button button-empty", href := "/omok/solo")("Open the solo board")
+            )
           ),
           currentGame
             .map(bits.currentGameInfo)
@@ -109,46 +72,46 @@ object home:
               ),
               button(cls := "button button-metal lobby__start__button lobby__start__button--ai")(
                 trans.site.playAgainstComputer()
-              )
-            )
-          ),
-          div(cls := "lobby__tv"):
-            featured.map: g =>
-              views.game.mini(Pov.naturalOrientation(g), tv = true)
-          ,
-          div(cls := "lobby__support")(
-            a(href := routes.Plan.index())(
-              iconTag(patronIconChar),
-              span(cls := "lobby__support__text")(
-                strong(trans.patron.donate()),
-                span(trans.patron.becomePatron())
-              )
+              ),
+              a(
+                cls := "button button-metal lobby__start__button lobby__start__button--opening-guide",
+                href := "/dev/omok/opening-guide"
+              )("Opening guide"),
+              a(
+                cls := "button button-metal lobby__start__button lobby__start__button--solo",
+                href := "/omok/solo"
+              )("Solo board")
             ),
-            a(href := "/swag")(
-              iconTag(Icon.Tshirt),
-              span(cls := "lobby__support__text")(
-                strong("Swag Store"),
-                span(trans.site.playChessInStyle())
+            homepage.ongoingOmokGames.nonEmpty.option(
+              div(cls := "lobby__box lobby__box--ongoing-omok")(
+                h2("진행 중인 오목 경기"),
+                div(cls := "lobby__box__content")(
+                  ul(
+                    homepage.ongoingOmokGames.map: game =>
+                      li(
+                        a(href := routes.Round.watcher(game.id, chess.Color.white))(
+                          playerText(game.whitePlayer),
+                          " vs ",
+                          playerText(game.blackPlayer)
+                        ),
+                        span(cls := "mini")(
+                          " · ",
+                          game.clock.fold("무제한")(_.config.show),
+                          " · ",
+                          momentFromNow(game.movedAt)
+                        )
+                      )
+                  )
+                )
               )
             )
           ),
-          puzzle.map: p =>
-            views.puzzle.bits.dailyLink(p)(cls := "lobby__puzzle"),
-          views.ublog.ui.homeCarousel(ublogPosts),
-          div(cls := "lobby__feed"):
-            views.feed.lobbyUpdates(lastUpdates)
-          ,
-          ctx.noBot.option(bits.underboards(tours, simuls)),
           div(cls := "lobby__about")(
-            ctx.blind.option(h2(trans.site.about())),
-            a(href := "/about")(trans.site.aboutX("Lichess")),
-            a(href := "/faq")(trans.faq.faqAbbreviation()),
-            a(href := "/contact")(trans.contact.contact()),
-            a(href := "/mobile")(trans.site.mobileApp()),
+            ctx.blind.option(h2("Omok.dev")),
+            a(href := "/dev/omok/opening-guide")("Opening guide"),
+            a(href := "/omok/solo")("Solo board"),
             a(href := routes.Cms.tos)(trans.site.termsOfService()),
             a(href := "/privacy")(trans.site.privacy()),
-            a(href := "/source")(trans.site.sourceCode()),
-            a(href := "/ads")("Ads"),
-            views.bits.connectLinks
+            a(href := "/source")(trans.site.sourceCode())
           )
         )
