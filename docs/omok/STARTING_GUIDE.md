@@ -180,6 +180,8 @@ For realtime-specific checks, open two isolated browser sessions and test:
 - live move propagation
 - resign
 - rematch
+- timed hook room start, where the first player's clock should begin ticking as soon as the second player joins
+- spectator discoverability, where a fresh `/ko` page should show a `진행 중인 오목 경기` box while a live Omok game exists
 
 ## 8. Optional, rough public exposure
 
@@ -201,6 +203,10 @@ That usually means `lila-ws` on `9664` is down or misrouted.
 ### `/ko` loads but buttons or modals behave strangely
 
 Check asset build and manifest state first. This Omok fork has had several live regressions caused by stale or mismatched compiled assets.
+
+### `진행 중인 오목 경기` appears in HTML but not in the real page
+
+The lobby client re-renders `.lobby__table` after boot. Do not rely on a server-rendered card that lives inside that subtree. Keep the preload data, but mount the visible ongoing-game box in a server-owned area outside `.lobby__table`, then verify the real page after boot.
 
 ### Frontend change does not seem to apply
 

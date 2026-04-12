@@ -4,12 +4,37 @@ import play.api.libs.json.Json
 
 import lila.app.UiEnv.{ *, given }
 import lila.app.mashup.Preload.Homepage
-import lila.core.perf.UserWithPerfs
 
 object home:
 
   def apply(homepage: Homepage)(using ctx: Context) =
     import homepage.*
+    def playerName(player: lila.core.game.Player) =
+      player.aiLevel.fold(player.name.fold("Anon.")(_.value))(_ => "Rapfi AI")
+    def ongoingOmokBox =
+      homepage.ongoingOmokGames.nonEmpty.option(
+        div(cls := "lobby__box lobby__box--ongoing-omok")(
+          div(cls := "lobby__box__top")(span(cls := "title")("진행 중인 오목 경기")),
+          div(cls := "lobby__box__content")(
+            table(
+              tbody(
+                homepage.ongoingOmokGames.map: game =>
+                  tr(
+                    td(cls := "name")(
+                      a(href := routes.Round.watcher(game.id, chess.Color.white))(
+                        s"${playerName(game.whitePlayer)} vs ${playerName(game.blackPlayer)}"
+                      )
+                    ),
+                    td(cls := "more")(
+                      small(game.clock.fold("무제한")(_.config.show))
+                    )
+                  )
+              )
+            )
+          )
+        )
+      )
+
     Page("")
       .copy(fullTitle = "Omok.dev".some)
       .i18n(_.variant)
@@ -19,7 +44,16 @@ object home:
           Json
             .obj(
               "data" -> data,
-              "showRatings" -> ctx.pref.showRatings
+              "showRatings" -> ctx.pref.showRatings,
+              "ongoingOmokGames" -> homepage.ongoingOmokGames.map: game =>
+                Json.obj(
+                  "id" -> game.id.value,
+                  "url" -> routes.Round.watcher(game.id, chess.Color.white).url,
+                  "white" -> playerName(game.whitePlayer),
+                  "black" -> playerName(game.blackPlayer),
+                  "clock" -> game.clock.fold("무제한")(_.config.show),
+                  "updatedAt" -> game.movedAt.toString
+                )
             )
             .add("hasUnreadLichessMessage", hasUnreadLichessMessage)
             .add("bots", Granter.opt(_.Beta))
@@ -36,7 +70,6 @@ object home:
         )
       )
       .hrefLangs(lila.ui.LangPath("/")):
-        given _root_.scala.Option[UserWithPerfs] = homepage.me
         main(
           cls := List(
             "lobby" -> true,
@@ -51,7 +84,8 @@ object home:
               br,
               a(cls := "button button-empty", href := "/dev/omok/opening-guide")("Open the opening guide"),
               a(cls := "button button-empty", href := "/omok/solo")("Open the solo board")
-            )
+            ),
+            ongoingOmokBox
           ),
           currentGame
             .map(bits.currentGameInfo)
@@ -81,29 +115,6 @@ object home:
                 cls := "button button-metal lobby__start__button lobby__start__button--solo",
                 href := "/omok/solo"
               )("Solo board")
-            ),
-            homepage.ongoingOmokGames.nonEmpty.option(
-              div(cls := "lobby__box lobby__box--ongoing-omok")(
-                h2("진행 중인 오목 경기"),
-                div(cls := "lobby__box__content")(
-                  ul(
-                    homepage.ongoingOmokGames.map: game =>
-                      li(
-                        a(href := routes.Round.watcher(game.id, chess.Color.white))(
-                          playerText(game.whitePlayer),
-                          " vs ",
-                          playerText(game.blackPlayer)
-                        ),
-                        span(cls := "mini")(
-                          " · ",
-                          game.clock.fold("무제한")(_.config.show),
-                          " · ",
-                          momentFromNow(game.movedAt)
-                        )
-                      )
-                  )
-                )
-              )
             )
           ),
           div(cls := "lobby__about")(
