@@ -204,6 +204,8 @@ That usually means `lila-ws` on `9664` is down or misrouted.
 
 Check asset build and manifest state first. This Omok fork has had several live regressions caused by stale or mismatched compiled assets.
 
+If the live runtime already has the right manifest entries and the right modal CSS, but a human still reports the 3 buttons doing nothing, do not stop there. This has repeatedly turned out to be stale compiled JS still being served through the public app shell. In that case, bump `compiledAssetBust` in `modules/web/src/main/ui/layout.scala`, restart the app on `9663`, and then re-run a real click check.
+
 ### `진행 중인 오목 경기` appears in HTML but not in the real page
 
 The lobby client re-renders `.lobby__table` after boot. Do not rely on a server-rendered card that lives inside that subtree. Keep the preload data, but mount the visible ongoing-game box in a server-owned area outside `.lobby__table`, then verify the real page after boot.
@@ -211,6 +213,8 @@ The lobby client re-renders `.lobby__table` after boot. Do not rely on a server-
 ### Frontend change does not seem to apply
 
 You probably changed source but did not rebuild the relevant UI bundle.
+
+For the public tunnel path, also consider stale page-shell asset busting. A rebuilt bundle plus correct manifest can still look broken to users until the app serves a fresh `?v=` asset version.
 
 ### Public tunnel config leaked into local config
 
