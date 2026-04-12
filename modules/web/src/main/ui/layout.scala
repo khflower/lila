@@ -16,11 +16,11 @@ final class layout(helpers: Helpers, assetHelper: lila.web.ui.AssetFullHelper)(
     reportScore: () => Int
 ):
   import helpers.{ *, given }
-  import assetHelper.{ defaultCsp, netConfig, cashTag, siteName }
+  import assetHelper.{ defaultCsp, netConfig, cashTag, siteName, socketDomainsForPage }
 
   val doctype = raw("<!DOCTYPE html>")
   def htmlTag(using lang: Lang) = html(st.lang := lang.code, dir := isRTL(lang).option("rtl"))
-  val topComment = raw("""<!-- Lichess is open source! See https://lichess.org/source -->""")
+  val topComment = raw("""<!-- Omok.dev is open source! See /source -->""")
   val charset = raw("""<meta charset="utf-8">""")
   val viewport = raw:
     """<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover">"""
@@ -82,22 +82,21 @@ final class layout(helpers: Helpers, assetHelper: lila.web.ui.AssetFullHelper)(
 
   def botImage = img(
     src := staticAssetUrl("images/icons/bot.webp"),
-    title := "Robot chess",
+    title := "Omok AI",
     style := "display:inline;width:34px;height:34px;vertical-align:top;margin-right:5px;vertical-align:text-top"
+  )
+
+  private val omokFaviconDataUri =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23d7b36a'/%3E%3Ccircle cx='24' cy='24' r='12' fill='%23111111'/%3E%3Ccircle cx='40' cy='40' r='12' fill='%23ffffff' stroke='%236b4a1f' stroke-width='3'/%3E%3C/svg%3E"
+  private val omokSiteIcon = raw(
+    """<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#d7b36a"></rect><circle cx="24" cy="24" r="12" fill="#111111"></circle><circle cx="40" cy="40" r="12" fill="#ffffff" stroke="#6b4a1f" stroke-width="3"></circle></svg>"""
   )
 
   val manifests = raw:
     """<link rel="manifest" href="/manifest.json">"""
 
   val favicons = raw:
-    List(512, 256, 192, 128, 64)
-      .map: px =>
-        s"""<link rel="icon" type="image/png" href="$assetBaseUrl/assets/logo/lichess-favicon-$px.png" sizes="${px}x$px">"""
-      .mkString(
-        "",
-        "",
-        s"""<link id="favicon" rel="icon" type="image/png" href="$assetBaseUrl/assets/logo/lichess-favicon-32.png" sizes="32x32">"""
-      )
+    s"""<link rel="icon" type="image/svg+xml" href="$omokFaviconDataUri"><link id="favicon" rel="icon" type="image/svg+xml" href="$omokFaviconDataUri">"""
   def blindModeForm(using ctx: Context) = raw:
     val btnText =
       if ctx.blind
@@ -147,8 +146,10 @@ final class layout(helpers: Helpers, assetHelper: lila.web.ui.AssetFullHelper)(
   def scriptsPreload(keys: List[String]) =
     frag(cashTag, assetHelper.manifest.jsAndDeps("manifest" :: keys).map(jsTag))
 
+  private val compiledAssetBust = "omok-20260412-1426"
+
   private def jsTag(name: String): Frag =
-    script(tpe := "module", src := staticCompiledUrl(name))
+    script(tpe := "module", src := Url(s"${staticCompiledUrl(name).value}?v=$compiledAssetBust"))
 
   def modulesInit(modules: EsmList, nonce: Optionce) =
     modules.flatMap(_.map(_.init(nonce))) // in body
@@ -183,13 +184,13 @@ final class layout(helpers: Helpers, assetHelper: lila.web.ui.AssetFullHelper)(
 
   val dailyNewsAtom = link(
     href := routes.Feed.atom,
-    st.title := "Lichess Updates Feed",
+    st.title := "Omok.dev updates feed",
     tpe := "application/atom+xml",
     rel := "alternate"
   )
 
   val dataVapid = attr("data-vapid")
-  def dataSocketDomains = attr("data-socket-domains") := netConfig.socketDomains.mkString(",")
+  def dataSocketDomains(using Context) = attr("data-socket-domains") := socketDomainsForPage.mkString(",")
   val dataNonce = attr("data-nonce")
   val dataAnnounce = attr("data-announce")
   val dataSoundSet = attr("data-sound-set")
@@ -287,9 +288,7 @@ final class layout(helpers: Helpers, assetHelper: lila.web.ui.AssetFullHelper)(
           title := trans.team.teams.txt()
         )
 
-    private val siteNameFrag: Frag =
-      if siteName == "lichess.org" then frag("lichess", span(".org"))
-      else frag(siteName)
+    private val siteNameFrag: Frag = frag("Omok", span(".dev"))
 
     def apply(
         zenable: Boolean,
@@ -305,24 +304,17 @@ final class layout(helpers: Helpers, assetHelper: lila.web.ui.AssetFullHelper)(
           a(cls := "site-title", href := langHref("/"))(
             if ctx.kid.yes then span(title := trans.site.kidMode.txt(), cls := "kiddo")(":)")
             else ctx.isBot.option(botImage),
-            div(cls := "site-icon", dataIcon := Icon.Logo),
+            div(
+              cls := "site-icon site-icon--omok",
+              style := "display:flex;width:2.15rem;height:2.15rem;flex:0 0 2.15rem;align-items:center;justify-content:center;overflow:hidden;border-radius:0.55rem;"
+            )(omokSiteIcon),
             div(cls := "site-name")(siteNameFrag)
           ),
-          (!isAppealUser).option(
-            frag(
-              topnav,
-              (ctx.kid.no && !ctx.me.exists(_.isPatron) && !zenable).option(
-                a(cls := "site-title-nav__donate")(
-                  href := routes.Plan.index()
-                )(span(trans.patron.donate()))
-              )
-            )
-          ),
+          (!isAppealUser).option(topnav),
           ctx.blind.option(h2("Navigation"))
         ),
         div(cls := "site-buttons")(
           warnNoAutoplay,
-          (!isAppealUser).option(clinput),
           privileges,
           teamRequests(ctx.teamNbRequests),
           if isAppealUser then
