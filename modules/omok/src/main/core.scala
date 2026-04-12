@@ -8,7 +8,11 @@ enum Color:
     case White => Black
 
 enum RuleSet:
-  case Freestyle, Renju
+  case Freestyle, Renju, Taraguchi10
+
+object RuleSet:
+  def isRenjuFamily(ruleSet: RuleSet): Boolean =
+    ruleSet == RuleSet.Renju || ruleSet == RuleSet.Taraguchi10
 
 enum ForbiddenReason:
   case Overline, DoubleFour, DoubleThree
@@ -80,6 +84,10 @@ final case class Board private (cells: Vector[Option[Color]]):
     Board.Directions.exists: (dr, dc) =>
       lineLength(pos, color, dr, dc) >= 6
 
+  def isWinningMove(pos: Pos, color: Color, ruleSet: RuleSet): Boolean =
+    if RuleSet.isRenjuFamily(ruleSet) && color == Color.Black then hasFive(pos, color)
+    else hasFive(pos, color) || hasOverline(pos, color)
+
 object Board:
   val Directions = List((0, 1), (1, 0), (1, 1), (1, -1))
   val empty = Board(Vector.fill(Pos.Area)(None))
@@ -99,7 +107,7 @@ object Board:
 object Forbidden:
 
   def judge(board: Board, move: Move, color: Color, ruleSet: RuleSet): Option[ForbiddenReason] =
-    if ruleSet != RuleSet.Renju || color != Color.Black then None
+    if !RuleSet.isRenjuFamily(ruleSet) || color != Color.Black then None
     else
       board.place(move.pos, color).toOption.flatMap: placed =>
         if placed.hasFive(move.pos, color) then None
@@ -203,19 +211,29 @@ final case class Game(
   def play(move: Move): Either[MoveError, Game] =
     status match
       case Status.Ongoing =>
-        situation.play(move).map: nextSituation =>
-          val placedBoard = nextSituation.board
-          val playedColor = situation.turn
-          val nextStatus =
-            if placedBoard.hasFive(move.pos, playedColor) then Status.Win(playedColor)
-            else if placedBoard.isFull then Status.Draw
-            else Status.Ongoing
-          copy(
-            situation = nextSituation,
-            status = nextStatus,
-            ply = ply + 1,
-            lastMove = Some(move)
-          )
+        val playedColor = situation.turn
+        Forbidden.judge(situation.board, move, playedColor, situation.ruleSet) match
+          case Some(_) =>
+            situation.board.place(move.pos, playedColor).map: placedBoard =>
+              copy(
+                situation = Situation(placedBoard, playedColor.other, situation.ruleSet),
+                status = Status.Win(playedColor.other),
+                ply = ply + 1,
+                lastMove = Some(move)
+              )
+          case None =>
+            situation.board.place(move.pos, playedColor).map: placedBoard =>
+              val nextStatus =
+                if placedBoard.isWinningMove(move.pos, playedColor, situation.ruleSet) then
+                  Status.Win(playedColor)
+                else if placedBoard.isFull then Status.Draw
+                else Status.Ongoing
+              copy(
+                situation = Situation(placedBoard, playedColor.other, situation.ruleSet),
+                status = nextStatus,
+                ply = ply + 1,
+                lastMove = Some(move)
+              )
       case _ => Left(MoveError.GameAlreadyOver)
 
 object Game:

@@ -75,6 +75,7 @@ Current Omok-specific highlights in this fork:
 - `/omok/solo` and `/omok/solo2` now share one unified solo-board flow
 - Omok round pages include a browser Rapfi settings panel with persisted local defaults
 - Rapfi defaults stay conservative by default, capped to 30 seconds think time and Renju-based rule selection
+- Omok browser-side runtime assets under `public/omok/` are included in this branch so a fresh clone better matches the current local Omok experience
 
 ## Omok engine and commercial-use caution
 

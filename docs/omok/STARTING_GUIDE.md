@@ -20,6 +20,7 @@ This guide also reflects the current Omok fork state:
 - `/omok/solo` is the unified solo-board entry point
 - Omok AI rounds expose local Rapfi engine settings in the round UI
 - browser Rapfi defaults are conservative, Renju-based, and capped at 30 seconds think time
+- `public/omok/` runtime assets, opening-guide data, and browser Rapfi bundles are now committed in this branch instead of being left only in a local runtime tree
 
 ## Prerequisites
 

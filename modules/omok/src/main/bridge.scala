@@ -15,6 +15,22 @@ object OmokMoveDto:
       col = move.pos.col
     )
 
+final case class OmokAiConfig(
+    provider: String,
+    mode: String,
+    aiColor: Option[String] = None,
+    threads: Int = 1,
+    moveTimeMs: Option[Int] = None,
+    depth: Option[Int] = None,
+    nodes: Option[Long] = None,
+    analysisEnabled: Boolean = true
+):
+  def asJson: JsObject = PlayJson.toJsObject(this)
+
+object OmokAiConfig:
+
+  given OWrites[OmokAiConfig] = PlayJson.writes
+
 final case class OmokPositionDto(
     boardSize: Int,
     boardRows: Vector[String],
@@ -22,7 +38,8 @@ final case class OmokPositionDto(
     ruleSet: String,
     ply: Int,
     lastMove: Option[OmokMoveDto] = None,
-    moves: Vector[OmokMoveDto] = Vector.empty
+    moves: Vector[OmokMoveDto] = Vector.empty,
+    opening: Option[OmokOpeningDto] = None
 ):
   require(boardSize > 0, "boardSize must be > 0")
   require(boardRows.size == boardSize, s"boardRows must contain $boardSize rows")
@@ -30,6 +47,25 @@ final case class OmokPositionDto(
   require(ply >= 0, "ply must be >= 0")
 
   def asJson: JsObject = PlayJson.toJsObject(this)
+
+final case class OmokOpeningDto(
+    activeSeat: String,
+    canSwap: Boolean,
+    canStartCandidates: Boolean,
+    candidateMode: Boolean,
+    candidateSelection: Boolean,
+    forceSimpleFifth: Boolean,
+    candidateCount: Int,
+    candidateTarget: Int,
+    candidates: Vector[OmokMoveDto] = Vector.empty,
+    history: Vector[String] = Vector.empty,
+    rangeRadius: Option[Int] = None,
+    instruction: String
+)
+
+object OmokOpeningDto:
+
+  given OWrites[OmokOpeningDto] = PlayJson.writes
 
 object OmokPositionDto:
 
@@ -78,7 +114,8 @@ object OmokPositionDto:
       ruleSet = ruleSetKey(ruleSet),
       ply = ply,
       lastMove = lastMove.map(OmokMoveDto.fromMove),
-      moves = moves.map(OmokMoveDto.fromMove)
+      moves = moves.map(OmokMoveDto.fromMove),
+      opening = None
     )
 
   private def renderBoard(board: Board): Vector[String] =
@@ -115,7 +152,8 @@ object OmokGameDto:
 final case class OmokAnalyseDto(
     position: Option[OmokPositionDto] = None,
     status: Option[String] = None,
-    winner: Option[String] = None
+    winner: Option[String] = None,
+    ai: Option[OmokAiConfig] = None
 ):
 
   def asJson: JsObject = OmokAnalyseDto.writes.writes(this)
@@ -129,7 +167,8 @@ object OmokAnalyseDto:
       List(
         dto.position.map("position" -> PlayJson.toJson(_)),
         dto.status.map("status" -> PlayJson.toJson(_)),
-        dto.winner.map("winner" -> PlayJson.toJson(_))
+        dto.winner.map("winner" -> PlayJson.toJson(_)),
+        dto.ai.map("ai" -> PlayJson.toJson(_))
       ).flatten
     )
 
@@ -153,6 +192,7 @@ private def colorKey(color: Color): String = color match
 private def ruleSetKey(ruleSet: RuleSet): String = ruleSet match
   case RuleSet.Freestyle => "freestyle"
   case RuleSet.Renju     => "renju"
+  case RuleSet.Taraguchi10 => "taraguchi10"
 
 private def statusKey(status: Status): String = status match
   case Status.Ongoing => "ongoing"

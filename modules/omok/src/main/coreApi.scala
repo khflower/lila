@@ -31,6 +31,7 @@ object CoreApi:
     def toCore: coreomok.RuleSet = ruleSet match
       case RuleSet.Freestyle => coreomok.RuleSet.Freestyle
       case RuleSet.Renju     => coreomok.RuleSet.Renju
+      case RuleSet.Taraguchi10 => coreomok.RuleSet.Renju
 
   extension (ruleSet: coreomok.RuleSet)
     def toLocal: RuleSet = ruleSet match

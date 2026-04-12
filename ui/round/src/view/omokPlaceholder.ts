@@ -47,8 +47,8 @@ const getTaraguchiOpeningFallback = (position?: OmokRoundPosition, ruleSet?: str
   const activeSeat = position.turn === 'white' || position.turn === 'black' ? position.turn : 'white';
   return {
     activeSeat,
-    canSwap: position.ply >= 1 && position.ply <= 5,
-    canStartCandidates: position.ply === 4,
+    canSwap: false,
+    canStartCandidates: false,
     candidateMode: false,
     candidateSelection: false,
     forceSimpleFifth: false,
