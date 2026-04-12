@@ -91,20 +91,89 @@ export async function domDialog(o: DomDialogOpts): Promise<Dialog> {
 
 export function snabDialog(o: SnabDialogOpts): VNode {
   const ass = loadAssets(o);
-  let dialog: HTMLDialogElement;
+  let dialogEl: HTMLDialogElement | undefined;
+  let viewEl: HTMLElement | undefined;
+  let initialized = false;
+
+  const fallbackCleanup = (dialog: HTMLDialogElement) => {
+    if ((dialog as HTMLDialogElement & { dataset: DOMStringMap }).dataset.snabCleaned) return;
+    dialog.dataset.snabCleaned = '1';
+
+    const view = dialog.querySelector<HTMLElement>('.dialog-content') ?? viewEl ?? dialog;
+    const fallbackDialog: Dialog = {
+      view,
+      dialog,
+      get returnValue() {
+        return dialog.returnValue;
+      },
+      show: async () => fallbackDialog,
+      updateActions: () => {},
+      close: (returnValue?: string) => dialog.close(returnValue),
+    };
+
+    o.onClose?.(fallbackDialog);
+    if (dialog.parentElement?.classList.contains('snab-modal-mask')) dialog.parentElement.remove();
+    else dialog.remove();
+    for (const css of o.css ?? []) {
+      if ('hashed' in css) site.asset.removeCssPath(css.hashed);
+      else if ('url' in css) site.asset.removeCss(css.url);
+    }
+  };
+
+  const maybeInit = () => {
+    if (initialized || !dialogEl || !viewEl) return;
+    initialized = true;
+
+    const dlg = new DialogWrapper(dialogEl, viewEl, o, true);
+    const show = () => {
+      if (o.onInsert) o.onInsert(dlg);
+      else dlg.show();
+    };
+
+    if (o.vnodes) {
+      void ass;
+      show();
+      return;
+    }
+
+    void ass.then(([html]) => {
+      if (html) viewEl!.innerHTML = html;
+      show();
+    });
+  };
 
   const dialogVNode = hl(
     `dialog${isTouchDevice() ? '.touch-scroll' : ''}`,
     {
       key: o.class ?? 'dialog',
       attrs: o.attrs?.dialog,
-      hook: onInsert(el => (dialog = el as HTMLDialogElement)),
+      on: {
+        close: (e: Event) => {
+          const dialog = e.currentTarget as HTMLDialogElement;
+          setTimeout(() => {
+            if (dialog.isConnected) fallbackCleanup(dialog);
+          });
+        },
+      },
+      hook: onInsert(el => {
+        dialogEl = el as HTMLDialogElement;
+        maybeInit();
+      }),
     },
     [
       o.noCloseButton ||
         hl(
           'div.close-button-anchor',
-          hl('button.close-button', { attrs: { 'data-icon': licon.X, 'aria-label': i18n.site.close } }),
+          hl('button.close-button', {
+            attrs: { 'data-icon': licon.X, 'aria-label': i18n.site.close },
+            on: {
+              click: (e: Event) => {
+                const dialog = (e.currentTarget as HTMLElement).closest('dialog');
+                if (dialog instanceof HTMLDialogElement) dialog.close('cancel');
+                blurIfPrimaryClick(e);
+              },
+            },
+          }),
         ),
       hl(
         `div.${o.noScrollable ? 'not-' : ''}scrollable`,
@@ -120,20 +189,8 @@ export function snabDialog(o: SnabDialogOpts): VNode {
           {
             attrs: o.attrs?.view,
             hook: onInsert(view => {
-              const dlg = new DialogWrapper(dialog, view, o, true);
-              const show = () => {
-                if (o.onInsert) o.onInsert(dlg);
-                else dlg.show();
-              };
-              if (o.vnodes) {
-                void ass;
-                show();
-                return;
-              }
-              void ass.then(([html]) => {
-                if (html) view.innerHTML = html;
-                show();
-              });
+              viewEl = view as HTMLElement;
+              maybeInit();
             }),
           },
           o.vnodes,
