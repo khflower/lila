@@ -7,6 +7,15 @@ export type Mode = 'list' | 'chart';
 export type Tab = 'pools' | 'real_time' | 'seeks' | 'now_playing';
 export type GameType = 'hook' | 'friend' | 'ai';
 export type GameMode = 'casual' | 'rated';
+export type OmokRuleSet = 'taraguchi10' | 'renju' | 'freestyle';
+export type OmokClockSystem = 'fischer' | 'byoyomi';
+export interface OmokAiStore {
+  threads: number;
+  moveTimeMs: number;
+  depth: number;
+  nodes: number;
+  analysisEnabled: boolean;
+}
 
 export interface Variant {
   id: number;
@@ -29,6 +38,7 @@ export interface Hook {
   u?: string; // username
   rating?: number;
   ra?: 1; // rated
+  omokRuleSet?: OmokRuleSet;
   action: 'cancel' | 'join';
   disabled?: boolean;
 }
@@ -61,6 +71,7 @@ export interface LobbyOpts {
   playban: boolean;
   showRatings: boolean;
   data: LobbyData;
+  ongoingOmokGames?: OngoingOmokGame[];
   bots?: boolean;
 }
 
@@ -78,6 +89,15 @@ export interface LobbyData {
   nowPlaying: NowPlaying[];
   ratingMap: Record<Perf, RatingWithProvisional> | null;
   counters: { members: number; rounds: number };
+}
+
+export interface OngoingOmokGame {
+  id: string;
+  url: string;
+  white: string;
+  black: string;
+  clock: string;
+  updatedAt: string;
 }
 
 type RatingWithProvisional = number;
@@ -118,12 +138,19 @@ export type PoolRange = string;
 
 export interface SetupStore {
   variant: VariantKey;
+  omokRuleSet: OmokRuleSet;
+  omokClockSystem: OmokClockSystem;
   fen: FEN;
   timeMode: TimeMode;
   gameMode: GameMode;
   ratingMin: number;
   ratingMax: number;
   aiLevel: number;
+  omokAiThreads: number;
+  omokAiMoveTimeMs: number;
+  omokAiDepth: number;
+  omokAiNodes: number;
+  omokAiAnalysisEnabled: boolean;
   time: number;
   increment: number;
   days: number;
@@ -139,3 +166,4 @@ export interface ForceSetupOptions {
   mode?: GameMode;
   color?: ColorChoice;
 }
+

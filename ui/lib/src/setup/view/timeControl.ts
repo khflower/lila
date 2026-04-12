@@ -14,6 +14,14 @@ import {
   type TimeMode,
 } from '../timeControl';
 
+export interface TimeControlLabels {
+  time?: string;
+  increment?: string;
+  days?: string;
+  unlimitedDescription?: string;
+  realTimeDescription?: string;
+}
+
 const showTime = (v: number) => {
   if (v === 1 / 4) return '¼';
   if (v === 1 / 2) return '½';
@@ -36,6 +44,7 @@ const blindModeTimePickers = (tc: TimeControl) => {
             option({ key: timeV.toString(), name: showTime(sliderTime) }, tc.timeV().toString()),
           ),
         ),
+        numericInput('sf_time_text', tc.time, tc.setTime, '0.25', 0, 180),
       ]),
     tc.mode() === 'realTime' &&
       hl('div.increment-choice', [
@@ -55,6 +64,7 @@ const blindModeTimePickers = (tc: TimeControl) => {
             ),
           ),
         ),
+        numericInput('sf_increment_text', tc.increment, tc.setIncrement, '1', 0, 180),
       ]),
     tc.mode() === 'correspondence' &&
       hl('div.days-choice', [
@@ -107,7 +117,42 @@ const inputRange = (min: number, max: number, prop: Prop<InputValue>, classes?: 
     on: { input: (e: Event) => prop(parseFloat((e.target as HTMLInputElement).value)) },
   });
 
-export const timePickerAndSliders = (tc: TimeControl, minimumTimeRequiredIfReal: number = 0): VNode => {
+const numericInput = (
+  id: string,
+  value: () => number,
+  onValue: (value: number) => void,
+  step: string,
+  min: number,
+  max: number,
+) =>
+  hl(`input#${id}.time-text-input`, {
+    attrs: {
+      type: 'number',
+      inputmode: step === '1' ? 'numeric' : 'decimal',
+      step,
+      min,
+      max,
+      value: value().toString(),
+    },
+    hook: {
+      update: (_: VNode, vnode: VNode) => {
+        const el = vnode.elm as HTMLInputElement;
+        if (document.activeElement !== el) el.value = value().toString();
+      },
+    },
+    on: {
+      change: (e: Event) => {
+        const next = parseFloat((e.target as HTMLInputElement).value);
+        if (!Number.isNaN(next)) onValue(next);
+      },
+    },
+  });
+
+export const timePickerAndSliders = (
+  tc: TimeControl,
+  minimumTimeRequiredIfReal: number = 0,
+  labels: TimeControlLabels = {},
+): VNode => {
   if (site.blindMode) return hl('div.config-group', blindModeTimePickers(tc));
 
   const activeMode = tc.mode();
@@ -142,7 +187,8 @@ export const timePickerAndSliders = (tc: TimeControl, minimumTimeRequiredIfReal:
     panelContent = hl('div.time-panel', [
       hl('div.sliders-grid', [
         hl('div.slider-container', [
-          hl('div.label-row', [hl('label', i18n.site.minutesPerSide), hl('span.val-box', showTime(tcTime))]),
+          hl('div.label-row', [hl('label', labels.time || i18n.site.minutesPerSide), hl('span.val-box', showTime(tcTime))]),
+          numericInput('sf_time_text_panel', tc.time, tc.setTime, '0.25', 0, 180),
           inputRange(0, 38, tc.timeV, {
             failure: !tc.realTimeValid(minimumTimeRequiredIfReal),
           }),
@@ -151,11 +197,13 @@ export const timePickerAndSliders = (tc: TimeControl, minimumTimeRequiredIfReal:
         hl('div.slider-container', [
           hl('div.label-row', [
             hl('span.val-box', tcIncrement.toString()),
-            hl('label', i18n.site.incrementInSeconds),
+            hl('label', labels.increment || i18n.site.incrementInSeconds),
           ]),
+          numericInput('sf_increment_text_panel', tc.increment, tc.setIncrement, '1', 0, 180),
           inputRange(0, 30, tc.incrementV, { failure: !tc.realTimeValid(minimumTimeRequiredIfReal) }),
         ]),
       ]),
+      labels.realTimeDescription ? hl('p.time-control-help', labels.realTimeDescription) : undefined,
       hl(
         'div.presets',
         tc.presets.map(p =>
@@ -180,12 +228,13 @@ export const timePickerAndSliders = (tc: TimeControl, minimumTimeRequiredIfReal:
   } else if (activeMode === 'correspondence') {
     panelContent = hl('div.time-panel', [
       hl('div.slider-container.full-width', [
-        hl('div.label-row', [hl('label', i18n.site.daysPerTurn), hl('span.val-box', tc.days().toString())]),
+        hl('div.label-row', [hl('label', labels.days || i18n.site.daysPerTurn), hl('span.val-box', tc.days().toString())]),
+        numericInput('sf_days_text_panel', tc.days, tc.setDays, '1', 1, 14),
         inputRange(1, 7, tc.daysV),
       ]),
     ]);
   } else if (activeMode === 'unlimited') {
-    panelContent = hl('div.time-panel', i18n.site.unlimitedDescription);
+    panelContent = hl('div.time-panel', labels.unlimitedDescription || i18n.site.unlimitedDescription);
   }
 
   return hl('div.config-group.time-control-tabs', [tabs, panelContent]);

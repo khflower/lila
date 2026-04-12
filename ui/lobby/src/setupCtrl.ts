@@ -15,7 +15,15 @@ import * as xhr from 'lib/xhr';
 
 import type LobbyController from './ctrl';
 import * as hookRepo from './hookRepo';
-import type { ForceSetupOptions, GameMode, GameType, OmokRuleSet, PoolMember, SetupStore } from './interfaces';
+import type {
+  ForceSetupOptions,
+  GameMode,
+  GameType,
+  OmokClockSystem,
+  OmokRuleSet,
+  PoolMember,
+  SetupStore,
+} from './interfaces';
 import { keyToId, variants } from './options';
 
 const getPerf = (variant: VariantKey, tc: TimeControl): Perf =>
@@ -35,6 +43,7 @@ export default class SetupController {
   // Store props
   variant: Prop<VariantKey>;
   omokRuleSet: Prop<OmokRuleSet>;
+  omokClockSystem: Prop<OmokClockSystem>;
   fen: Prop<string>;
   gameMode: Prop<GameMode>;
   ratingMin: Prop<number>;
@@ -76,6 +85,7 @@ export default class SetupController {
     storedJsonProp<SetupStore>(this.storeKey(gameType), () => ({
       variant: 'standard',
       omokRuleSet: gameType === 'ai' ? 'renju' : 'taraguchi10',
+      omokClockSystem: 'fischer',
       fen: '',
       timeMode: gameType === 'hook' ? 'realTime' : 'unlimited',
       time: 5,
@@ -101,6 +111,7 @@ export default class SetupController {
         ? storeProps.omokRuleSet || 'renju'
         : storeProps.omokRuleSet || 'taraguchi10';
     this.omokRuleSet = this.propWithApply(preferredOmokRuleSet);
+    this.omokClockSystem = this.propWithApply(storeProps.omokClockSystem || 'fischer');
     this.fen = this.propWithApply(forceOptions?.fen || storeProps.fen);
     const canChangeTimeMode = !!this.root.me || this.gameType !== 'hook';
     this.timeControl = timeControlFromStoredValues(
@@ -152,6 +163,7 @@ export default class SetupController {
     this.store[this.gameType]({
       variant: this.variant(),
       omokRuleSet: this.omokRuleSet(),
+      omokClockSystem: this.omokClockSystem(),
       fen: this.fen(),
       timeMode: this.timeControl.mode(),
       time: this.timeControl.time(),
@@ -332,8 +344,13 @@ export default class SetupController {
 
   validFen = () => this.variant() !== 'fromPosition' || (!this.fenError && !!this.fen());
 
+  clockSystemSupported = () => this.omokClockSystem() === 'fischer';
+
   valid = () =>
-    this.validFen() && this.timeControl.valid(this.minimumTimeIfReal()) && this.validConstraints();
+    this.clockSystemSupported() &&
+    this.validFen() &&
+    this.timeControl.valid(this.minimumTimeIfReal()) &&
+    this.validConstraints();
 
   private readonly invalid = <A>(forced: A | undefined, current: A) =>
     forced !== undefined && forced !== current;
