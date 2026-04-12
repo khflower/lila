@@ -396,7 +396,13 @@ final class Setup(
       case value         => value
 
   private def suggestSolo2Filename(raw: Option[String]): String =
-    raw.map(_.trim).filter(_.nonEmpty).getOrElse("solo-board-2")
+    raw
+      .map(_.trim)
+      .filter(_.nonEmpty)
+      .map: name =>
+        if name.matches(".*\\.[^./\\\\]+$") then name
+        else s"$name.ret"
+      .getOrElse("solo-board.ret")
 
   private def renderFriendTimeControl(config: lila.setup.FriendConfig): String =
     config.makeClock

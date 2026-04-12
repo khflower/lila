@@ -24,7 +24,7 @@ function createInitialState() {
     hoverKey: null,
     mode: 'stone',
     pendingText: '',
-    filename: 'solo-board-2',
+    filename: 'solo-board.ret',
     currentLabelDraft: '',
     nodeIndex: new Map(),
   };
@@ -177,10 +177,11 @@ function deleteCurrentNode(state) {
 
 function goToParent(state) {
   const current = getCurrentNode(state);
-  if (!current.parentId) return;
+  if (!current.parentId) return false;
   state.currentId = current.parentId;
   state.currentLabelDraft = getCurrentNode(state).text || '';
   state.hoverKey = null;
+  return true;
 }
 
 function goToFirstChild(state) {
@@ -274,12 +275,7 @@ function downloadBlob(filename, blob) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function downloadJson(filename, content) {
-  downloadBlob(filename, new Blob([content], { type: 'application/json' }));
-}
-
-async function exportBinaryFile(state) {
-  const filename = normalizeFilename(state.filename || 'solo-board-2');
+async function exportBinaryFile(state, filename) {
   const response = await fetch(`${BINARY_EXPORT_URL}?filename=${encodeURIComponent(filename)}`, {
     method: 'POST',
     headers: {
@@ -296,7 +292,7 @@ async function exportBinaryFile(state) {
 
 async function importBinaryFile(file) {
   const form = new FormData();
-  form.append('file', file, file.name || 'solo-board-2');
+  form.append('file', file, file.name || 'solo-board.ret');
   const response = await fetch(BINARY_IMPORT_URL, {
     method: 'POST',
     body: form,
@@ -307,6 +303,25 @@ async function importBinaryFile(file) {
     throw new Error(payload?.error || 'Failed to load app file');
   }
   return payload.data;
+}
+
+function hasFilenameExtension(name) {
+  return /\.[^./\\]+$/.test(name);
+}
+
+function normalizeFilename(name) {
+  return String(name || '').trim() || 'solo-board';
+}
+
+function normalizeSaveFilename(name) {
+  const normalized = normalizeFilename(name);
+  return hasFilenameExtension(normalized) ? normalized : `${normalized}.ret`;
+}
+
+function promptForSaveFilename(currentName) {
+  const response = window.prompt('Save filename', normalizeSaveFilename(currentName || 'solo-board'));
+  if (response == null) return null;
+  return normalizeSaveFilename(response);
 }
 
 function render(state) {
@@ -328,15 +343,13 @@ function render(state) {
           <button class="button button-empty" type="button" data-action="go-root">Root</button>
           <button class="button button-empty" type="button" data-action="go-parent"${current.parentId ? '' : ' disabled'}>Back</button>
           <button class="button button-empty" type="button" data-action="go-child"${current.children.length ? '' : ' disabled'}>Forward</button>
-          <button class="button button-empty" type="button" data-action="delete-current"${current.parentId ? '' : ' disabled'}>Delete move</button>
+          <button class="button button-empty" type="button" data-action="delete-current"${current.parentId ? '' : ' disabled'}>Delete branch</button>
           <button class="button button-empty" type="button" data-action="reset-file">New file</button>
         </div>
         <div class="omok-solo2__toolbar-group omok-solo2__toolbar-group--grow">
           <button class="button ${state.mode === 'text' ? 'button-metal' : 'button-empty'}" type="button" data-action="toggle-mode">${state.mode === 'text' ? 'Text mode' : 'Stone mode'}</button>
-          <button class="button button-metal" type="button" data-action="save-app-file">Save app file</button>
-          <button class="button button-empty" type="button" data-action="load-app-file">Load app file</button>
-          <button class="button button-empty" type="button" data-action="save-json-file">Save JSON backup</button>
-          <button class="button button-empty" type="button" data-action="load-json-file">Load JSON backup</button>
+          <button class="button button-metal" type="button" data-action="save-app-file">Save file</button>
+          <button class="button button-empty" type="button" data-action="load-app-file">Load file</button>
         </div>
       </div>
 
@@ -352,7 +365,7 @@ function render(state) {
       </div>
 
       ${boardHtml(state)}
-      <div class="omok-solo2__footer-note">Text mode creates a labeled child branch at the clicked point. Short labels are shown on next-branch markers and in the tree.</div>
+      <div class="omok-solo2__footer-note">Right-click anywhere on the board to go back one move. Available continuations are shown as black dots, and text mode keeps short labels in the branch list and tree.</div>
     </section>
 
     <aside class="omok-solo2__side">
@@ -392,12 +405,11 @@ function render(state) {
         <h2>Save and load</h2>
         <div class="omok-solo2__fields">
           <div class="omok-solo2__field">
-            <label for="solo2-file-name">Filename</label>
-            <input id="solo2-file-name" class="js-solo2-filename" type="text" value="${escapeHtml(state.filename)}" />
+            <label for="solo2-file-name">Default save filename</label>
+            <input id="solo2-file-name" class="js-solo2-filename" type="text" value="${escapeHtml(state.filename)}" placeholder="solo-board.ret" />
           </div>
-          <div class="omok-solo2__hint">Primary save/load now uses the renju-edit-v2 style serialized app file through the JVM backend. JSON remains as a backup/debug format.</div>
+          <div class="omok-solo2__hint">Save now uses the app-file flow only. Load accepts any extension, and save defaults to <code>.ret</code> unless you explicitly type another extension.</div>
           <input class="js-solo2-binary-file-input" type="file" hidden />
-          <input class="js-solo2-json-file-input" type="file" accept="application/json,.json" hidden />
         </div>
       </section>
 
@@ -475,8 +487,10 @@ function bindEvents(state) {
 
   root.querySelector('[data-action="save-app-file"]')?.addEventListener('click', async () => {
     try {
-      state.filename = normalizeFilename(state.filename || 'solo-board-2');
-      await exportBinaryFile(state);
+      const filename = promptForSaveFilename(state.filename || 'solo-board.ret');
+      if (!filename) return;
+      state.filename = filename;
+      await exportBinaryFile(state, filename);
       render(state);
     } catch (error) {
       window.alert('Failed to export app file.');
@@ -486,15 +500,6 @@ function bindEvents(state) {
 
   root.querySelector('[data-action="load-app-file"]')?.addEventListener('click', () => {
     root.querySelector('.js-solo2-binary-file-input')?.click();
-  });
-
-  root.querySelector('[data-action="save-json-file"]')?.addEventListener('click', () => {
-    const filename = `${normalizeFilename(state.filename || 'solo-board-2')}.json`;
-    downloadJson(filename, `${JSON.stringify(exportState(state), null, 2)}\n`);
-  });
-
-  root.querySelector('[data-action="load-json-file"]')?.addEventListener('click', () => {
-    root.querySelector('.js-solo2-json-file-input')?.click();
   });
 
   root.querySelector('.js-solo2-pending-text')?.addEventListener('input', event => {
@@ -530,22 +535,6 @@ function bindEvents(state) {
     }
   });
 
-  root.querySelector('.js-solo2-json-file-input')?.addEventListener('change', async event => {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    const text = await file.text();
-    try {
-      applyImportedState(state, JSON.parse(text));
-      state.filename = (file.name || state.filename).replace(/\.json$/i, '');
-      render(state);
-    } catch (error) {
-      window.alert('Failed to load JSON backup. Use a Solo Board 2 JSON export.');
-      console.error(error);
-    } finally {
-      event.target.value = '';
-    }
-  });
-
   const svg = root.querySelector('.js-solo2-svg');
   const surface = root.querySelector('.js-solo2-surface');
   const taken = occupiedOnPath(state);
@@ -566,7 +555,13 @@ function bindEvents(state) {
     render(state);
   });
 
+  surface?.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    if (goToParent(state)) render(state);
+  });
+
   surface?.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
     event.preventDefault();
     const key = nearestKeyFromPointer(event, svg);
     if (!key) return;
@@ -587,10 +582,6 @@ function bindEvents(state) {
       render(state);
     }
   });
-}
-
-function normalizeFilename(name) {
-  return String(name || '').trim() || 'solo-board-2';
 }
 
 function boardHtml(state) {
@@ -623,11 +614,8 @@ function boardHtml(state) {
   const childMarkers = current.children.map(child => {
     const pos = parseKey(child.moveKey);
     const pt = coordFor(pos.col, pos.row);
-    const label = escapeHtml(child.text || String(nextMoveNumber(state)));
-    if (child.text) {
-      return `<g><rect class="omok-solo2__child-rect" x="${pt.x - 3.55}" y="${pt.y - 2.4}" width="7.1" height="4.8" rx="1.4" ry="1.4"></rect><text class="omok-solo2__child-text" x="${pt.x}" y="${pt.y}">${label}</text></g>`;
-    }
-    return `<g><circle class="omok-solo2__child-circle" cx="${pt.x}" cy="${pt.y}" r="2.7"></circle><text class="omok-solo2__child-text" x="${pt.x}" y="${pt.y}">${label}</text></g>`;
+    const title = escapeHtml(formatNodeLabel(state, child));
+    return `<g><title>${title}</title><circle class="omok-solo2__child-dot" cx="${pt.x}" cy="${pt.y}" r="1.1"></circle></g>`;
   }).join('');
 
   const preview = state.hoverKey && !occupiedOnPath(state).has(state.hoverKey) ? (() => {
@@ -650,7 +638,7 @@ function boardHtml(state) {
       <div></div>
       <div class="omok-solo2__coords-vertical">${sideCoords}</div>
       <div class="omok-solo2__board-box">
-        <svg class="omok-solo2__board-svg js-solo2-svg" viewBox="0 0 ${SVG_SIZE} ${SVG_SIZE}" preserveAspectRatio="none" aria-label="Omok solo board 2">
+        <svg class="omok-solo2__board-svg js-solo2-svg" viewBox="0 0 ${SVG_SIZE} ${SVG_SIZE}" preserveAspectRatio="none" aria-label="Omok solo board">
           <rect x="0" y="0" width="${SVG_SIZE}" height="${SVG_SIZE}" rx="2.8" ry="2.8" fill="transparent"></rect>
           ${lines.join('')}
           ${stars}

@@ -258,20 +258,10 @@
   fill: #252019;
 }
 
-.omok-solo2__child-circle {
-  fill: rgba(255, 248, 232, 0.94);
-  stroke: rgba(69, 53, 24, 0.75);
-  stroke-width: 0.22;
-}
-
-.omok-solo2__child-rect {
-  fill: rgba(255, 248, 232, 0.95);
-  stroke: rgba(69, 53, 24, 0.72);
-  stroke-width: 0.22;
-}
-
-.omok-solo2__child-text {
-  fill: #3c311f;
+.omok-solo2__child-dot {
+  fill: #121212;
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 0.14;
 }
 
 .omok-solo2__preview-black,

@@ -7,10 +7,8 @@ object omokPages:
 
   private val styleAsset = s"${staticAssetUrl("omok/omok-pages.css")}?v=20260410a"
   private val friendRoomScript = s"${staticAssetUrl("omok/friend-room.js")}?v=20260410a"
-  private val soloStyleAsset = s"${staticAssetUrl("omok/solo-board.css")}?v=20260410a"
-  private val soloScriptAsset = s"${staticAssetUrl("omok/solo-board.js")}?v=20260410a"
-  private val solo2StyleAsset = s"${staticAssetUrl("omok/solo-board-2.css")}?v=20260411b"
-  private val solo2ScriptAsset = s"${staticAssetUrl("omok/solo-board-2.js")}?v=20260411b"
+  private val soloStyleAsset = s"${staticAssetUrl("omok/solo-board-2.css")}?v=20260412a"
+  private val soloScriptAsset = s"${staticAssetUrl("omok/solo-board-2.js")}?v=20260412a"
   private val brandName = "Omok.dev"
   private val backToLobbyLabel = "Back to lobby"
   private val openingGuideLabel = "Opening guide"
@@ -619,41 +617,16 @@ object omokPages:
           div(cls := "omok-page__hero")(
             h1(cls := "box__top")("Solo board"),
             p(cls := "omok-page__lead")(
-              "Place stones freely on an empty 15x15 board. Black and white alternate automatically, and Undo or Reset lets you explore quickly."
+              "Build move trees on an empty 15x15 board, follow alternate branches, right-click to step back, and save or load app files without the separate beta page."
             ),
             div(cls := "omok-page__actions")(
               a(cls := "button button-metal", href := "/")(backToLobbyLabel),
-              a(cls := "button button-empty", href := "/dev/omok/opening-guide")(openingGuideLabel),
-              a(cls := "button button-empty", href := "/omok/solo2")("Solo board 2 beta")
-            )
-          ),
-          div(id := "omok-solo-board-app"),
-          script(attr("type") := "module", src := soloScriptAsset)
-        )
-      )
-
-  def soloBoard2(using Context) =
-    Page("Solo board 2")
-      .copy(fullTitle = s"Solo board 2 - $brandName".some)
-      .wrap: body =>
-        main(cls := "page-menu omok-solo-page")(
-          div(cls := "page-menu__content box box-pad omok-page__shell")(body)
-        )
-      .transformHead(head => frag(head, link(rel := "stylesheet", href := styleAsset), link(rel := "stylesheet", href := solo2StyleAsset)))
-      (
-        frag(
-          div(cls := "omok-page__hero")(
-            h1(cls := "box__top")("Solo board 2 beta"),
-            p(cls := "omok-page__lead")(
-              "Build move trees, choose branches, attach short text labels, and now import or export the renju-edit-v2 style serialized board file through the server-side JVM bridge."
-            ),
-            div(cls := "omok-page__actions")(
-              a(cls := "button button-metal", href := "/")(backToLobbyLabel),
-              a(cls := "button button-empty", href := "/omok/solo")("Solo board 1"),
               a(cls := "button button-empty", href := "/dev/omok/opening-guide")(openingGuideLabel)
             )
           ),
           div(id := "omok-solo-board-2-app"),
-          script(attr("type") := "module", src := solo2ScriptAsset)
+          script(attr("type") := "module", src := soloScriptAsset)
         )
       )
+
+  def soloBoard2(using Context) = soloBoard
