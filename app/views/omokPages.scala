@@ -120,9 +120,9 @@ object omokPages:
         card("Quick actions")(
           p("Start a room, invite a player, or launch Rapfi AI without leaving the omok lobby."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#hook")(createRoomLabel),
-            a(cls := "button button-empty", href := "/?any#friend")(invitePlayerLabel),
-            a(cls := "button button-empty", href := "/?any#ai")(playRapfiLabel)
+            a(cls := "button button-metal", href := "/ko?any#hook")(createRoomLabel),
+            a(cls := "button button-empty", href := "/ko?any#friend")(invitePlayerLabel),
+            a(cls := "button button-empty", href := "/ko?any#ai")(playRapfiLabel)
           )
         )
       )
@@ -137,7 +137,7 @@ object omokPages:
         card("Live play")(
           p("Open live omok rooms from the lobby. Legacy TV pages are replaced by Omok.dev room and game flows."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#hook")(createRoomLabel),
+            a(cls := "button button-metal", href := "/ko?any#hook")(createRoomLabel),
             a(cls := "button button-empty", href := "/")(trans.site.play())
           )
         ),
@@ -279,14 +279,14 @@ object omokPages:
           p("Use the workbook-backed opening guide to explore fixed-center lines, 4th-move branches, and 5th-move evaluations."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
             a(cls := "button button-metal", href := "/dev/omok/opening-guide")(openingGuideLabel),
-            a(cls := "button button-empty", href := "/?any#ai")(playRapfiLabel)
+            a(cls := "button button-empty", href := "/ko?any#ai")(playRapfiLabel)
           )
         ),
         card("Live play")(
           p("For live omok opening play, start a room or invite a player instead of using the legacy opening explorer."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#hook")(createRoomLabel),
-            a(cls := "button button-empty", href := "/?any#friend")(invitePlayerLabel)
+            a(cls := "button button-metal", href := "/ko?any#hook")(createRoomLabel),
+            a(cls := "button button-empty", href := "/ko?any#friend")(invitePlayerLabel)
           )
         )
       )
@@ -311,8 +311,8 @@ object omokPages:
         card("Next steps")(
           p("If you wanted a practice board or an AI opponent, launch Rapfi AI or start a fresh room from the lobby."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#ai")(playRapfiLabel),
-            a(cls := "button button-empty", href := "/?any#hook")(createRoomLabel)
+            a(cls := "button button-metal", href := "/ko?any#ai")(playRapfiLabel),
+            a(cls := "button button-empty", href := "/ko?any#hook")(createRoomLabel)
           )
         )
       )
@@ -330,15 +330,15 @@ object omokPages:
         card("Practice options")(
           p("Use Rapfi AI for solo play, or use the opening guide for structured opening practice without leaving Omok.dev."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#ai")(playRapfiLabel),
+            a(cls := "button button-metal", href := "/ko?any#ai")(playRapfiLabel),
             a(cls := "button button-empty", href := "/dev/omok/opening-guide")(openingGuideLabel)
           )
         ),
         card("Live room")(
           p("If you want a real board instead of a legacy puzzle page, create a room or invite another player."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#hook")(createRoomLabel),
-            a(cls := "button button-empty", href := "/?any#friend")(invitePlayerLabel)
+            a(cls := "button button-metal", href := "/ko?any#hook")(createRoomLabel),
+            a(cls := "button button-empty", href := "/ko?any#friend")(invitePlayerLabel)
           )
         )
       )
@@ -367,7 +367,7 @@ object omokPages:
           div(cls := "omok-page__actions omok-page__actions--inline")(
             a(cls := "button button-metal", href := "/")(backToLobbyLabel),
             a(cls := "button button-empty", href := "/dev/omok/opening-guide")(openingGuideLabel),
-            a(cls := "button button-empty", href := "/?any#ai")(playRapfiLabel)
+            a(cls := "button button-empty", href := "/ko?any#ai")(playRapfiLabel)
           )
         )
       )
@@ -515,8 +515,8 @@ object omokPages:
         card("Next action")(
           p("Player profile links stay inside Omok.dev. Use an invite link, start a room, or return to the lobby from here."),
           div(cls := "omok-page__actions omok-page__actions--inline")(
-            a(cls := "button button-metal", href := "/?any#friend")(invitePlayerLabel),
-            a(cls := "button button-empty", href := "/?any#hook")(createRoomLabel)
+            a(cls := "button button-metal", href := "/ko?any#friend")(invitePlayerLabel),
+            a(cls := "button button-empty", href := "/ko?any#hook")(createRoomLabel)
           )
         )
       )
