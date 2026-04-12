@@ -1,5 +1,7 @@
 package controllers
 
+import java.time.Instant
+
 import play.api.libs.json.*
 import play.api.mvc.*
 
@@ -72,10 +74,11 @@ final class Round(
       )
     yield res.enforceCrossSiteIsolation
 
-  private def allowSharedOmokAnon(pov: Pov): Boolean =
-    pov.game.userIds.isEmpty ||
-      env.round.omokRoundRepo.ruleSetOf(pov.gameId).isDefined ||
-      env.round.omokRoundRepo.get(pov.gameId).isDefined
+  private def allowSharedOmokAnon(pov: Pov)(using ctx: Context): Boolean =
+    pov.game.userIds.isEmpty && OmokClaimStore.has(ctx.req.sid, pov.playerId.value)
+
+  private def canAccessOmokPlayer(pov: Pov)(using ctx: Context): Boolean =
+    allowSharedOmokAnon(pov) || !isTheft(pov)
 
   def player(fullId: GameFullId) = Open:
     env.round.proxyRepo
@@ -95,8 +98,18 @@ final class Round(
               lila.round.OmokRoundState.initial(lila.omok.RuleSet.Renju)
             )
           }
-          // Keep both claimed seats usable in one browser session.
-          renderPlayer(pov, allowSharedAnonClaim = true)
+          OmokClaimStore.claim(ctx.req.sid, pov.playerId.value)
+          renderPlayer(pov, allowSharedAnonClaim = true).map: res =>
+            if ctx.isAuth then res
+            else
+              res.withCookies(
+                env.security.lilaCookie.cookie(
+                  lila.game.AnonCookie.name,
+                  fullId.playerId.value,
+                  maxAge = lila.game.AnonCookie.maxAge.some,
+                  httpOnly = false.some
+                )
+              )
         case None => userC.tryRedirect(fullId.into(UserStr)).getOrElse(notFound)
 
   def omokStart(fullId: GameFullId, ruleSet: String) = Secure(_.Cli) { _ ?=> _ ?=>
@@ -332,7 +345,7 @@ final class Round(
   def resign(fullId: GameFullId) = Open:
     Found(env.round.proxyRepo.pov(fullId)): pov =>
       val redirection = fuccess(Redirect(routes.Lobby.home))
-      if isTheft(pov) then
+      if !canAccessOmokPlayer(pov) then
         lila.log("round").warn(s"theft resign $fullId ${ctx.ip}")
         redirection
       else
@@ -367,3 +380,31 @@ final class Round(
 
   def help = Open:
     Ok.snip(lila.web.ui.help.round(ctx.kid.no))
+
+object OmokClaimStore:
+
+  private val ttl = 7.days
+
+  private case class ClaimState(playerIds: Set[String], updatedAt: Instant)
+
+  private val claims = scala.collection.mutable.Map.empty[String, ClaimState]
+
+  def claim(sid: Option[String], playerId: String): Unit = synchronized {
+    prune()
+    sid.foreach: value =>
+      val now = Instant.now
+      val existing = claims.getOrElse(value, ClaimState(Set.empty, now))
+      claims.update(value, existing.copy(playerIds = existing.playerIds + playerId, updatedAt = now))
+  }
+
+  def has(sid: Option[String], playerId: String): Boolean = synchronized {
+    prune()
+    sid.exists(value => claims.get(value).exists(_.playerIds.contains(playerId)))
+  }
+
+  private def prune(): Unit = {
+    val threshold = Instant.now.minusSeconds(ttl.toSeconds)
+    claims.keys.foreach: sid =>
+      claims.get(sid).foreach: state =>
+        if state.updatedAt.isBefore(threshold) then claims.remove(sid)
+  }

@@ -8,7 +8,8 @@ import lila.core.user.{ GameUsers, WithPerf }
 final private class Biter(
     userApi: lila.core.user.UserApi,
     gameRepo: lila.core.game.GameRepo,
-    newPlayer: lila.core.game.NewPlayer
+    newPlayer: lila.core.game.NewPlayer,
+    initOmokLobbyGame: (lila.core.id.GameId, Option[String]) => Unit
 )(using Executor)(using idGenerator: lila.core.game.IdGenerator):
 
   def apply(hook: Hook, sri: Sri, user: Option[LobbyUser]): Fu[JoinHook] =
@@ -32,6 +33,9 @@ final private class Biter(
           ownerColor.fold(ByColor(owner, joiner), ByColor(joiner, owner))
         )
       _ <- gameRepo.insertDenormalized(game)
+      _ =
+        if hook.omok then
+          initOmokLobbyGame(game.id, hook.omokRuleSet)
     yield
       lila.mon.lobby.hook.join.increment()
       JoinHook(sri, hook, game, ownerColor)

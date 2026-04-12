@@ -179,7 +179,7 @@ final class Env(
 
   lazy val mobile = wire[RoundMobile]
 
-  lazy val omokRoundRepo = wire[OmokRoundRepo]
+  lazy val omokRoundRepo = OmokRoundRepo()
 
   private lazy val omokDemoSeed = wire[OmokDemoSeed]
 

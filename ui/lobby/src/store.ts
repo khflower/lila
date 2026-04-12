@@ -22,7 +22,7 @@ const tab: Config<Tab> = {
   key: 'lobby.tab',
   fix(t: string | null): Tab {
     if (<Tab>t) return t as Tab;
-    return 'pools';
+    return 'real_time';
   },
 };
 const mode: Config<Mode> = {

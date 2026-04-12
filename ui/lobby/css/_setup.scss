@@ -1,4 +1,4 @@
-@import '../../lib/css/setup/colorChoice';
+﻿@import '../../lib/css/setup/colorChoice';
 @import '../../lib/css/component/mselect';
 
 $c-setup: $c-secondary;
@@ -114,6 +114,55 @@ $c-slider: $c-setup;
       margin-bottom: 0.5rem;
       font-weight: 600;
       color: $c-font;
+    }
+  }
+
+  .omok-ai-config {
+    @extend %flex-column;
+
+    gap: 1rem;
+
+    &__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem 1rem;
+      align-items: start;
+    }
+
+    &__field {
+      @extend %flex-column;
+
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    &__field-label {
+      font-weight: 600;
+      color: $c-font;
+      line-height: 1.25;
+    }
+
+    &__field-input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    &__field-help {
+      color: $c-font-dim;
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    &__toggle {
+      @extend %flex-center-nowrap;
+
+      align-items: flex-start;
+      gap: 0.6rem;
+      color: $c-font;
+
+      input {
+        margin-top: 0.15rem;
+      }
     }
   }
 
@@ -253,6 +302,7 @@ $c-slider: $c-setup;
         @extend %flex-column;
 
         justify-content: space-between;
+        gap: 0.55rem;
 
         .label-row {
           @extend %flex-between-nowrap;
@@ -267,6 +317,10 @@ $c-slider: $c-setup;
             font-weight: bold;
             color: $c-bg;
           }
+        }
+
+        .time-text-input {
+          width: 100%;
         }
 
         input[type='range'] {
@@ -316,6 +370,12 @@ $c-slider: $c-setup;
 
     &:has(.increment-choice) .fen__board {
       width: 30%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .omok-ai-config__grid {
+      grid-template-columns: 1fr;
     }
   }
 }

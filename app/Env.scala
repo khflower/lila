@@ -68,6 +68,12 @@ final class Env(
   val forumSearch: lila.forumSearch.Env = wire[lila.forumSearch.Env]
   val pool: lila.pool.Env = wire[lila.pool.Env]
   import pool.given
+  private val initOmokLobbyGame: (lila.core.id.GameId, Option[String]) => Unit = (gameId, rawRuleSet) =>
+    val ruleSet = rawRuleSet.map(_.trim.toLowerCase) match
+      case Some("freestyle") => lila.omok.RuleSet.Freestyle
+      case Some("taraguchi10" | "taraguchi-10" | "taraguchi") => lila.omok.RuleSet.Taraguchi10
+      case _                 => lila.omok.RuleSet.Renju
+    round.omokRoundRepo.put(gameId, lila.round.OmokRoundState.initial(ruleSet))
   val lobby: lila.lobby.Env = wire[lila.lobby.Env]
   val setup: lila.setup.Env = wire[lila.setup.Env]
   val simul: lila.simul.Env = wire[lila.simul.Env]

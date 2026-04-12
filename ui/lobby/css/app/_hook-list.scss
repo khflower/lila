@@ -109,6 +109,24 @@
   }
 }
 
+.hook__player,
+.hook__mode {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hook__player__sub,
+.hook__mode__sub {
+  font-size: 0.82em;
+  opacity: 0.8;
+}
+
+.hook__mode__sub {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .lseeks .create {
   margin-top: 20px;
   text-align: center;

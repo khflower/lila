@@ -1,7 +1,7 @@
 package lila.round
 
 import alleycats.Zero
-import chess.{ Black, Centis, Color, Status, White }
+import chess.{ Black, Centis, Color, MoveMetrics, Status, White }
 import play.api.libs.json.*
 import scalalib.actor.AsyncActor
 
@@ -184,33 +184,90 @@ final private class RoundAsyncActor(
 
     case p: HumanPlace =>
       handle(p.playerId): pov =>
-        val expectedTurn = assumedOmokTurnFor(pov.color)
+        val beforeState = omokMovePlayer.get(gameId)
+        val expectedTurn = expectedOmokTurnFor(pov)
+        logger.info:
+          s"[omok-ai] place attempt game=$gameId player=${pov.color.name} pos=${p.pos} expected=$expectedTurn state=${beforeState.fold("none")(state => s"active=${state.activeSeat} rule=${state.ruleSet} ply=${state.position.ply} ai=${state.ai.flatMap(_.aiColor).getOrElse("-")}")}"
         omokMovePlayer.placeIfPresent(PlaceRequest(gameId, p.pos, expectedTurn = Some(expectedTurn))) match
           case None =>
             fuccess:
+              logger.info(s"[omok-ai] place missing state game=$gameId player=${pov.color.name} pos=${p.pos}")
               logger.debug(s"[omok] ignoring HumanPlace for unseeded round ${pov.gameId}/${pov.color.name}")
               socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
               Nil
           case Some(Left(err)) =>
             fuccess:
+              logger.info(s"[omok-ai] place rejected game=$gameId player=${pov.color.name} pos=${p.pos} reason=${err.message}")
               logger.debug(err.message)
               socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
               Nil
           case Some(Right(applied)) =>
+            logger.info:
+              s"[omok-ai] place applied game=$gameId player=${pov.color.name} pos=${p.pos} from=${applied.previous.activeSeat} to=${applied.state.activeSeat} ply=${applied.state.position.ply}"
+            val moverColor = colorFromOmok(applied.previous.activeSeat)
             applied.terminalStatus match
               case Some(terminalStatus) =>
                 for
+                  clockEvents <- stepOmokClockIfTurnChanged(pov.game, moverColor, applied.previous, applied.state)
                   _ <- fuccess:
                     version = version.map(_ + 1)
                     socketSend.exec(Protocol.Out.omokMove(version, applied.event))
                   events <- finishOmokTerminal(pov.game, terminalStatus)
-                yield events
+                yield clockEvents ++ events
               case None =>
-                fuccess:
+                stepOmokClockIfTurnChanged(pov.game, moverColor, applied.previous, applied.state).map: clockEvents =>
                   version = version.map(_ + 1)
                   socketSend.exec(Protocol.Out.omokMove(version, applied.event))
-                  Nil
+                  clockEvents
       .addEffect(_ => p.promise.foreach(_.success {}))
+
+    case p: HumanOmokSwap =>
+      handle(p.playerId): pov =>
+        val beforeState = omokMovePlayer.get(gameId)
+        val seat = expectedOmokTurnFor(pov)
+        logger.info:
+          s"[omok-ai] swap attempt game=$gameId player=${pov.color.name} expected=$seat state=${beforeState.fold("none")(state => s"active=${state.activeSeat} rule=${state.ruleSet} ply=${state.position.ply} ai=${state.ai.flatMap(_.aiColor).getOrElse("-")}")}"
+        omokMovePlayer.swapIfPresent(gameId, seat) match
+          case None =>
+            fuccess:
+              logger.info(s"[omok-ai] swap missing state game=$gameId player=${pov.color.name}")
+              logger.debug(s"[omok] ignoring swap for unseeded round ${pov.gameId}/${pov.color.name}")
+              socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+              Nil
+          case Some(Left(err)) =>
+            fuccess:
+              logger.info(s"[omok-ai] swap rejected game=$gameId player=${pov.color.name} reason=$err")
+              logger.debug(err)
+              socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+              Nil
+          case Some(Right(applied)) =>
+            logger.info:
+              s"[omok-ai] swap applied game=$gameId player=${pov.color.name} from=${applied.previous.activeSeat} to=${applied.state.activeSeat} ply=${applied.state.position.ply}"
+            val moverColor = colorFromOmok(applied.previous.activeSeat)
+            stepOmokClockIfTurnChanged(pov.game, moverColor, applied.previous, applied.state).map: clockEvents =>
+              version = version.map(_ + 1)
+              socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+              clockEvents
+
+    case p: HumanOmokStartCandidates =>
+      handle(p.playerId): pov =>
+        val seat = expectedOmokTurnFor(pov)
+        omokMovePlayer.startCandidatesIfPresent(gameId, seat) match
+          case None =>
+            fuccess:
+              logger.debug(s"[omok] ignoring candidate start for unseeded round ${pov.gameId}/${pov.color.name}")
+              socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+              Nil
+          case Some(Left(err)) =>
+            fuccess:
+              logger.debug(err)
+              socketSend.exec(Protocol.Out.resyncPlayer(GameFullId(gameId, p.playerId)))
+              Nil
+          case Some(Right(applied)) =>
+            fuccess:
+              version = version.map(_ + 1)
+              socketSend.exec(Protocol.Out.omokMove(version, applied.event))
+              Nil
 
     case p: RoundBus.BotPlay =>
       val res = proxy
@@ -358,7 +415,7 @@ final private class RoundAsyncActor(
     case WsBoot =>
       handle: game =>
         game.playable.so:
-          messenger.volatile(game, "Lichess has been updated! Sorry for the inconvenience.")
+          messenger.volatile(game, "Omok.dev has been updated. Sorry for the inconvenience.")
           val progress = moretimer.give(game, Color.all, 20.seconds)
           proxy.save(progress).inject(progress.events)
 
@@ -368,13 +425,15 @@ final private class RoundAsyncActor(
 
     case NoStart =>
       handle: game =>
-        game.timeBeforeExpiration
-          .exists(_.centis == 0)
-          .so:
-            if game.isSwiss then
-              game.startClock.so: g =>
-                proxy.save(g).inject(List(Event.Reload))
-            else finisher.noStart(game)
+        if omokMovePlayer.get(game.id).isDefined then fuccess(Nil)
+        else
+          game.timeBeforeExpiration
+            .exists(_.centis == 0)
+            .so:
+              if game.isSwiss then
+                game.startClock.so: g =>
+                  proxy.save(g).inject(List(Event.Reload))
+              else finisher.noStart(game)
 
     case StartClock =>
       handle: game =>
@@ -403,6 +462,20 @@ final private class RoundAsyncActor(
 
   private def assumedOmokTurnFor(color: Color): lila.omok.Color =
     if color.white then lila.omok.Color.White else lila.omok.Color.Black
+
+  private def expectedOmokTurnFor(pov: Pov): lila.omok.Color =
+    omokMovePlayer
+      .get(gameId)
+      .flatMap: state =>
+        state.ai
+          .filter(_.mode == "browser")
+          .flatMap(_.aiColor)
+          .flatMap:
+            case "white" => lila.omok.Color.White.some
+            case "black" => lila.omok.Color.Black.some
+            case _       => none
+          .filter(_ == state.activeSeat)
+      .getOrElse(assumedOmokTurnFor(pov.color))
 
   private def colorFromOmok(color: lila.omok.Color): Color =
     color match
@@ -468,6 +541,21 @@ final private class RoundAsyncActor(
   private def handle(color: Color)(op: Pov => Fu[Events]): Funit =
     proxy.withPov(color): pov =>
       handleAndPublish(op(pov))
+
+  private def stepOmokClockIfTurnChanged(
+      game: lila.core.game.Game,
+      playerColor: Color,
+      previous: OmokRoundState,
+      state: OmokRoundState
+  ): Fu[Events] =
+    if previous.activeSeat == state.activeSeat then fuccess(Nil)
+    else
+      game.clock.so: clock =>
+        val aligned = if clock.color == playerColor then clock else clock.copy(color = playerColor)
+        val running = if aligned.isRunning then aligned else aligned.start
+        val stepped = running.step(MoveMetrics.empty).value
+        val progress = game.withClock(stepped) ++ List(Event.Clock(stepped))
+        proxy.save(progress).inject(progress.events)
 
   private def handleAndPublish(events: Fu[Events]): Funit =
     events.dmap(publish).recover(errorHandler("handle"))

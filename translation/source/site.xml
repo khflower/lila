@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="gameSetup">Game setup</string>
-  <string name="challengeAFriend" comment="be mindful how 'friend' translates in gendered languages. look for a more neutral term if there's an issue, or base your translation on a different phrase like 'invite to a game'. keep it short and convey the button's meaning without offense.">Challenge a friend</string>
-  <string name="playAgainstComputer">Play against computer</string>
+  <string name="gameSetup">Omok setup</string>
+  <string name="challengeAFriend" comment="be mindful how 'friend' translates in gendered languages. look for a more neutral term if there's an issue, or base your translation on a different phrase like 'invite to a game'. keep it short and convey the button's meaning without offense.">Invite a player</string>
+  <string name="playAgainstComputer">Play against Rapfi AI</string>
   <string name="gameMode">Game mode</string>
-  <string name="createLobbyGame">Create lobby game</string>
+  <string name="createLobbyGame">Create omok room</string>
   <string name="toInviteSomeoneToPlayGiveThisUrl">To invite someone to play, give this URL</string>
   <string name="gameOver">Game Over</string>
   <string name="waitingForOpponent">Waiting for opponent</string>
@@ -13,7 +13,7 @@
   <string name="permanentLinkForAnyoneToChallengeYou">A permanent link for anyone to challenge you with these exact settings.</string>
   <string name="waiting">Waiting</string>
   <string name="yourTurn">Your turn</string>
-  <string name="aiNameLevelAiLevel">%1$s level %2$s</string>
+  <string name="aiNameLevelAiLevel">Rapfi AI %2$s</string>
   <string name="level">Level</string>
   <string name="strength">Strength</string>
   <string name="toggleTheChat">Toggle the chat</string>
@@ -30,9 +30,9 @@
   <string name="createTheGame">Create the game</string>
   <string name="whiteIsVictorious">White is victorious</string>
   <string name="blackIsVictorious">Black is victorious</string>
-  <string name="youPlayTheWhitePieces">You play the white pieces</string>
-  <string name="youPlayTheBlackPieces">You play the black pieces</string>
-  <string name="itsYourTurn">It's your turn!</string>
+  <string name="youPlayTheWhitePieces">You play White.</string>
+  <string name="youPlayTheBlackPieces">You play Black.</string>
+  <string name="itsYourTurn">Your turn!</string>
   <string name="cheatDetected">Cheat Detected</string>
   <string name="kingInTheCenter">King in the centre</string>
   <string name="threeChecks">Three checks</string>
@@ -203,7 +203,7 @@
   <string name="rememberMe">Keep me logged in</string>
   <string name="youNeedAnAccountToDoThat">You need an account to do that</string>
   <string name="signUp">Register</string>
-  <string name="computersAreNotAllowedToPlay">Computers and computer-assisted players are not allowed to play. Please do not get assistance from chess engines, databases, or from other players while playing. Also note that making multiple accounts is strongly discouraged and excessive multi-accounting will lead to being banned.</string>
+  <string name="computersAreNotAllowedToPlay">Computers and computer-assisted players are not allowed to play. Please do not get assistance from omok engines, databases, or from other players while playing. Also note that making multiple accounts is strongly discouraged and excessive multi-accounting will lead to being banned.</string>
   <string name="games">Games</string>
   <string name="forum">Forum</string>
   <string name="xPostedInForumY">%1$s posted in topic %2$s</string>
@@ -253,9 +253,9 @@
   <string name="forgotPassword">Forgot password?</string>
   <string name="error.weakPassword">This password is extremely common and too easy to guess.</string>
   <string name="error.namePassword">Please don't use your username as your password.</string>
-  <string name="blankedPassword">You have used the same password on another site, and that site has been compromised. To ensure the safety of your Lichess account, we need you to set a new password. Thank you for your understanding.</string>
-  <string name="youAreLeavingLichess">You are leaving Lichess</string>
-  <string name="neverTypeYourPassword">Never type your Lichess password on another site!</string>
+  <string name="blankedPassword">You have used the same password on another site, and that site has been compromised. To ensure the safety of your Omok.dev account, we need you to set a new password. Thank you for your understanding.</string>
+  <string name="youAreLeavingLichess">You are leaving Omok.dev</string>
+  <string name="neverTypeYourPassword">Never type your Omok.dev password on another site!</string>
   <string name="proceedToX">Proceed to %s</string>
   <string name="passwordSuggestion">Do not set a password suggested by someone else. They can use it to steal your account.</string>
   <string name="emailSuggestion">Do not set an email address suggested by someone else. They can use it to steal your account.</string>
@@ -337,7 +337,7 @@
   <string name="subject">Subject</string>
   <string name="send">Send</string>
   <string name="incrementInSeconds">Increment in seconds</string>
-  <string name="freeOnlineChess">Free Online Chess</string>
+  <string name="freeOnlineChess">Free Online Omok</string>
   <plurals name="nbRated">
     <item quantity="one">%s rated</item>
     <item quantity="other">%s rated</item>
@@ -364,7 +364,7 @@
     <item quantity="one">Give %s second</item>
     <item quantity="other">Give %s seconds</item>
   </plurals>
-  <string name="thisAccountViolatedTos">The Lichess Terms of Service were violated on this account</string>
+  <string name="thisAccountViolatedTos">The Omok.dev Terms of Service were violated on this account</string>
   <string name="openingExplorerAndTablebase">Opening explorer &amp; tablebase</string>
   <string name="takeback">Takeback</string>
   <string name="proposeATakeback">Propose a takeback</string>
@@ -424,7 +424,7 @@
   <string name="mustBeInTeam">Must be in team %s</string>
   <string name="youAreNotInTeam">You are not in the team %s</string>
   <string name="backToGame">Back to game</string>
-  <string name="siteDescription">Free online chess server. Play chess in a clean interface. No registration, no ads, no plugin required. Play chess with the computer, friends or random opponents.</string>
+  <string name="siteDescription">Free online omok server. Play omok in a clean interface with no ads and no plugin required. Create rooms, invite a player, or face Rapfi AI in your browser.</string>
   <string name="xJoinedTeamY">%1$s joined team %2$s</string>
   <string name="xCreatedTeamY">%1$s created team %2$s</string>
   <string name="startedStreaming">started streaming</string>
@@ -452,9 +452,9 @@
     <item quantity="one">%s imported game</item>
     <item quantity="other">%s imported games</item>
   </plurals>
-  <string name="thisIsAChessCaptcha">This is a chess CAPTCHA.</string>
+  <string name="thisIsAChessCaptcha">This is a board CAPTCHA.</string>
   <string name="clickOnTheBoardToMakeYourMove">Click on the board to make your move, and prove you are human.</string>
-  <string name="captcha.fail">Please solve the chess captcha.</string>
+  <string name="captcha.fail">Please solve the board CAPTCHA.</string>
   <string name="notACheckmate">Not a checkmate</string>
   <string name="whiteCheckmatesInOneMove">White to checkmate in one move</string>
   <string name="blackCheckmatesInOneMove">Black to checkmate in one move</string>
@@ -500,7 +500,7 @@
   <string name="advancedSettings">Advanced settings</string>
   <string name="safeTournamentName">Pick a very safe name for the tournament.</string>
   <string name="inappropriateNameWarning">Anything even slightly inappropriate could get your account closed.</string>
-  <string name="emptyTournamentName">Leave empty to name the tournament after a notable chess player.</string>
+  <string name="emptyTournamentName">Leave empty to use a simple Omok.dev tournament name.</string>
   <string name="makePrivateTournament">Make the tournament private, and restrict access with a password</string>
   <string name="join">Join</string>
   <string name="withdraw">Withdraw</string>
@@ -548,7 +548,7 @@
   <string name="inlineNotation">Inline notation</string>
   <string name="makeAStudy">For safekeeping and sharing, consider making a study.</string>
   <string name="clearSavedMoves">Clear moves</string>
-  <string name="previouslyOnLichessTV">Previously on Lichess TV</string>
+  <string name="previouslyOnLichessTV">Previously on Omok.dev Live</string>
   <string name="onlinePlayers">Online players</string>
   <string name="activePlayers">Active players</string>
   <string name="bewareTheGameIsRatedButHasNoClock">Beware, the game is rated but has no clock!</string>
@@ -638,7 +638,7 @@
   <string name="timeline">Timeline</string>
   <string name="starting">Starting:</string>
   <string name="allInformationIsPublicAndOptional">All information is public and optional.</string>
-  <string name="biographyDescription">Talk about yourself, your interests, what you like in chess, your favourite openings, players, ...</string>
+  <string name="biographyDescription">Talk about yourself, your interests, what you enjoy in omok, your favourite openings, players, ...</string>
   <plurals name="maximumNbCharacters">
     <item quantity="one">Maximum: %s character.</item>
     <item quantity="other">Maximum: %s characters.</item>
@@ -691,7 +691,7 @@
   <string name="webmasters">Webmasters</string>
   <string name="about">About</string>
   <string name="aboutX">About %s</string>
-  <string name="xIsAFreeYLibreOpenSourceChessServer">%1$s is a free (%2$s), libre, no-ads, open source chess server.</string>
+  <string name="xIsAFreeYLibreOpenSourceChessServer">%1$s is a free (%2$s), libre, no-ads, open source omok server.</string>
   <string name="really">really</string>
   <string name="contribute">Contribute</string>
   <string name="termsOfService">Terms of Service</string>
@@ -720,7 +720,7 @@
   <string name="simulHostExtraTime">Host extra initial clock time</string>
   <string name="simulAddExtraTimePerPlayer">Add initial time to your clock for each player joining the simul.</string>
   <string name="simulHostExtraTimePerPlayer">Host extra clock time per player</string>
-  <string name="lichessTournaments">Lichess tournaments</string>
+  <string name="lichessTournaments">Omok.dev tournaments</string>
   <string name="tournamentFAQ">Arena tournament FAQ</string>
   <string name="timeBeforeTournamentStarts">Time before tournament starts</string>
   <string name="averageCentipawnLoss">Average centipawn loss</string>
@@ -741,8 +741,8 @@
   <string name="variationArrowsInfo">Variation arrows let you navigate without using the move list.</string>
   <string name="playSelectedMove">play selected move</string>
   <string name="newTournament">New tournament</string>
-  <string name="tournamentHomeTitle">Chess tournaments featuring various time controls and variants</string>
-  <string name="tournamentHomeDescription">Play fast-paced chess tournaments! Join an official scheduled tournament, or create your own. Bullet, Blitz, Classical, Chess960, King of the Hill, Threecheck, and more options available for endless chess fun.</string>
+  <string name="tournamentHomeTitle">Omok tournaments with live clocks and flexible room formats</string>
+  <string name="tournamentHomeDescription">Join live omok events, watch rooms fill in real time, or organise your own competition on Omok.dev.</string>
   <string name="tournamentNotFound">Tournament not found</string>
   <string name="tournamentDoesNotExist">This tournament does not exist.</string>
   <string name="tournamentMayHaveBeenCanceled">The tournament may have been cancelled if all players left before it started.</string>
@@ -769,8 +769,8 @@
   <string name="weHaveSentYouAnEmailTo">We've sent an email to %s. Click the link in the email to reset your password.</string>
   <string name="byRegisteringYouAgreeToBeBoundByOur">By registering, you agree to the %s.</string>
   <string name="readAboutOur">Read about our %s.</string>
-  <string name="networkLagBetweenYouAndLichess">Network lag between you and Lichess</string>
-  <string name="timeToProcessAMoveOnLichessServer">Time to process a move on Lichess's server</string>
+  <string name="networkLagBetweenYouAndLichess">Network lag between you and Omok.dev</string>
+  <string name="timeToProcessAMoveOnLichessServer">Time to process a move on the Omok.dev server</string>
   <string name="downloadAnnotated">Download annotated</string>
   <string name="downloadRaw">Download raw</string>
   <string name="downloadImported">Download imported</string>
@@ -782,21 +782,21 @@
   <string name="primaryColorArrowsHowTo">Ctrl or shift = red; command, alt, or meta = blue; a key from each = yellow.</string>
   <string name="letOtherPlayersMessageYou">Let other players message you</string>
   <string name="receiveForumNotifications">Receive notifications when mentioned in the forum</string>
-  <string name="shareYourInsightsData">Share your chess insights data</string>
+  <string name="shareYourInsightsData">Share your omok insights data</string>
   <string name="withNobody">With nobody</string>
   <string name="withFriends">With friends</string>
   <string name="withEverybody">With everybody</string>
   <string name="kidMode">Kid mode</string>
   <string name="kidModeIsEnabled">Kid mode is enabled.</string>
   <string name="kidModeExplanation">This is about safety. In kid mode, all site communications are disabled. Enable this for your children and school students, to protect them from other internet users.</string>
-  <string name="inKidModeTheLichessLogoGetsIconX">In kid mode, the Lichess logo gets a %s icon, so you know your kids are safe.</string>
-  <string name="askYourChessTeacherAboutLiftingKidMode">Your account is managed. Ask your chess teacher about removing kid mode.</string>
+  <string name="inKidModeTheLichessLogoGetsIconX">In kid mode, the Omok.dev logo gets a %s icon, so you know your kids are safe.</string>
+  <string name="askYourChessTeacherAboutLiftingKidMode">Your account is managed. Ask your teacher or guardian about removing kid mode.</string>
   <string name="enableKidMode">Enable Kid mode</string>
   <string name="disableKidMode">Disable Kid mode</string>
   <string name="security">Security</string>
   <string name="sessions">Sessions</string>
   <string name="revokeAllSessions">revoke all sessions</string>
-  <string name="playChessEverywhere">Play chess everywhere</string>
+  <string name="playChessEverywhere">Play omok everywhere</string>
   <string name="everybodyGetsAllFeaturesForFree">Everybody gets all features for free</string>
   <string name="viewTheSolution">View the solution</string>
   <string name="noChallenges">No challenges.</string>
@@ -833,8 +833,8 @@
   <string name="usernameSuffixInvalid">The username must end with a letter or a number.</string>
   <string name="usernameCharsInvalid">The username must only contain letters, numbers, underscores, and hyphens. Consecutive underscores and hyphens are not allowed.</string>
   <string name="usernameUnacceptable">This username is not acceptable.</string>
-  <string name="playChessInStyle">Play chess in style</string>
-  <string name="chessBasics">Chess basics</string>
+  <string name="playChessInStyle">Study openings and play omok in style</string>
+  <string name="chessBasics">Omok basics</string>
   <string name="coaches">Coaches</string>
   <string name="invalidPgn">Invalid PGN</string>
   <string name="invalidFen">Invalid FEN</string>
@@ -847,14 +847,14 @@
     <item quantity="one">%s second to play the first move</item>
     <item quantity="other">%s seconds to play the first move</item>
   </plurals>
-  <string name="practiceWithComputer">Practice with computer</string>
+  <string name="practiceWithComputer">Practice with Rapfi AI</string>
   <string name="anotherWasX">Another was %s</string>
   <string name="bestWasX">Best was %s</string>
   <string name="youBrowsedAway">You browsed away</string>
   <string name="resumePractice">Resume practice</string>
   <string name="drawByFiftyMoves">The game has been drawn by the fifty-move rule.</string>
   <string name="theGameIsADraw">The game is a draw.</string>
-  <string name="computerThinking">Computer thinking ...</string>
+  <string name="computerThinking">Rapfi is thinking ...</string>
   <string name="seeBestMove">See best move</string>
   <string name="hideBestMove">Hide best move</string>
   <string name="getAHint">Get a hint</string>
@@ -873,7 +873,7 @@
   <string name="tryAnotherMoveForWhite">Try another move for white</string>
   <string name="tryAnotherMoveForBlack">Try another move for black</string>
   <string name="solution">Solution</string>
-  <string name="waitingForAnalysis">Waiting for analysis</string>
+  <string name="waitingForAnalysis">Waiting for Rapfi analysis</string>
   <string name="noMistakesFoundForWhite">No mistakes found for white</string>
   <string name="noMistakesFoundForBlack">No mistakes found for black</string>
   <string name="doneReviewingWhiteMistakes">Done reviewing white's mistakes</string>
@@ -899,12 +899,12 @@
     <item quantity="one">and save %s premove line</item>
     <item quantity="other">and save %s premove lines</item>
   </plurals>
-  <string name="showUnreadLichessMessage">You have received a private message from Lichess.</string>
+  <string name="showUnreadLichessMessage">You have received a private message from Omok.dev.</string>
   <string name="clickHereToReadIt">Click here to read it</string>
   <string name="sorry">Sorry :(</string>
   <string name="weHadToTimeYouOutForAWhile">We had to time you out for a while.</string>
   <string name="why">Why?</string>
-  <string name="pleasantChessExperience">We aim to provide a pleasant chess experience for everyone.</string>
+  <string name="pleasantChessExperience">We aim to provide a pleasant omok experience for everyone.</string>
   <string name="goodPractice">To that effect, we must ensure that all players follow good practice.</string>
   <string name="potentialProblem">When a potential problem is detected, we display this message.</string>
   <string name="howToAvoidThis">How to avoid this?</string>
@@ -912,14 +912,14 @@
   <string name="tryToWin">Try to win (or at least draw) every game you play.</string>
   <string name="resignLostGames">Resign lost games (don't let the clock run down).</string>
   <string name="temporaryInconvenience">We apologise for the temporary inconvenience,</string>
-  <string name="wishYouGreatGames">and wish you great games on lichess.org.</string>
+  <string name="wishYouGreatGames">and wish you great games on Omok.dev.</string>
   <string name="thankYouForReading">Thank you for reading!</string>
   <string name="lifetimeScore">Lifetime score</string>
   <string name="currentMatchScore">Current match score</string>
-  <string name="agreementAssistance">I agree that I will at no time receive assistance during my games (from a chess computer, book, database or another person).</string>
+  <string name="agreementAssistance">I agree that I will at no time receive assistance during my games (from an omok engine, book, database or another person).</string>
   <string name="agreementNice">I agree that I will always be respectful to other players.</string>
   <string name="agreementMultipleAccounts" comment="%s will be replaced with the translation of 'termsOfService'">I agree that I will not create multiple accounts (except for the reasons stated in the %s).</string>
-  <string name="agreementPolicy">I agree that I will follow all Lichess policies.</string>
+  <string name="agreementPolicy">I agree that I will follow all Omok.dev policies.</string>
   <string name="searchOrStartNewDiscussion">Search or start new conversation</string>
   <string name="edit">Edit</string>
   <string name="ultraBullet" comment="Probably best left untranslated. Leave it as 'UltraBullet' unless your language has a better word for it.">UltraBullet</string>
@@ -933,7 +933,7 @@
   <string name="rapidDesc">Rapid games: 8 to 25 minutes</string>
   <string name="classicalDesc">Classical games: 25 minutes and more</string>
   <string name="correspondenceDesc">Correspondence games: one or several days per move</string>
-  <string name="puzzleDesc">Chess tactics trainer</string>
+  <string name="puzzleDesc">Board tactics trainer</string>
   <string name="important">Important</string>
   <string name="yourQuestionMayHaveBeenAnswered">Your question may already have an answer %1$s</string>
   <string name="inTheFAQ">in the FAQ</string>
@@ -959,7 +959,7 @@
   <string name="congratsYouWon">Congratulations, you won!</string>
   <string name="gameVsX">Game vs %1$s</string>
   <string name="resVsX">%1$s vs %2$s</string>
-  <string name="lostAgainstTOSViolator">You lost rating points to someone who violated the Lichess TOS</string>
+  <string name="lostAgainstTOSViolator">You lost rating points to someone who violated the Omok.dev TOS</string>
   <string name="refundXpointsTimeControlY">Refund: %1$s %2$s rating points.</string>
   <string name="timeAlmostUp">Time is almost up!</string>
   <string name="clickToRevealEmailAddress">[Click to reveal email address]</string>
@@ -995,10 +995,10 @@ Leave empty to start games from the normal initial position.</string>
   <string name="onlyTeamMembers">Only team members</string>
   <string name="navigateMoveTree">Navigate the move tree</string>
   <string name="mouseTricks">Mouse tricks</string>
-  <string name="toggleLocalAnalysis">Toggle local computer analysis</string>
-  <string name="toggleAllAnalysis">Toggle all computer analysis</string>
-  <string name="playComputerMove">Play best computer move</string>
-  <string name="analysisOptions">Analysis options</string>
+  <string name="toggleLocalAnalysis">Toggle local Rapfi analysis</string>
+  <string name="toggleAllAnalysis">Toggle all Rapfi analysis</string>
+  <string name="playComputerMove">Play best Rapfi move</string>
+  <string name="analysisOptions">Rapfi analysis options</string>
   <string name="focusChat">Focus chat</string>
   <string name="showHelpDialog">View this help overlay</string>
   <string name="reopenYourAccount">Reopen your account</string>
@@ -1013,14 +1013,14 @@ Leave empty to start games from the normal initial position.</string>
   <string name="youCantStartNewGame">You can't start a new game until this one is finished.</string>
   <string name="since">Since</string>
   <string name="until">Until</string>
-  <string name="lichessDbExplanation">Rated games played on Lichess</string>
+  <string name="lichessDbExplanation">Rated games played on Omok.dev</string>
   <string name="switchSides">Switch sides</string>
   <string name="closingAccountWithdrawAppeal">Closing your account will withdraw your appeal</string>
   <string name="ourEventTips">Our tips for organising events</string>
   <string name="instructions">Instructions</string>
   <string name="showMeEverything">Show me everything</string>
-  <string name="lichessPatronInfo">Lichess is a charity and entirely free/libre open source software.
-All operating costs, development, and content are funded solely by user donations.</string>
+  <string name="lichessPatronInfo">Omok.dev is funded by user donations and maintained as free/libre open source software.
+All operating costs, development, and content are funded solely by the community.</string>
   <string name="nothingToSeeHere">Nothing to see here at the moment.</string>
   <string name="stats">Stats</string>
   <string name="accessibility">Accessibility</string>
@@ -1034,4 +1034,74 @@ All operating costs, development, and content are funded solely by user donation
   <string name="thereAreNoResultsForX">No results for "%s"</string>
   <string name="tags">Tags</string>
   <string name="enPassant">En passant rights</string>
+  <string name="omokBrandName">Omok.dev</string>
+  <string name="omokOpeningGuide">Opening guide</string>
+  <string name="omokOpeningGuideDescription">Explore workbook-backed Taraguchi opening moves without using hints during live games.</string>
+  <string name="omokRoomDescription">Create a custom omok room that any online player can join.</string>
+  <string name="omokFriendDescription">Create a private omok invitation link and share it with a specific player.</string>
+  <string name="omokAiMatchDescription">Start an omok game against Rapfi AI running in your browser.</string>
+  <string name="omokCreateRoomAction">Create omok room</string>
+  <string name="omokInvitePlayerAction">Invite a player</string>
+  <string name="omokPlayRapfiAction">Play against Rapfi AI</string>
+  <string name="omokSetupTitle">Omok game setup</string>
+  <string name="omokQuickMatch">Quick match</string>
+  <string name="omokRuleSetLabel">Rule set</string>
+  <string name="omokRuleSetDescription">Choose Taraguchi-10 for swap opening, Renju for center-start, or Freestyle for an empty board.</string>
+  <string name="omokBrowserEngineLabel">Rapfi browser engine</string>
+  <string name="omokBrowserEngineDescription">Engine settings for this device. Rapfi runs in your browser, not on the game server.</string>
+  <string name="omokThreadsHelp">Used when SharedArrayBuffer is available.</string>
+  <string name="omokThinkTimeLabel">Think time (ms)</string>
+  <string name="omokThinkTimeHelp">Primary limit for browser-side move generation.</string>
+  <string name="omokDepthLimitLabel">Depth limit</string>
+  <string name="omokDepthHelp">0 means no explicit depth cap.</string>
+  <string name="omokNodeLimitLabel">Node limit</string>
+  <string name="omokNodesHelp">0 means no explicit node cap.</string>
+  <string name="omokAnalysisPanelToggle">Show Rapfi analysis in the round view</string>
+  <string name="omokAnalysisShow">Analyse with Rapfi</string>
+  <string name="omokAnalysisHide">Hide analysis</string>
+  <string name="omokAnalysisThinking">Thinking...</string>
+  <string name="omokAnalysisReady">Ready</string>
+  <string name="omokAnalysisIdle">Idle</string>
+  <string name="omokOpeningOrder">Opening order</string>
+  <string name="omokOpeningLog">Opening log</string>
+  <string name="omokState">State</string>
+  <string name="omokResult">Result</string>
+  <string name="omokLastMove">Last move</string>
+  <string name="omokGuideTitle">Omok opening guide</string>
+  <string name="omokGuideLead">H8 is fixed. Place the 2nd and 3rd moves, then this page shows only the 4th and 5th moves that exist in the opening workbook.</string>
+  <string name="omokGuideNote">Coordinate system: A1 is the bottom-left corner, letters increase to the right, and numbers increase upward.</string>
+  <string name="omokGuideDownloadWorkbook">Download opening workbook</string>
+  <string name="omokHomeTitle">Omok.dev</string>
+  <string name="omokHomeTagline">Free online omok with custom rooms, Rapfi AI, and opening study tools.</string>
+  <string name="omokHomeAbout">Omok.dev is a free, open source omok service focused on real-time play, browser-side AI, and opening study.</string>
+  <string name="omokHomeOpenGuide">Open the opening guide</string>
+  <string name="omokBackToLobby">Back to lobby</string>
+  <string name="omokBackToGame">Back to game</string>
+  <string name="omokPlayersTitle">Omok players</string>
+  <string name="omokPlayersLead">Open player-related links without leaving the Omok.dev experience.</string>
+  <string name="omokGamesTitle">Omok games</string>
+  <string name="omokGamesLead">Open live omok rooms and recent game links without leaving Omok.dev.</string>
+  <string name="omokFaqTitle">Omok.dev FAQ</string>
+  <string name="omokFaqLead">Answers for Omok.dev play, correspondence, autoplay, rules, and browser-side Rapfi AI.</string>
+  <string name="omokSourceTitle">Omok.dev source</string>
+  <string name="omokSourceLead">This Omok.dev build adds omok rules, browser-side Rapfi AI, and opening study pages on top of the base service shell.</string>
+  <string name="omokTermsTitle">Omok.dev terms of service</string>
+  <string name="omokTermsLead">Use Omok.dev fairly, respect other players, and do not use automation or harassment to damage play.</string>
+  <string name="omokPrivacyTitle">Omok.dev privacy</string>
+  <string name="omokPrivacyLead">Omok.dev stores the minimum session and game data needed to run rooms, turns, and browser-side features.</string>
+  <string name="omokAboutTitle">About Omok.dev</string>
+  <string name="omokAboutLead">Omok.dev is an omok-first service for live play, Rapfi AI, and opening study.</string>
+  <string name="omokThanksTitle">Thanks from Omok.dev</string>
+  <string name="omokThanksLead">Thanks for testing, reporting issues, and helping turn the old shell into an omok-first service.</string>
+  <string name="omokChangelogTitle">Omok.dev changelog</string>
+  <string name="omokChangelogLead">Recent Omok.dev work includes Renju and Freestyle play, Taraguchi opening support, browser Rapfi AI, and the opening guide.</string>
+  <string name="omokAdsTitle">No ads on Omok.dev</string>
+  <string name="omokAdsLead">Omok.dev focuses on play and study without third-party display ads in the core experience.</string>
+  <string name="omokAnalysisTitle">Omok review</string>
+  <string name="omokAnalysisLead">Review an omok game inside the Omok.dev analysis view.</string>
+  <string name="omokAnalysisUnavailable">This route is reserved for Omok.dev review pages. Open an omok game or use the opening guide instead.</string>
+  <string name="omokReviewAction">Review</string>
+  <string name="omokMoveListTitle">Move list</string>
+  <string name="omokProfileTitle">Omok player page</string>
+  <string name="omokProfileLead">Player profile links stay inside Omok.dev while profile pages are being rebuilt for omok.</string>
 </resources>

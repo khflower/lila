@@ -5,6 +5,7 @@ import chess.format.Fen
 import chess.variant.*
 
 import lila.game.Rematches
+import lila.omok.OmokAiConfig
 
 import Rematcher.*
 
@@ -63,3 +64,23 @@ class RematcherTest extends munit.FunSuite:
       canOffer = true
     )
     assertEquals(action, YesAction.JoinExisting)
+
+  test("omok ai rematch preserves config but updates ai color for the new seat"):
+    val previous = Some(
+      OmokAiConfig(
+        provider = "rapfi",
+        mode = "browser",
+        aiColor = Some("black"),
+        threads = 1,
+        moveTimeMs = Some(800),
+        analysisEnabled = true
+      )
+    )
+
+    val updated = rematchOmokAi(previous, Some("white"))
+
+    assertEquals(updated.map(_.provider), Some("rapfi"))
+    assertEquals(updated.map(_.mode), Some("browser"))
+    assertEquals(updated.flatMap(_.aiColor), Some("white"))
+    assertEquals(updated.flatMap(_.moveTimeMs), Some(800))
+    assertEquals(updated.map(_.analysisEnabled), Some(true))

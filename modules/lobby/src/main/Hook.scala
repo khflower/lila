@@ -24,7 +24,9 @@ case class Hook(
     user: Option[LobbyUser],
     ratingRange: RatingRange,
     createdAt: Instant,
-    boardApi: Boolean
+    boardApi: Boolean,
+    omok: Boolean,
+    omokRuleSet: Option[String]
 ):
 
   val realVariant = Variant.orDefault(variant)
@@ -78,6 +80,7 @@ case class Hook(
     .add("u" -> user.map(_.username))
     .add("rating" -> rating)
     .add("variant" -> realVariant.exotic.option(realVariant.key))
+    .add("omokRuleSet" -> omokRuleSet)
     .add("ra" -> rated.yes.option(1))
 
   def seemsCompatibleWithPools = rated.yes && realVariant.standard && color == TriColor.Random
@@ -104,7 +107,9 @@ object Hook:
       sid: Option[String],
       ratingRange: RatingRange,
       blocking: lila.core.pool.Blocking,
-      boardApi: Boolean = false
+      boardApi: Boolean = false,
+      omok: Boolean = false,
+      omokRuleSet: Option[String] = none
   ): Hook =
     new Hook(
       id = ThreadLocalRandom.nextString(idSize),
@@ -117,7 +122,9 @@ object Hook:
       sid = sid,
       ratingRange = ratingRange,
       createdAt = nowInstant,
-      boardApi = boardApi
+      boardApi = boardApi,
+      omok = omok,
+      omokRuleSet = omokRuleSet
     )
 
   import lila.core.pool.{ PoolFrom, PoolMember }

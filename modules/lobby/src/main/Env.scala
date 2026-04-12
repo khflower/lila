@@ -14,6 +14,7 @@ final class Env(
     gameRepo: lila.core.game.GameRepo,
     gameApi: lila.core.game.GameApi,
     newPlayer: lila.core.game.NewPlayer,
+    initOmokLobbyGame: (lila.core.id.GameId, Option[String]) => Unit,
     poolApi: lila.core.pool.PoolApi,
     cacheApi: lila.memo.CacheApi,
     userTrustApi: lila.core.security.UserTrustApi,

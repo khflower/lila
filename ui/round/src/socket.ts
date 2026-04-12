@@ -99,6 +99,22 @@ export function make(send: RoundSocketSend, ctrl: RoundController): RoundSocket 
         ctrl.redraw();
       }
     },
+    clock(o: { white: number; black: number; lag?: number }) {
+      if (ctrl.clock) {
+        if (ctrl.data.clock) {
+          ctrl.data.clock.white = o.white;
+          ctrl.data.clock.black = o.black;
+          ctrl.data.clock.running = true;
+        }
+        ctrl.clock.setClock({
+          white: o.white,
+          black: o.black,
+          ticking: ctrl.currentTurnColor(),
+          delay: o.lag,
+        });
+        ctrl.redraw();
+      }
+    },
     cclock(o: { white: number; black: number }) {
       if (ctrl.corresClock) {
         ctrl.data.correspondence!.white = o.white;

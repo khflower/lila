@@ -22,15 +22,29 @@ function layout() {
 layout();
 window.addEventListener('resize', layout);
 
+function forceBootNavigation(hash: string) {
+  const target = `${location.pathname || '/'}?any#${hash}`;
+  if (`${location.pathname}${location.search}${location.hash}` === target) location.reload();
+  else location.assign(target);
+}
+
 function attachBootFallback(selector: string, hash: string) {
   const button = document.querySelector<HTMLElement>(selector);
   if (!button) return;
   button.addEventListener('click', () => {
     if ((window as any).__lobbyBooted) return;
-    const site = (window as any).site;
-    if (!site?.asset?.loadEsmPage) return;
     location.hash = hash;
-    site.asset.loadEsmPage('lobby');
+    const site = (window as any).site;
+    if (!site?.asset?.loadEsmPage) {
+      forceBootNavigation(hash);
+      return;
+    }
+    Promise.resolve(site.asset.loadEsmPage('lobby')).catch(() => forceBootNavigation(hash));
+    window.setTimeout(() => {
+      if ((window as any).__lobbyBooted) return;
+      if (document.querySelector('.dialog-content, .game-setup')) return;
+      forceBootNavigation(hash);
+    }, 700);
   });
 }
 

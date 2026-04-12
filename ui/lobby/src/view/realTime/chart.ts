@@ -32,6 +32,19 @@ const clockX = (dur: number) => {
   return Math.round((durLog(Math.min(clockMax, dur || clockMax)) / durLog(clockMax)) * 100);
 };
 
+function omokRuleSetLabel(ruleSet?: Hook['omokRuleSet']) {
+  switch (ruleSet) {
+    case 'taraguchi10':
+      return 'Taraguchi-10';
+    case 'renju':
+      return 'Renju';
+    case 'freestyle':
+      return 'Freestyle';
+    default:
+      return '';
+  }
+}
+
 function renderPlot(ctrl: LobbyController, hook: Hook, translate: [number, number]) {
   const bottom = Math.max(0, ratingY(hook.rating) - translate[1]),
     left = Math.max(0, clockX(hook.t) - translate[0]),
@@ -80,6 +93,7 @@ function renderHook(ctrl: LobbyController, hook: Hook): string {
   html += '<div class="inner-clickable">';
   html += `<div>${hook.clock}</div>`;
   html += '<i data-icon="' + perfIcons[hook.perf] + '"> ' + i18n.site[hook.ra ? 'rated' : 'casual'] + '</i>';
+  if (hook.omokRuleSet) html += `<div class="hook__mode__sub">${omokRuleSetLabel(hook.omokRuleSet)}</div>`;
   html += '</div></div>';
   return html;
 }

@@ -67,6 +67,44 @@ That guide covers:
 - `/ko` verification steps
 - hook-clock and spectator-discoverability checks
 - common Omok-specific startup traps
+- how to reproduce the same Omok feature set from this fork branch or from an upstream base checkout
+
+### Omok reproducibility, source of truth, and what is included
+
+For Omok work, this fork branch is the source of truth, not the upstream lichess README by itself.
+
+Recommended reproduction path:
+
+1. clone this fork
+2. check out the Omok branch you want to reproduce
+3. follow `docs/omok/STARTING_GUIDE.md`
+
+This branch is intended to include the Omok-specific code and assets that are easy to lose in a partial handoff, including:
+
+- Omok lobby, setup, invite, claim, and round controller/view changes
+- `public/omok/` browser assets and opening-guide data
+- browser Rapfi bundles used by the Omok round UI
+- Omok-specific docs and translation entries
+
+Things that are still external dependencies, and are **not** expected to live inside this repo:
+
+- MongoDB
+- Redis
+- the separate `lila-ws` repository/process
+- optional public tunnel / reverse proxy tooling
+- machine-local config secrets
+
+If you start from vanilla `lichess-org/lila` instead of cloning this fork directly, treat this branch as an overlay, not as a vague description. In practice that means fetching this fork branch and using it as the file-level source of truth for Omok paths, rather than guessing from scattered notes.
+
+Example flow from an upstream base checkout:
+
+```bash
+git remote add omokfork https://github.com/khflower/lila.git
+git fetch omokfork codex/recovered-from-dump-20260411
+git checkout -b omok-repro omokfork/codex/recovered-from-dump-20260411
+```
+
+If you cannot switch wholesale to the Omok branch, compare against it explicitly and port the Omok-specific paths from there. `docs/omok/STARTING_GUIDE.md` calls out the critical directories and startup checks.
 
 Current Omok-specific highlights in this fork:
 

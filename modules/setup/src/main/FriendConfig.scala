@@ -15,14 +15,26 @@ case class FriendConfig(
     days: Days,
     rated: Rated,
     color: TriColor,
-    fen: Option[Fen.Full] = None
+    fen: Option[Fen.Full] = None,
+    omokRuleSet: Option[String] = None
 ) extends HumanConfig
     with Positional
     with WithColor:
 
   val strictFen = false
 
-  def >> = (variant.id, timeMode.id, time, increment, days, rated.id.some, color.name, fen).some
+  def >> =
+    (
+      variant.id,
+      timeMode.id,
+      time,
+      increment,
+      days,
+      rated.id.some,
+      color.name,
+      fen,
+      omokRuleSet
+    ).some
 
   def isPersistent = timeMode == TimeMode.Unlimited || timeMode == TimeMode.Correspondence
 
@@ -36,7 +48,8 @@ object FriendConfig extends BaseConfig:
       d: Days,
       m: Option[Int],
       c: String,
-      fen: Option[Fen.Full]
+      fen: Option[Fen.Full],
+      omokRuleSet: Option[String]
   ) =
     new FriendConfig(
       variant = chess.variant.Variant.orDefault(v),
@@ -46,7 +59,10 @@ object FriendConfig extends BaseConfig:
       days = d,
       rated = m.fold(Rated.default)(Rated.orDefault),
       color = TriColor(c).err("Invalid color " + c),
-      fen = fen
+      fen = fen,
+      omokRuleSet = omokRuleSet
+        .map(_.trim.toLowerCase)
+        .filter(ruleSet => ruleSet == "renju" || ruleSet == "freestyle" || ruleSet == "taraguchi10" || ruleSet == "taraguchi-10")
     )
 
   val default = FriendConfig(
@@ -73,7 +89,8 @@ object FriendConfig extends BaseConfig:
         days = r.get("d"),
         rated = Rated.orDefault(r.int("m")),
         color = TriColor.White,
-        fen = r.getO[Fen.Full]("f").filter(_.value.nonEmpty)
+        fen = r.getO[Fen.Full]("f").filter(_.value.nonEmpty),
+        omokRuleSet = r.getO[String]("ors").filter(_.nonEmpty)
       )
 
     def writes(w: BSON.Writer, o: FriendConfig) =
@@ -84,5 +101,6 @@ object FriendConfig extends BaseConfig:
         "i" -> o.increment,
         "d" -> o.days,
         "m" -> o.rated.id,
-        "f" -> o.fen
+        "f" -> o.fen,
+        "ors" -> o.omokRuleSet
       )

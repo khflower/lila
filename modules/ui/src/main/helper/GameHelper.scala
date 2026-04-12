@@ -14,7 +14,7 @@ trait GameHelper:
   def titleGame(g: Game) =
     val speed = chess.Speed(g.clock.map(_.config)).name
     val variant = g.variant.exotic.so(s" ${g.variant.name}")
-    s"$speed$variant Chess • ${playerText(g.whitePlayer)} vs ${playerText(g.blackPlayer)}"
+    s"$speed$variant Omok - ${playerText(g.whitePlayer)} vs ${playerText(g.blackPlayer)}"
 
   def shortClockName(clock: Option[Clock.Config])(using t: Translate): Frag =
     clock.fold[Frag](trans.site.unlimited())(shortClockName)
@@ -175,7 +175,7 @@ trait GameHelper:
   def gameLink(pov: Pov)(using Context): String = gameLink(pov.game, pov.color)
 
   def aiName(level: Int)(using Translate): String =
-    trans.site.aiNameLevelAiLevel.txt("Stockfish", level)
+    "Rapfi AI"
 
   def aiNameFrag(level: Int)(using Translate) =
     raw(aiName(level).replace(" ", "&nbsp;"))

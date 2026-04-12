@@ -2,11 +2,15 @@ package lila.api
 
 import chess.format.Fen
 import play.api.libs.json.*
+import reactivemongo.api.bson.*
 
 import lila.analyse.{ Analysis, JsonView as analysisJson }
 import lila.api.Context.given
 import lila.common.HTTPRequest
 import lila.common.Json.given
+import lila.core.id.GameId
+import lila.db.dsl.{ *, given }
+import lila.game.OmokGameSidecar
 import lila.omok.OmokAnalyseDto
 import scalalib.data.Preload
 import lila.core.i18n.Translate
@@ -14,12 +18,30 @@ import lila.core.perm.Granter
 import lila.core.user.GameUsers
 import lila.pref.Pref
 import lila.puzzle.PuzzleOpening
-import lila.round.{ Forecast, JsonView }
+import lila.round.{ Forecast, JsonView, OmokRoundState }
 import lila.simul.Simul
 import lila.swiss.GameView as SwissView
 import lila.tournament.GameView as TourView
 import lila.tree.{ ExportOptions, Tree }
 import lila.game.GameExt.timeForFirstMove
+
+object RoundApi:
+
+  type StoredOmokLookup = GameId => Fu[Option[OmokGameSidecar]]
+
+  val noStoredOmokLookup: StoredOmokLookup = _ => fuccess(None)
+  def storedOmokLookup(gameRepo: lila.game.GameRepo)(using Executor): StoredOmokLookup =
+    noStoredOmokLookup
+
+  private[api] def readStoredOmok(doc: Bdoc): Either[String, Option[OmokGameSidecar]] =
+    Right(None)
+
+  def getOrHydrateOmok(
+      omokRoundRepo: lila.round.OmokRoundRepo,
+      gameId: GameId,
+      loadStoredOmok: StoredOmokLookup
+  )(using Executor): Fu[Either[String, Option[OmokRoundState]]] =
+    omokRoundRepo.getOrHydrateAsync(gameId)(loadStoredOmok(gameId))
 
 final private[api] class RoundApi(
     jsonView: JsonView,
@@ -37,7 +59,8 @@ final private[api] class RoundApi(
     prefApi: lila.pref.PrefApi,
     getLightUser: lila.core.LightUser.GetterSync,
     userLag: lila.socket.UserLagCache,
-    omokRoundRepo: lila.round.OmokRoundRepo
+    omokRoundRepo: lila.round.OmokRoundRepo,
+    loadStoredOmok: RoundApi.StoredOmokLookup
 )(using Executor):
 
   def player(
@@ -49,14 +72,15 @@ final private[api] class RoundApi(
       initialFen <- gameRepo.initialFen(pov.game)
       users <- users.orLoad(userApi.gamePlayers(pov.game.userIdPair, pov.game.perfKey))
       prefs <- prefApi.get(users.map(_.map(_.user)), pov.color, ctx.pref)
-      (json, simul, swiss, note, forecast, bookmarked) <-
+      (json, simul, swiss, note, forecast, bookmarked, omok) <-
         (
           jsonView.playerJson(pov, prefs, users, initialFen, ctxFlags),
           pov.game.simulId.so(simulApi.find),
           swissApi.gameView(pov),
           ctx.myId.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _)),
           forecastApi.loadForDisplay(pov),
-          bookmarkApi.exists(pov.game, ctx.me)
+          bookmarkApi.exists(pov.game, ctx.me),
+          withOmok(pov)
         ).tupled
     yield (
       withTournament(pov, tour)
@@ -67,7 +91,7 @@ final private[api] class RoundApi(
         .compose(withBookmark(bookmarked))
         .compose(withForecastCount(forecast.map(_.steps.size)))
         .compose(withOpponentSignal(pov))
-        .compose(withOmok(pov))
+        .compose(omok)
     )(json)
   }.mon(_.round.api.player)
 
@@ -81,13 +105,14 @@ final private[api] class RoundApi(
     for
       initialFen <- initialFenO.fold(gameRepo.initialFen(pov.game))(fuccess)
       given Translate = ctx.translate
-      (json, simul, swiss, note, bookmarked) <-
+      (json, simul, swiss, note, bookmarked, omok) <-
         (
           jsonView.watcherJson(pov, users, ctx.pref.some, ctx.me, tv, initialFen, ctxFlags),
           pov.game.simulId.so(simulApi.find),
           swissApi.gameView(pov),
           ctx.me.ifTrue(ctx.isMobileApi).so(noteApi.get(pov.gameId, _)),
-          bookmarkApi.exists(pov.game, ctx.me)
+          bookmarkApi.exists(pov.game, ctx.me),
+          withOmok(pov)
         ).tupled
     yield (
       withTournament(pov, tour)
@@ -96,7 +121,7 @@ final private[api] class RoundApi(
         .compose(withNote(note))
         .compose(withBookmark(bookmarked))
         .compose(withSteps(pov, initialFen))
-        .compose(withOmok(pov))
+        .compose(omok)
     )(json)
   }.mon(_.round.api.watcher)
 
@@ -228,9 +253,17 @@ final private[api] class RoundApi(
         }
     )
 
-  private def withOmok(pov: Pov)(json: JsObject) =
-    omokRoundRepo.get(pov.gameId).fold(json): state =>
-      json + ("omok" -> state.analyseDto.asJson)
+  private val omitOmok: JsObject => JsObject = json => json
+
+  private def withOmok(pov: Pov): Fu[JsObject => JsObject] =
+    RoundApi
+      .getOrHydrateOmok(omokRoundRepo, pov.gameId, loadStoredOmok)
+      .map:
+        case Right(Some(state)) => json => json + ("omok" -> state.analyseDto.asJson)
+        case Right(None)        => omitOmok
+        case Left(err) =>
+          lila.log("api.round").warn(s"[omok] failed to hydrate ${pov.gameId}: $err")
+          omitOmok
 
   // Reserve a stable namespace for future omok analyse boot data.
   private def withOmokAnalyse(json: JsObject) =

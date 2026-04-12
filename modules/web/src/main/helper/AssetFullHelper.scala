@@ -16,6 +16,7 @@ trait AssetFullHelper:
   export lila.common.String.html.safeJsonValue
 
   private lazy val socketDomains = netConfig.socketDomains ::: netConfig.socketAlts
+  def socketDomainsForPage: List[String] = socketDomains
 
   def siteName: String =
     if netConfig.siteName == "localhost:9663" then "lichess.dev"

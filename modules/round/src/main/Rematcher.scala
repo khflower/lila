@@ -94,13 +94,15 @@ final private class Rematcher(
 
     def createGame(withId: Option[GameId]) = for
       previousOmokRuleSet <- omokRuleSetOf(pov.game.id)
+      previousOmokAi <- omokAiOf(pov.game.id)
       isOmokRematch = previousOmokRuleSet.isDefined || isLikelyOmok(pov.game)
       rematchRuleSet = previousOmokRuleSet.orElse(isOmokRematch.option(RuleSet.Renju))
       nextGame <- returnGame(pov, withId).map(_.start)
+      rematchOmokAi = Rematcher.rematchOmokAi(previousOmokAi, Rematcher.aiColorOf(nextGame))
       _ = rematches.accept(pov.gameId, nextGame.id)
       _ = if pov.game.variant == Chess960 && !chess960.get(pov.gameId) then chess960.put(nextGame.id)
       _ = rematchRuleSet.foreach: ruleSet =>
-        omokRoundRepo.put(nextGame.id, OmokRoundState.initial(ruleSet))
+        omokRoundRepo.put(nextGame.id, OmokRoundState.initial(ruleSet, rematchOmokAi))
       _ <- gameRepo.insertDenormalized(nextGame)
     yield
       messenger.volatile(pov.game, trans.site.rematchOfferAccepted.txt())
@@ -166,10 +168,25 @@ final private class Rematcher(
   private def omokRuleSetOf(gameId: GameId): Fu[Option[RuleSet]] =
     fuccess(omokRoundRepo.ruleSetOf(gameId))
 
+  private def omokAiOf(gameId: GameId): Fu[Option[lila.omok.OmokAiConfig]] =
+    fuccess(omokRoundRepo.aiOf(gameId))
+
   private def isLikelyOmok(game: Game): Boolean =
     game.variant.standard && game.status == chess.Status.VariantEnd
 
 object Rematcher:
+
+  def aiColorOf(game: Game): Option[String] =
+    if game.whitePlayer.aiLevel.isDefined then Some("white")
+    else if game.blackPlayer.aiLevel.isDefined then Some("black")
+    else none
+
+  def rematchOmokAi(
+      previous: Option[lila.omok.OmokAiConfig],
+      aiColor: Option[String]
+  ): Option[lila.omok.OmokAiConfig] =
+    previous.map: ai =>
+      ai.copy(aiColor = aiColor.orElse(ai.aiColor))
 
   enum YesAction:
     case RedirectAccepted(nextId: GameId)
@@ -213,7 +230,3 @@ object Rematcher:
       ply = ply,
       startedAtPly = ply
     )
-
-
-
-

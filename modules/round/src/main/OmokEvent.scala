@@ -37,7 +37,7 @@ object OmokEvent:
       val analyse = state.analyseDto
       MovePayload(
         move = OmokMoveDto.fromMove(move),
-        position = OmokPositionDto.fromPosition(state.position),
+        position = state.positionDto,
         status = analyse.status,
         winner = analyse.winner
       )

@@ -1,6 +1,7 @@
 package lila.round
 
 import chess.{ ByColor, Rated }
+import play.api.libs.json.*
 
 import lila.core.game.{ Game, OnStart, Source, newGame }
 import lila.core.id.{ GameFullId, GameId }
@@ -52,15 +53,43 @@ final case class OmokStartScaffoldResult(
     nativeFullIds: Option[ByColor[GameFullId]] = None
 ):
   def gameId: GameId = fullId.gameId
-  def redirectPath: String = s"/$fullId"
+  private def fullIdPath(fullId: GameFullId): String = s"/$fullId"
+  def claimPath(fullId: GameFullId): String = s"/dev/omok/claim/$fullId"
+  def redirectPath: String = nativeFullIds.fold(fullIdPath(fullId))(_ => claimPath(fullId))
   def message: String =
     nativeFullIds.fold(
       s"${if reset then "restarted" else "started"} omok scaffold $gameId -> $redirectPath: ${OmokStartScaffold.renderState(state)}"
     ): fullIds =>
-      s"started native omok round $gameId: black=/${fullIds.black} white=/${fullIds.white}: ${OmokStartScaffold.renderState(state)}"
+      s"started native omok round $gameId: black=/${fullIds.black} white=/${fullIds.white} claimBlack=${claimPath(fullIds.black)} claimWhite=${claimPath(fullIds.white)}: ${OmokStartScaffold.renderState(state)}"
+  def apiJson: JsObject =
+    Json.obj(
+      "gameId" -> gameId.value,
+      "fullId" -> fullId.value,
+      "path" -> redirectPath,
+      "playerPath" -> fullIdPath(fullId),
+      "message" -> message,
+      "state" -> Json.obj(
+        "ruleSet" -> state.ruleSet.toString.toLowerCase,
+        "ply" -> state.position.ply,
+        "turn" -> state.position.turn.toString.toLowerCase,
+        "lastMove" -> state.position.lastMove.map(_.pos.key),
+        "moves" -> state.moves.map(_.pos.key)
+      )
+    ) ++ nativeFullIds.fold(Json.obj()): fullIds =>
+      Json.obj(
+        "fullIds" -> Json.obj(
+          "black" -> fullIds.black.value,
+          "white" -> fullIds.white.value
+        ),
+        "claimPaths" -> Json.obj(
+          "black" -> claimPath(fullIds.black),
+          "white" -> claimPath(fullIds.white)
+        )
+      )
 
 object OmokStartScaffold:
   type FullIdExists = GameFullId => Fu[Boolean]
+  private val fullIdPattern = """[\w-]{12}"""
 
   def apply(omokRoundRepo: OmokRoundRepo)(using Executor): OmokStartScaffold =
     new OmokStartScaffold(omokRoundRepo, _ => fuccess(true), OmokNativeGameStarter.unsupported)
@@ -88,7 +117,24 @@ object OmokStartScaffold:
     raw.trim.toLowerCase match
       case "renju"     => Some(RuleSet.Renju)
       case "freestyle" => Some(RuleSet.Freestyle)
+      case "taraguchi10" | "taraguchi-10" | "taraguchi" => Some(RuleSet.Taraguchi10)
       case _           => None
+
+  def parseRawRuleSet(rawRuleSet: Option[String]): Either[OmokStartScaffoldError, RuleSet] =
+    rawRuleSet match
+      case None => Right(RuleSet.Renju)
+      case Some(raw) =>
+        val candidate = raw.trim
+        if candidate.isEmpty then
+          Left(OmokStartScaffoldError("invalid rule set ''; expected one of: renju, freestyle, taraguchi10"))
+        else
+          parseRuleSet(candidate).toRight(
+            OmokStartScaffoldError(
+              s"invalid rule set '$candidate'; expected one of: renju, freestyle, taraguchi10"
+            )
+          )
+
+  def looksLikeFullId(raw: String): Boolean = raw.matches(fullIdPattern)
 
   def renderState(state: OmokRoundState): String =
     val lastMove = state.position.lastMove.fold("-")(_.pos.key)
@@ -114,10 +160,17 @@ final class OmokStartScaffold(
     parseRuleSet(rawRuleSet).fold(
       err => fuccess(Left(err)),
       ruleSet =>
-        nativeGameStarter.start().map: started =>
-          val state = OmokRoundState.initial(ruleSet)
-          omokRoundRepo.put(started.game.id, state)
-          Right(OmokStartScaffoldResult(started.fullId, state, reset = false, nativeFullIds = started.fullIds.some))
+        nativeGameStarter
+          .start()
+          .map: started =>
+            val state = OmokRoundState.initial(ruleSet)
+            omokRoundRepo.put(started.game.id, state)
+            Right(
+              OmokStartScaffoldResult(started.fullId, state, reset = false, nativeFullIds = started.fullIds.some)
+            )
+          .recover { case err =>
+            Left(OmokStartScaffoldError(Option(err.getMessage).filter(_.nonEmpty).getOrElse("native omok start failed")))
+          }
     )
 
   def start(
@@ -131,6 +184,12 @@ final class OmokStartScaffold(
     parsed match
       case Left(err)                => fuccess(Left(err))
       case Right((fullId, ruleSet)) => start(fullId, ruleSet)
+
+  def startFromInput(
+      fullId: GameFullId,
+      rawRuleSet: Option[String]
+  ): Fu[Either[OmokStartScaffoldError, OmokStartScaffoldResult]] =
+    parseRuleSet(rawRuleSet).fold(err => fuccess(Left(err)), start(fullId, _))
 
   def startMessage(rawFullId: String, rawRuleSet: Option[String] = None): Fu[String] =
     start(rawFullId, rawRuleSet).map(_.fold(err => s"ERROR ${err.message}", _.message))
@@ -156,22 +215,14 @@ final class OmokStartScaffold(
     OmokStartScaffoldResult(fullId, state, reset)
 
   private def parseFullId(raw: String): Either[OmokStartScaffoldError, GameFullId] =
+    val normalized = raw.trim
     Either.cond(
-      raw.matches("""[\w-]{12}"""),
-      GameFullId(raw),
+      OmokStartScaffold.looksLikeFullId(normalized),
+      GameFullId(normalized),
       OmokStartScaffoldError(
-        s"invalid full id '$raw'; expected 12 characters matching [A-Za-z0-9_-]"
+        s"invalid full id '$normalized'; expected 12 characters matching [A-Za-z0-9_-]"
       )
     )
 
   private def parseRuleSet(rawRuleSet: Option[String]): Either[OmokStartScaffoldError, RuleSet] =
-    rawRuleSet
-      .filter(_.trim.nonEmpty)
-      .fold[Either[OmokStartScaffoldError, RuleSet]](Right(RuleSet.Renju)): raw =>
-        OmokStartScaffold
-          .parseRuleSet(raw)
-          .toRight(
-            OmokStartScaffoldError(
-              s"invalid rule set '$raw'; expected one of: renju, freestyle"
-            )
-          )
+    OmokStartScaffold.parseRawRuleSet(rawRuleSet)

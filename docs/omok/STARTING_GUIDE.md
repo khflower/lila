@@ -4,6 +4,26 @@ This guide is the practical starting point for running the Omok-enabled lila for
 
 It is intentionally focused on the current Omok workflow in this repo, not on the full upstream lichess production stack.
 
+## Reproducibility first
+
+The goal of this guide is not just “boot something Omok-like”. The goal is that another person can get to the same Omok feature set with as little guessing as possible.
+
+Use this order of preference:
+
+1. **Best**: clone this fork branch directly and follow this guide.
+2. **Acceptable**: start from upstream `lichess-org/lila`, then fetch this fork branch and use it as the exact overlay/source of truth for Omok files.
+3. **Worst**: manually recreate Omok changes from chat logs or from a running local runtime tree. Avoid this if you can.
+
+If you are starting from upstream base, do it explicitly:
+
+```bash
+git remote add omokfork https://github.com/khflower/lila.git
+git fetch omokfork codex/recovered-from-dump-20260411
+git checkout -b omok-repro omokfork/codex/recovered-from-dump-20260411
+```
+
+If you must stay on an upstream branch, compare against the Omok branch directly and port the Omok-specific paths from there. Do not assume the upstream README alone is enough to recreate the Omok stack.
+
 ## What you get
 
 With the steps below you can:
@@ -21,6 +41,25 @@ This guide also reflects the current Omok fork state:
 - Omok AI rounds expose local Rapfi engine settings in the round UI
 - browser Rapfi defaults are conservative, Renju-based, and capped at 30 seconds think time
 - `public/omok/` runtime assets, opening-guide data, and browser Rapfi bundles are now committed in this branch instead of being left only in a local runtime tree
+
+## What is already in this branch, and what is still external
+
+Already expected in this branch:
+
+- Omok-specific Scala server code under `app/`, `modules/setup/`, `modules/lobby/`, `modules/round/`, `modules/api/`, and related UI helpers
+- Omok-specific UI code under `ui/lobby/`, `ui/round/`, and related translations
+- Omok browser assets under `public/omok/`
+- Omok docs under `docs/omok/`
+
+Still external on purpose:
+
+- MongoDB
+- Redis
+- `lila-ws`
+- optional tunnel/proxy tooling
+- local-only config secrets or host-specific runtime scripts
+
+If your clone does not contain an Omok-critical asset or source file that this guide expects, stop and fetch the Omok fork branch again before debugging runtime behavior.
 
 ## Prerequisites
 
@@ -207,11 +246,21 @@ That setup is intentionally rough and is not required for a normal local dev bri
 - origin / CSRF settings are updated for the public hostname
 - both app and ws are checked independently, because `/ko` can load while realtime is dead
 
+Important late-session lesson: if you build your own ad-hoc runtime manifest or public asset aliasing layer, keep these three invariants true:
+
+- `/ko` must load the real page-level `lobby.*.css`, not `lobby.setup.*.css`
+- round pages must load a real `round.*.css` target, not a dangling `/assets/css/round`
+- do not re-inject stale modal fallback code like `repairOmokSetup` after the real source files have been fixed
+
+Those exact mistakes caused a live Omok regression even when source code and backend routes were otherwise correct.
+
 ## 9. Common traps
 
 ### `9663` is up but gameplay is broken
 
 That usually means `lila-ws` on `9664` is down or misrouted.
+
+This has already happened in the real Omok flow during this handoff: `/ko` still rendered, but lobby propagation and join behavior were broken until `lila-ws` came back.
 
 ### `/ko` loads but buttons or modals behave strangely
 
@@ -228,6 +277,20 @@ The lobby client re-renders `.lobby__table` after boot. Do not rely on a server-
 You probably changed source but did not rebuild the relevant UI bundle.
 
 For the public tunnel path, also consider stale page-shell asset busting. A rebuilt bundle plus correct manifest can still look broken to users until the app serves a fresh `?v=` asset version.
+
+If only old public tabs are broken, bump the compiled asset bust in `modules/web/src/main/ui/layout.scala`, restart the app, and test in a clean tab.
+
+### Raw fullId URL opens a chess-looking page for an Omok game
+
+Check whether you entered through the Omok claim path.
+
+For anonymous or freshly created Omok games, the safe entry path is the Omok-aware claim route, for example:
+
+```text
+/dev/omok/claim/<fullId>
+```
+
+If a raw player/fullId URL renders a generic chess page while `page-init-data` still contains Omok state, debug claim/bootstrap and Omok round hydration first.
 
 ### Omok round page loads but live Rapfi streaming still looks static
 
@@ -258,13 +321,20 @@ Main Omok paths in this repo:
 - `app/controllers/Setup.scala`
 - `app/controllers/Round.scala`
 - `app/views/omokPages.scala`
+- `modules/api/src/main/RoundApi.scala`
+- `modules/lobby/src/main/LobbySocket.scala`
 - `modules/round/src/main/OmokMovePlayer.scala`
 - `modules/round/src/main/OmokRoundRepo.scala`
+- `modules/round/src/main/OmokStoredState.scala`
 - `modules/round/src/main/Rematcher.scala`
+- `modules/setup/src/main/Processor.scala`
+- `ui/lobby/src/lobby.inline.ts`
 - `ui/round/src/ctrl.ts`
 - `ui/round/src/omokRapfi.ts`
 - `ui/round/src/view/omokPlaceholder.ts`
 - `public/omok/`
+
+If you are recreating the Omok stack on top of an upstream checkout, these are the first paths to diff against the Omok fork branch.
 
 ## 11. Recommended first commands for a new maintainer
 

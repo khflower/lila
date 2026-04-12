@@ -17,6 +17,8 @@ private case class HumanPlace(
     pos: lila.omok.Pos,
     promise: Option[Promise[Unit]] = None
 )
+private case class HumanOmokSwap(playerId: GamePlayerId)
+private case class HumanOmokStartCandidates(playerId: GamePlayerId)
 private case class ByePlayer(playerId: GamePlayerId)
 private case class GetSocketStatus(promise: Promise[SocketStatus])
 private case class GetGameAndSocketStatus(promise: Promise[GameAndSocketStatus])

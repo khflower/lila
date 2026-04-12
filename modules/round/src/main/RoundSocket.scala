@@ -112,6 +112,8 @@ final class RoundSocket(
         case "moretime" => forward(Moretime(_))
         case "rematch-yes" => forward(RoundBus.Rematch(_, true))
         case "rematch-no" => forward(RoundBus.Rematch(_, false))
+        case "omok-swap" => forward(HumanOmokSwap(_))
+        case "omok-candidates" => forward(HumanOmokStartCandidates(_))
         case "takeback-yes" => forward(RoundBus.Takeback(_, true))
         case "takeback-no" => forward(RoundBus.Takeback(_, false))
         case "draw-yes" => forward(RoundBus.Draw(_, true))

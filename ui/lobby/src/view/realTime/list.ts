@@ -10,6 +10,39 @@ import type { Hook } from '@/interfaces';
 
 import { tds, perfNames } from '../util';
 
+function omokRuleSetLabel(ruleSet?: Hook['omokRuleSet']) {
+  switch (ruleSet) {
+    case 'taraguchi10':
+      return 'Taraguchi-10';
+    case 'renju':
+      return 'Renju';
+    case 'freestyle':
+      return 'Freestyle';
+    default:
+      return '';
+  }
+}
+
+function renderPlayer(ctrl: LobbyController, hook: Hook) {
+  const player =
+    ctrl.me && hook.u
+      ? h('span.ulink.ulpt.mobile-powertip', { attrs: { 'data-href': '/@/' + hook.u } }, hook.u)
+      : h('span', i18n.site.anonymous);
+  return h('span.hook__player', [
+    player,
+    hook.omokRuleSet ? h('span.hook__player__sub', 'Omok room') : null,
+  ]);
+}
+
+function renderMode(hook: Hook) {
+  const modeLabel = i18n.site[hook.ra ? 'rated' : 'casual'];
+  const ruleSet = omokRuleSetLabel(hook.omokRuleSet);
+  return h('span.hook__mode', [
+    h('span', { attrs: { 'data-icon': perfIcons[hook.perf] } }, modeLabel),
+    ruleSet ? h('span.hook__mode__sub', ruleSet) : null,
+  ]);
+}
+
 function renderHook(ctrl: LobbyController, hook: Hook) {
   return h(
     'tr.hook.' + hook.action,
@@ -27,12 +60,10 @@ function renderHook(ctrl: LobbyController, hook: Hook) {
       },
     },
     tds([
-      ctrl.me
-        ? h('span.ulink.ulpt.mobile-powertip', { attrs: { 'data-href': '/@/' + hook.u } }, hook.u)
-        : i18n.site.anonymous,
+      renderPlayer(ctrl, hook),
       ...(!ctrl.me ? [] : !ctrl.opts.showRatings ? [''] : [hook.rating + (hook.prov ? '?' : '')]),
       hook.clock,
-      h('span', { attrs: { 'data-icon': perfIcons[hook.perf] } }, i18n.site[hook.ra ? 'rated' : 'casual']),
+      renderMode(hook),
     ]),
   );
 }

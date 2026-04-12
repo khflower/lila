@@ -2,7 +2,7 @@ package lila.round
 
 import lila.core.id.GameId
 import lila.game.OmokGameSidecar
-import lila.omok.{ Color, CoordinateNotation, Game as OmokGame, Move as OmokMove, Pos, Replay, RuleSet, Status }
+import lila.omok.{ Color, CoordinateNotation, Game as OmokGame, Move as OmokMove, OmokAiConfig, Pos, Replay, RuleSet, Status }
 
 class OmokStoredStateTest extends munit.FunSuite:
 
@@ -10,7 +10,6 @@ class OmokStoredStateTest extends munit.FunSuite:
   private def pos(row: Int, col: Int) = Pos.unsafe(row, col)
 
   private val winningMoves = Vector(
-    pos(7, 7),
     pos(0, 0),
     pos(7, 8),
     pos(0, 1),
@@ -107,6 +106,17 @@ class OmokStoredStateTest extends munit.FunSuite:
     assertEquals(result, Right(Some(cached)))
     assertEquals(fetches, 0)
     assertEquals(repo.get(gameId), Some(cached))
+
+  test("repo remembers omok ai config across cache eviction"):
+    val repo = OmokRoundRepo()
+    val gameId = GameId("aikeep01")
+    val ai = OmokAiConfig(provider = "rapfi", mode = "browser", aiColor = Some("white"), threads = 1)
+
+    repo.put(gameId, OmokRoundState.initial(RuleSet.Taraguchi10, Some(ai)))
+    repo.evict(gameId)
+
+    assertEquals(repo.get(gameId), None)
+    assertEquals(repo.aiOf(gameId), Some(ai))
 
   test("putStored rejects invalid durable state without mutating the repo"):
     val repo = OmokRoundRepo()

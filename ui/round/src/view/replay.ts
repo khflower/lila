@@ -1,4 +1,4 @@
-import { blurIfPrimaryClick, repeater } from 'lib';
+﻿import { blurIfPrimaryClick, repeater } from 'lib';
 import { throttle } from 'lib/async';
 import { displayColumns } from 'lib/device';
 import { finished, aborted, userAnalysable, playable } from 'lib/game';
@@ -19,6 +19,9 @@ import type RoundController from '../ctrl';
 import type { Step } from '../interfaces';
 import * as util from '../util';
 import boardMenu from './boardMenu';
+
+const siteText = (key: string, fallback: string): string =>
+  ((i18n.site as unknown as Record<string, string | undefined>)[key] as string | undefined) || fallback;
 
 const scrollMax = 99999,
   moveTag = 'kwdb',
@@ -122,20 +125,22 @@ function renderMoves(ctrl: RoundController): LooseVNodes {
 
 export function analysisButton(ctrl: RoundController): LooseVNode {
   const forecastCount = ctrl.data.forecastCount;
+  const isOmok = !!ctrl.data.omok;
+  const label = isOmok ? siteText('omokReviewAction', 'Review') : forecastCount ? String(forecastCount) : '';
   return (
     userAnalysable(ctrl.data) &&
     !ctrl.data.local &&
     hl(
       'a.fbt.analysis',
       {
-        class: { text: !!forecastCount },
+        class: { text: isOmok || !!forecastCount },
         attrs: {
-          title: i18n.site.analysis,
+          title: isOmok ? siteText('omokReviewAction', 'Review') : i18n.site.analysis,
           href: gameRoute(ctrl.data, ctrl.data.player.color) + '/analysis#' + ctrl.ply,
           'data-icon': licon.Microscope,
         },
       },
-      !!forecastCount && String(forecastCount),
+      label,
     )
   );
 }

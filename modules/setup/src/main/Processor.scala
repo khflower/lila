@@ -1,8 +1,12 @@
 package lila.setup
 
+import chess.{ ByColor, Rated }
+
 import lila.common.Bus
 import lila.core.perf.UserWithPerfs
+import lila.core.game.{ Source, newGame }
 import lila.lobby.{ SetupBus, Seek }
+import lila.omok.RuleSet
 
 final private[setup] class Processor(
     gameApi: lila.core.game.GameApi,
@@ -25,18 +29,46 @@ final private[setup] class Processor(
     _ = onStart.exec(pov.gameId)
   yield pov
 
+  def friendOmok(config: FriendConfig, ruleSet: RuleSet): Fu[Processor.OmokFriendGame] =
+    config
+      .fenGame: chessGame =>
+        summon[lila.core.game.IdGenerator].game.map: gameId =>
+          lila.core.game
+            .newGame(
+              chess = chessGame,
+              players = ByColor: c =>
+                summon[lila.core.game.NewPlayer].anon(c, none),
+              rated = if lila.core.game.allowRated(config.variant, chessGame.clock.map(_.config)) then config.rated else Rated.No,
+              source = Source.Friend,
+              daysPerTurn = config.makeDaysPerTurn,
+              pgnImport = None
+            )
+            .withId(gameId)
+            .start
+      .flatMap: game =>
+        val hostColor = config.creatorColor
+        val host = Pov(game, hostColor)
+        val guest = Pov(game, !hostColor)
+        for
+          _ <- gameRepo.insertDenormalized(game)
+          _ = onStart.exec(game.id)
+        yield Processor.OmokFriendGame(game, host, guest)
+
   def hook(
       config: HookConfig,
       sri: lila.core.socket.Sri,
       sid: Option[String],
-      blocking: lila.core.pool.Blocking
+      blocking: lila.core.pool.Blocking,
+      omok: Boolean = false,
+      omokRuleSet: Option[String] = none
   )(using me: Option[UserWithPerfs]): Fu[Processor.HookResult] =
     import Processor.HookResult.*
     config.hook(sri, me, sid, blocking) match
       case Left(hook) =>
         fuccess:
-          Bus.pub(SetupBus.AddHook(hook))
-          Created(hook.id)
+          val actualHook = if omok then hook.copy(omok = true, omokRuleSet = omokRuleSet) else hook
+          Bus.pub(SetupBus.AddHook(actualHook))
+          CreatedHook(actualHook)
       case Right(Some(seek)) => me.fold(fuccess(Refused))(u => createSeekIfAllowed(seek, u.id))
       case _ => fuccess(Refused)
 
@@ -47,11 +79,18 @@ final private[setup] class Processor(
       then Refused
       else
         Bus.pub(SetupBus.AddSeek(seek))
-        Created(seek.id)
+        CreatedSeek(seek.id)
     }
 
 object Processor:
 
+  final case class OmokFriendGame(
+      game: lila.core.game.Game,
+      host: Pov,
+      guest: Pov
+  )
+
   enum HookResult:
-    case Created(id: String)
+    case CreatedHook(hook: lila.lobby.Hook)
+    case CreatedSeek(id: String)
     case Refused

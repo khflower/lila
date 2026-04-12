@@ -18,7 +18,8 @@ case class HookConfig(
     days: Days,
     rated: Rated,
     color: TriColor,
-    ratingRange: RatingRange
+    ratingRange: RatingRange,
+    omokRuleSet: Option[String] = none
 ) extends HumanConfig:
 
   def withinLimits(using me: Option[Me], perf: Perf): HookConfig =
@@ -33,7 +34,8 @@ case class HookConfig(
     days,
     rated.id.some,
     ratingRange.toString.some,
-    color.name.some
+    color.name.some,
+    omokRuleSet
   ).some
 
   def withTimeModeString(tc: Option[String]) =
@@ -103,7 +105,8 @@ object HookConfig extends BaseConfig:
       d: Days,
       m: Option[Int],
       e: Option[String],
-      c: Option[String]
+      c: Option[String],
+      ors: Option[String]
   ) =
     new HookConfig(
       variant = chess.variant.Variant.orDefault(v),
@@ -113,7 +116,10 @@ object HookConfig extends BaseConfig:
       days = d,
       rated = m.fold(Rated.default)(Rated.orDefault),
       color = TriColor.orDefault(c),
-      ratingRange = e.fold(RatingRange.default)(RatingRange.orDefault)
+      ratingRange = e.fold(RatingRange.default)(RatingRange.orDefault),
+      omokRuleSet = ors
+        .map(_.trim.toLowerCase)
+        .filter(ruleSet => ruleSet == "renju" || ruleSet == "freestyle" || ruleSet == "taraguchi10" || ruleSet == "taraguchi-10")
     )
 
   def default(auth: Boolean): HookConfig = default.copy(rated = Rated(auth))
@@ -143,7 +149,8 @@ object HookConfig extends BaseConfig:
         days = r.get("d"),
         rated = Rated.orDefault(r.int("m")),
         color = TriColor.Random,
-        ratingRange = r.strO("e").flatMap(RatingRange.parse).getOrElse(RatingRange.default)
+        ratingRange = r.strO("e").flatMap(RatingRange.parse).getOrElse(RatingRange.default),
+        omokRuleSet = none
       )
 
     def writes(w: BSON.Writer, o: HookConfig) =

@@ -96,5 +96,5 @@ export const userTxt = (player: Player): string =>
   player.user
     ? (player.user.title ? player.user.title + ' ' : '') + player.user.username
     : player.ai
-      ? i18n.site.aiNameLevelAiLevel('Stockfish', player.ai)
+      ? 'Rapfi AI'
       : i18n.site.anonymous;

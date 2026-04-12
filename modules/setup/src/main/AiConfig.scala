@@ -8,6 +8,7 @@ import scalalib.model.Days
 import lila.core.game.{ IdGenerator, NewPlayer, Source }
 import lila.core.user.GameUser
 import lila.lobby.TriColor
+import lila.omok.OmokAiConfig
 
 case class AiConfig(
     variant: chess.variant.Variant,
@@ -17,14 +18,50 @@ case class AiConfig(
     days: Days,
     level: Int,
     color: TriColor,
-    fen: Option[Fen.Full] = None
+    fen: Option[Fen.Full] = None,
+    omokRuleSet: Option[String] = None,
+    omokThreads: Option[Int] = None,
+    omokMoveTimeMs: Option[Int] = None,
+    omokDepth: Option[Int] = None,
+    omokNodes: Option[Long] = None,
+    omokAnalysisEnabled: Boolean = true
 ) extends Config
     with Positional
     with WithColor:
 
   val strictFen = true
 
-  def >> = (variant.id, timeMode.id, time, increment, days, level, color.name, fen).some
+  def >> = (
+    variant.id,
+    timeMode.id,
+    time,
+    increment,
+    days,
+    level,
+    color.name,
+    fen,
+    omokRuleSet,
+    omokThreads,
+    omokMoveTimeMs,
+    omokDepth,
+    omokNodes,
+    omokAnalysisEnabled
+  ).some
+
+  def isOmok: Boolean = omokRuleSet.exists(_.nonEmpty)
+
+  def omokAiConfig(aiColor: chess.Color): Option[OmokAiConfig] =
+    Option.when(isOmok):
+      OmokAiConfig(
+        provider = "rapfi",
+        mode = "browser",
+        aiColor = Some(aiColor.name),
+        threads = omokThreads.filter(_ > 0).getOrElse(1),
+        moveTimeMs = omokMoveTimeMs.filter(_ > 0),
+        depth = omokDepth.filter(_ > 0),
+        nodes = omokNodes.filter(_ > 0),
+        analysisEnabled = omokAnalysisEnabled
+      )
 
   private def game(user: GameUser)(using idGenerator: IdGenerator, newPlayer: NewPlayer): Fu[Game] =
     fenGame: chessGame =>
@@ -59,7 +96,13 @@ object AiConfig extends BaseConfig:
       d: Days,
       level: Int,
       c: String,
-      fen: Option[Fen.Full]
+      fen: Option[Fen.Full],
+      omokRuleSet: Option[String],
+      omokThreads: Option[Int],
+      omokMoveTimeMs: Option[Int],
+      omokDepth: Option[Int],
+      omokNodes: Option[Long],
+      omokAnalysisEnabled: Boolean
   ) =
     new AiConfig(
       variant = chess.variant.Variant.orDefault(v),
@@ -69,7 +112,13 @@ object AiConfig extends BaseConfig:
       days = d,
       level = level,
       color = TriColor(c).err("Invalid color " + c),
-      fen = fen
+      fen = fen,
+      omokRuleSet = omokRuleSet.filter(_.nonEmpty),
+      omokThreads = omokThreads.filter(_ > 0),
+      omokMoveTimeMs = omokMoveTimeMs.filter(_ > 0),
+      omokDepth = omokDepth.filter(_ > 0),
+      omokNodes = omokNodes.filter(_ > 0),
+      omokAnalysisEnabled = omokAnalysisEnabled
     )
 
   val default = AiConfig(
@@ -79,7 +128,8 @@ object AiConfig extends BaseConfig:
     increment = Clock.IncrementSeconds(8),
     days = Days(2),
     level = 1,
-    color = TriColor.default
+    color = TriColor.default,
+    omokRuleSet = None
   )
 
   val levels = (1 to 8).toList
@@ -102,7 +152,13 @@ object AiConfig extends BaseConfig:
         days = r.get("d"),
         level = r.int("l"),
         color = TriColor.White,
-        fen = r.getO[Fen.Full]("f").filter(_.value.nonEmpty)
+        fen = r.getO[Fen.Full]("f").filter(_.value.nonEmpty),
+        omokRuleSet = r.getO[String]("ors").filter(_.nonEmpty),
+        omokThreads = r.getO[Int]("oth"),
+        omokMoveTimeMs = r.getO[Int]("otm"),
+        omokDepth = r.getO[Int]("ode"),
+        omokNodes = r.getO[Long]("ono"),
+        omokAnalysisEnabled = r.getO[Boolean]("oan").getOrElse(true)
       )
 
     def writes(w: BSON.Writer, o: AiConfig) =
@@ -113,5 +169,11 @@ object AiConfig extends BaseConfig:
         "i" -> o.increment,
         "d" -> o.days,
         "l" -> o.level,
-        "f" -> o.fen
+        "f" -> o.fen,
+        "ors" -> o.omokRuleSet,
+        "oth" -> o.omokThreads,
+        "otm" -> o.omokMoveTimeMs,
+        "ode" -> o.omokDepth,
+        "ono" -> o.omokNodes,
+        "oan" -> o.omokAnalysisEnabled
       )

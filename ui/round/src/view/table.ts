@@ -9,13 +9,15 @@ import renderExpiration from './expiration';
 import { render as renderReplay, analysisButton } from './replay';
 import { userHtml } from './user';
 
+const omokAiName = 'Rapfi AI';
+
 function renderPlayer(ctrl: RoundController, position: TopOrBottom) {
   if (ctrl.nvui) return undefined;
   const player = ctrl.playerAt(position);
   return player.ai
     ? hl('div.user-link.online.ruser.ruser-' + position, [
         hl('i.line'),
-        hl('name', i18n.site.aiNameLevelAiLevel('Stockfish', player.ai)),
+        hl('name', ctrl.data.omok ? omokAiName : i18n.site.aiNameLevelAiLevel('Stockfish', player.ai)),
       ])
     : userHtml(ctrl, player, position);
 }
@@ -129,7 +131,6 @@ export const renderTablePlay = (ctrl: RoundController): LooseVNodes => {
 };
 
 export const renderTable = (ctrl: RoundController): LooseVNodes => [
-  hl('div.round__app__table'),
   renderExpiration(ctrl),
   renderPlayer(ctrl, 'top'),
   ctrl.data.player.spectator

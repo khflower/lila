@@ -30,7 +30,13 @@ object SetupForm:
       "days" -> days,
       "level" -> level,
       "color" -> color,
-      "fen" -> fenField
+      "fen" -> fenField,
+      "omokRuleSet" -> optional(nonEmptyText),
+      "omokThreads" -> optional(number(min = 1, max = 16)),
+      "omokMoveTimeMs" -> optional(number(min = 50, max = 120000)),
+      "omokDepth" -> optional(number(min = 1, max = 64)),
+      "omokNodes" -> optional(longNumber(min = 1, max = 1_000_000_000L)),
+      "omokAnalysisEnabled" -> default(boolean, true)
     )(AiConfig.from)(_.>>)
       .verifying("invalidFen", _.validFen)
       .verifying("Can't play that time control from a position", _.timeControlFromPosition)
@@ -48,7 +54,8 @@ object SetupForm:
       "days" -> days,
       "mode" -> mode(withRated = me.isDefined),
       "color" -> color,
-      "fen" -> fenField
+      "fen" -> fenField,
+      "omokRuleSet" -> optional(nonEmptyText)
     )(FriendConfig.from)(_.>>)
       .verifying("Invalid clock", _.validClock)
       .verifying("Invalid speed", _.validSpeed(me.exists(_.isBot)))
@@ -67,7 +74,8 @@ object SetupForm:
       "days" -> days,
       "mode" -> mode(me.isDefined),
       "ratingRange" -> optional(ratingRange),
-      "color" -> lila.common.Form.empty
+      "color" -> lila.common.Form.empty,
+      "omokRuleSet" -> optional(nonEmptyText)
     )(HookConfig.from)(_.>>)
       .verifying("Invalid clock", _.validClock)
       .verifying("Can't create rated unlimited game", !_.isRatedUnlimited)

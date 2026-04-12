@@ -29,6 +29,7 @@ export function main(ctrl: RoundController): VNode {
       ctrl.ply,
     );
   const hideBoard = ctrl.data.player.blindfold && playable(ctrl.data);
+  const isOmok = !!ctrl.data.omok;
   return ctrl.nvui
     ? ctrl.nvui.render()
     : hl(
@@ -37,12 +38,24 @@ export function main(ctrl: RoundController): VNode {
           class: {
             'swap-clock': isTouchDevice() && displayColumns() === 1 && storage.boolean('swapClock').get(),
           },
+          attrs: isOmok
+            ? {
+                'data-board-game': 'omok',
+                'data-board-ready': 'placeholder',
+              }
+            : undefined,
         },
         [
           renderBlindfoldToggle(ctrl.blindfold),
           hl(
             'div.round__app__board.main-board' + (hideBoard ? '.blindfold' : ''),
             {
+              attrs: isOmok
+                ? {
+                    'data-board-game': 'omok',
+                    'data-board-ready': 'placeholder',
+                  }
+                : undefined,
               hook:
                 'ontouchstart' in window || !storage.boolean('scrollMoves').getOrDefault(true)
                   ? undefined
@@ -61,12 +74,14 @@ export function main(ctrl: RoundController): VNode {
                     ),
             },
             [
-              renderGround(ctrl),
+              isOmok
+                ? hl('div.round__app__board__cg-wrap-hidden', { style: { display: 'none' } }, [renderGround(ctrl)])
+                : renderGround(ctrl),
               ctrl.promotion.view(ctrl.data.game.variant.key === 'antichess'),
               renderOmokPlaceholder(ctrl),
-              renderOmokState(ctrl),
             ],
           ),
+          isOmok ? renderOmokState(ctrl) : undefined,
           ctrl.voiceMove && renderVoiceBar(ctrl.voiceMove.ctrl, ctrl.redraw),
           ctrl.keyboardHelp && view(ctrl),
           crazyView(ctrl, topColor, 'top') || materialDiffs[0],

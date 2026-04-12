@@ -3077,15 +3077,15 @@ interface I18n {
     advancedSettings: string;
     /** Advantage */
     advantage: string;
-    /** I agree that I will at no time receive assistance during my games (from a chess computer, book, database or another person). */
+    /** I agree that I will at no time receive assistance during my games (from an omok engine, book, database or another person). */
     agreementAssistance: string;
     /** I agree that I will not create multiple accounts (except for the reasons stated in the %s). */
     agreementMultipleAccounts: I18nFormat;
     /** I agree that I will always be respectful to other players. */
     agreementNice: string;
-    /** I agree that I will follow all Lichess policies. */
+    /** I agree that I will follow all Omok.dev policies. */
     agreementPolicy: string;
-    /** %1$s level %2$s */
+    /** Rapfi AI %2$s */
     aiNameLevelAiLevel: I18nFormat;
     /** All information is public and optional. */
     allInformationIsPublicAndOptional: string;
@@ -3099,7 +3099,7 @@ interface I18n {
     always: string;
     /** Analysis board */
     analysis: string;
-    /** Analysis options */
+    /** Rapfi analysis options */
     analysisOptions: string;
     /** Press right-click (or shift+click) to draw circles and arrows on the board. For other colours, combine the following with right-click: */
     analysisShapesHowTo: string;
@@ -3113,7 +3113,7 @@ interface I18n {
     apply: string;
     /** as black */
     asBlack: string;
-    /** Your account is managed. Ask your chess teacher about removing kid mode. */
+    /** Your account is managed. Ask your teacher or guardian about removing kid mode. */
     askYourChessTeacherAboutLiftingKidMode: string;
     /** as white */
     asWhite: string;
@@ -3149,7 +3149,7 @@ interface I18n {
     bewareTheGameIsRatedButHasNoClock: string;
     /** Biography */
     biography: string;
-    /** Talk about yourself, your interests, what you like in chess, your favourite openings, players, ... */
+    /** Talk about yourself, your interests, what you enjoy in omok, your favourite openings, players, ... */
     biographyDescription: string;
     /** Black */
     black: string;
@@ -3185,7 +3185,7 @@ interface I18n {
     blackWins: string;
     /** Black wins */
     blackWinsGame: string;
-    /** You have used the same password on another site, and that site has been compromised. To ensure the safety of your Lichess account, we need you to set a new password. Thank you for your understanding. */
+    /** You have used the same password on another site, and that site has been compromised. To ensure the safety of your Omok.dev account, we need you to set a new password. Thank you for your understanding. */
     blankedPassword: string;
     /** Blitz */
     blitz: string;
@@ -3231,7 +3231,7 @@ interface I18n {
     cancelSimul: string;
     /** Cancel the tournament */
     cancelTournament: string;
-    /** Please solve the chess captcha. */
+    /** Please solve the board CAPTCHA. */
     'captcha.fail': string;
     /** Capture */
     capture: string;
@@ -3241,7 +3241,7 @@ interface I18n {
     casual: string;
     /** Casual */
     casualTournament: string;
-    /** Challenge a friend */
+    /** Invite a player */
     challengeAFriend: string;
     /** Challenge %s */
     challengeX: I18nFormat;
@@ -3275,7 +3275,7 @@ interface I18n {
     checkYourEmail: string;
     /** Chess960 start position: %s */
     chess960StartPosition: I18nFormat;
-    /** Chess basics */
+    /** Omok basics */
     chessBasics: string;
     /** Claim a draw */
     claimADraw: string;
@@ -3327,9 +3327,9 @@ interface I18n {
     computerAnalysisAvailable: string;
     /** Computer analysis disabled */
     computerAnalysisDisabled: string;
-    /** Computers and computer-assisted players are not allowed to play. Please do not get assistance from chess engines, databases, or from other players while playing. Also note that making multiple accounts is strongly discouraged and excessive multi-accounting will lead to being banned. */
+    /** Computers and computer-assisted players are not allowed to play. Please do not get assistance from omok engines, databases, or from other players while playing. Also note that making multiple accounts is strongly discouraged and excessive multi-accounting will lead to being banned. */
     computersAreNotAllowedToPlay: string;
-    /** Computer thinking ... */
+    /** Rapfi is thinking ... */
     computerThinking: string;
     /** Conditional premoves */
     conditionalPremoves: string;
@@ -3371,7 +3371,7 @@ interface I18n {
     createANewTournament: string;
     /** Newly created simuls */
     createdSimuls: string;
-    /** Create lobby game */
+    /** Create omok room */
     createLobbyGame: string;
     /** Create the game */
     createTheGame: string;
@@ -3493,7 +3493,7 @@ interface I18n {
     embedInYourWebsite: string;
     /** Paste a game URL or a study chapter URL to embed it. */
     embedsAvailable: string;
-    /** Leave empty to name the tournament after a notable chess player. */
+    /** Leave empty to use a simple Omok.dev tournament name. */
     emptyTournamentName: string;
     /** Enable */
     enable: string;
@@ -3585,7 +3585,7 @@ interface I18n {
     forgotPassword: string;
     /** Forum */
     forum: string;
-    /** Free Online Chess */
+    /** Free Online Omok */
     freeOnlineChess: string;
     /** Friends */
     friends: string;
@@ -3601,7 +3601,7 @@ interface I18n {
     gameOver: string;
     /** Games */
     games: string;
-    /** Game setup */
+    /** Omok setup */
     gameSetup: string;
     /** Games played */
     gamesPlayed: string;
@@ -3673,7 +3673,7 @@ interface I18n {
     incrementInSeconds: string;
     /** Infinite analysis */
     infiniteAnalysis: string;
-    /** In kid mode, the Lichess logo gets a %s icon, so you know your kids are safe. */
+    /** In kid mode, the Omok.dev logo gets a %s icon, so you know your kids are safe. */
     inKidModeTheLichessLogoGetsIconX: I18nFormat;
     /** Inline notation */
     inlineNotation: string;
@@ -3701,7 +3701,7 @@ interface I18n {
     inYourLocalTimezone: string;
     /** Private */
     isPrivate: string;
-    /** It's your turn! */
+    /** Your turn! */
     itsYourTurn: string;
     /** Join */
     join: string;
@@ -3761,11 +3761,11 @@ interface I18n {
     letOtherPlayersMessageYou: string;
     /** Level */
     level: string;
-    /** Rated games played on Lichess */
+    /** Rated games played on Omok.dev */
     lichessDbExplanation: string;
-    /** Lichess is a charity and entirely free/libre open source software. */
+    /** Omok.dev is funded by user donations and maintained as free/libre open source software. */
     lichessPatronInfo: string;
-    /** Lichess tournaments */
+    /** Omok.dev tournaments */
     lichessTournaments: string;
     /** Lifetime score */
     lifetimeScore: string;
@@ -3797,7 +3797,7 @@ interface I18n {
     lossOr50MovesByPriorMistake: string;
     /** Loss prevented by 50-move rule */
     lossSavedBy50MoveRule: string;
-    /** You lost rating points to someone who violated the Lichess TOS */
+    /** You lost rating points to someone who violated the Omok.dev TOS */
     lostAgainstTOSViolator: string;
     /** For safekeeping and sharing, consider making a study. */
     makeAStudy: string;
@@ -3935,11 +3935,11 @@ interface I18n {
     needNbMoreGames: I18nPlural;
     /** You need to play %1$s more %2$s rated games */
     needNbMorePerfGames: I18nPlural;
-    /** Network lag between you and Lichess */
+    /** Network lag between you and Omok.dev */
     networkLagBetweenYouAndLichess: string;
     /** Never */
     never: string;
-    /** Never type your Lichess password on another site! */
+    /** Never type your Omok.dev password on another site! */
     neverTypeYourPassword: string;
     /** New opponent */
     newOpponent: string;
@@ -4007,6 +4007,146 @@ interface I18n {
     offline: string;
     /** OK */
     ok: string;
+    /** Omok.dev is an omok-first service for live play, Rapfi AI, and opening study. */
+    omokAboutLead: string;
+    /** About Omok.dev */
+    omokAboutTitle: string;
+    /** Omok.dev focuses on play and study without third-party display ads in the core experience. */
+    omokAdsLead: string;
+    /** No ads on Omok.dev */
+    omokAdsTitle: string;
+    /** Start an omok game against Rapfi AI running in your browser. */
+    omokAiMatchDescription: string;
+    /** Hide analysis */
+    omokAnalysisHide: string;
+    /** Idle */
+    omokAnalysisIdle: string;
+    /** Review an omok game inside the Omok.dev analysis view. */
+    omokAnalysisLead: string;
+    /** Show Rapfi analysis in the round view */
+    omokAnalysisPanelToggle: string;
+    /** Ready */
+    omokAnalysisReady: string;
+    /** Analyse with Rapfi */
+    omokAnalysisShow: string;
+    /** Thinking... */
+    omokAnalysisThinking: string;
+    /** Omok review */
+    omokAnalysisTitle: string;
+    /** This route is reserved for Omok.dev review pages. Open an omok game or use the opening guide instead. */
+    omokAnalysisUnavailable: string;
+    /** Back to game */
+    omokBackToGame: string;
+    /** Back to lobby */
+    omokBackToLobby: string;
+    /** Omok.dev */
+    omokBrandName: string;
+    /** Engine settings for this device. Rapfi runs in your browser, not on the game server. */
+    omokBrowserEngineDescription: string;
+    /** Rapfi browser engine */
+    omokBrowserEngineLabel: string;
+    /** Recent Omok.dev work includes Renju and Freestyle play, Taraguchi opening support, browser Rapfi AI, and the opening guide. */
+    omokChangelogLead: string;
+    /** Omok.dev changelog */
+    omokChangelogTitle: string;
+    /** Create omok room */
+    omokCreateRoomAction: string;
+    /** 0 means no explicit depth cap. */
+    omokDepthHelp: string;
+    /** Depth limit */
+    omokDepthLimitLabel: string;
+    /** Answers for Omok.dev play, correspondence, autoplay, rules, and browser-side Rapfi AI. */
+    omokFaqLead: string;
+    /** Omok.dev FAQ */
+    omokFaqTitle: string;
+    /** Create a private omok invitation link and share it with a specific player. */
+    omokFriendDescription: string;
+    /** Open live omok rooms and recent game links without leaving Omok.dev. */
+    omokGamesLead: string;
+    /** Omok games */
+    omokGamesTitle: string;
+    /** Download opening workbook */
+    omokGuideDownloadWorkbook: string;
+    /** H8 is fixed. Place the 2nd and 3rd moves, then this page shows only the 4th and 5th moves that exist in the opening workbook. */
+    omokGuideLead: string;
+    /** Coordinate system: A1 is the bottom-left corner, letters increase to the right, and numbers increase upward. */
+    omokGuideNote: string;
+    /** Omok opening guide */
+    omokGuideTitle: string;
+    /** Omok.dev is a free, open source omok service focused on real-time play, browser-side AI, and opening study. */
+    omokHomeAbout: string;
+    /** Open the opening guide */
+    omokHomeOpenGuide: string;
+    /** Free online omok with custom rooms, Rapfi AI, and opening study tools. */
+    omokHomeTagline: string;
+    /** Omok.dev */
+    omokHomeTitle: string;
+    /** Invite a player */
+    omokInvitePlayerAction: string;
+    /** Last move */
+    omokLastMove: string;
+    /** Move list */
+    omokMoveListTitle: string;
+    /** Node limit */
+    omokNodeLimitLabel: string;
+    /** 0 means no explicit node cap. */
+    omokNodesHelp: string;
+    /** Opening guide */
+    omokOpeningGuide: string;
+    /** Explore workbook-backed Taraguchi opening moves without using hints during live games. */
+    omokOpeningGuideDescription: string;
+    /** Opening log */
+    omokOpeningLog: string;
+    /** Opening order */
+    omokOpeningOrder: string;
+    /** Open player-related links without leaving the Omok.dev experience. */
+    omokPlayersLead: string;
+    /** Omok players */
+    omokPlayersTitle: string;
+    /** Play against Rapfi AI */
+    omokPlayRapfiAction: string;
+    /** Omok.dev stores the minimum session and game data needed to run rooms, turns, and browser-side features. */
+    omokPrivacyLead: string;
+    /** Omok.dev privacy */
+    omokPrivacyTitle: string;
+    /** Player profile links stay inside Omok.dev while profile pages are being rebuilt for omok. */
+    omokProfileLead: string;
+    /** Omok player page */
+    omokProfileTitle: string;
+    /** Quick match */
+    omokQuickMatch: string;
+    /** Result */
+    omokResult: string;
+    /** Review */
+    omokReviewAction: string;
+    /** Create a custom omok room that any online player can join. */
+    omokRoomDescription: string;
+    /** Choose Taraguchi-10 for swap opening, Renju for center-start, or Freestyle for an empty board. */
+    omokRuleSetDescription: string;
+    /** Rule set */
+    omokRuleSetLabel: string;
+    /** Omok game setup */
+    omokSetupTitle: string;
+    /** This Omok.dev build adds omok rules, browser-side Rapfi AI, and opening study pages on top of the base service shell. */
+    omokSourceLead: string;
+    /** Omok.dev source */
+    omokSourceTitle: string;
+    /** State */
+    omokState: string;
+    /** Use Omok.dev fairly, respect other players, and do not use automation or harassment to damage play. */
+    omokTermsLead: string;
+    /** Omok.dev terms of service */
+    omokTermsTitle: string;
+    /** Thanks for testing, reporting issues, and helping turn the old shell into an omok-first service. */
+    omokThanksLead: string;
+    /** Thanks from Omok.dev */
+    omokThanksTitle: string;
+    /** Primary limit for browser-side move generation. */
+    omokThinkTimeHelp: string;
+    /** Think time (ms) */
+    omokThinkTimeLabel: string;
+    /** Used when SharedArrayBuffer is available. */
+    omokThreadsHelp: string;
     /** One day */
     oneDay: string;
     /** One URL per line. */
@@ -4089,13 +4229,13 @@ interface I18n {
     pinnedPieces: string;
     /** Play */
     play: string;
-    /** Play against computer */
+    /** Play against Rapfi AI */
     playAgainstComputer: string;
-    /** Play chess everywhere */
+    /** Play omok everywhere */
     playChessEverywhere: string;
-    /** Play chess in style */
+    /** Study openings and play omok in style */
     playChessInStyle: string;
-    /** Play best computer move */
+    /** Play best Rapfi move */
     playComputerMove: string;
     /** Player */
     player: string;
@@ -4115,7 +4255,7 @@ interface I18n {
     playVariationToCreateConditionalPremoves: string;
     /** Play %s */
     playX: I18nFormat;
-    /** We aim to provide a pleasant chess experience for everyone. */
+    /** We aim to provide a pleasant omok experience for everyone. */
     pleasantChessExperience: string;
     /** Points */
     points: string;
@@ -4129,9 +4269,9 @@ interface I18n {
     potentialProblem: string;
     /** Practice */
     practice: string;
-    /** Practice with computer */
+    /** Practice with Rapfi AI */
     practiceWithComputer: string;
-    /** Previously on Lichess TV */
+    /** Previously on Omok.dev Live */
     previouslyOnLichessTV: string;
     /** Ctrl or shift = red; command, alt, or meta = blue; a key from each = yellow. */
     primaryColorArrowsHowTo: string;
@@ -4149,7 +4289,7 @@ interface I18n {
     promoteVariation: string;
     /** Propose a takeback */
     proposeATakeback: string;
-    /** Chess tactics trainer */
+    /** Board tactics trainer */
     puzzleDesc: string;
     /** Puzzles */
     puzzles: string;
@@ -4311,7 +4451,7 @@ interface I18n {
     setFlair: string;
     /** Set the board */
     setTheBoard: string;
-    /** Share your chess insights data */
+    /** Share your omok insights data */
     shareYourInsightsData: string;
     /** View this help overlay */
     showHelpDialog: string;
@@ -4319,7 +4459,7 @@ interface I18n {
     showMeEverything: string;
     /** Show threat */
     showThreat: string;
-    /** You have received a private message from Lichess. */
+    /** You have received a private message from Omok.dev. */
     showUnreadLichessMessage: string;
     /** Show variation arrows */
     showVariationArrows: string;
@@ -4361,7 +4501,7 @@ interface I18n {
     simulVariantsHint: string;
     /** Since */
     since: string;
-    /** Free online chess server. Play chess in a clean interface. No registration, no ads, no plugin required. Play chess with the computer, friends or random opponents. */
+    /** Free online omok server. Play omok in a clean interface with no ads and no plugin required. Create rooms, invite a player, or face Rapfi AI in your browser. */
     siteDescription: string;
     /** Size */
     size: string;
@@ -4445,11 +4585,11 @@ interface I18n {
     thematic: string;
     /** No results for "%s" */
     thereAreNoResultsForX: I18nFormat;
-    /** The Lichess Terms of Service were violated on this account */
+    /** The Omok.dev Terms of Service were violated on this account */
     thisAccountViolatedTos: string;
     /** This game is rated */
     thisGameIsRated: string;
-    /** This is a chess CAPTCHA. */
+    /** This is a board CAPTCHA. */
     thisIsAChessCaptcha: string;
     /** This topic has been archived and can no longer be replied to. */
     thisTopicIsArchived: string;
@@ -4475,17 +4615,17 @@ interface I18n {
     timeControl: string;
     /** Timeline */
     timeline: string;
-    /** Time to process a move on Lichess's server */
+    /** Time to process a move on the Omok.dev server */
     timeToProcessAMoveOnLichessServer: string;
     /** Title verification */
     titleVerification: string;
     /** Today */
     today: string;
-    /** Toggle all computer analysis */
+    /** Toggle all Rapfi analysis */
     toggleAllAnalysis: string;
     /** Toggle move annotations */
     toggleGlyphAnnotations: string;
-    /** Toggle local computer analysis */
+    /** Toggle local Rapfi analysis */
     toggleLocalAnalysis: string;
     /** Toggle local evaluation */
     toggleLocalEvaluation: string;
@@ -4523,9 +4663,9 @@ interface I18n {
     tournamentEntryCode: string;
     /** Arena tournament FAQ */
     tournamentFAQ: string;
-    /** Play fast-paced chess tournaments! Join an official scheduled tournament, or create your own. Bullet, Blitz, Classical, Chess960, King of the Hill, Threecheck, and more options available for endless chess fun. */
+    /** Join live omok events, watch rooms fill in real time, or organise your own competition on Omok.dev. */
     tournamentHomeDescription: string;
-    /** Chess tournaments featuring various time controls and variants */
+    /** Omok tournaments with live clocks and flexible room formats */
     tournamentHomeTitle: string;
     /** The tournament may have been cancelled if all players left before it started. */
     tournamentMayHaveBeenCanceled: string;
@@ -4647,7 +4787,7 @@ interface I18n {
     waitForSignupHelp: string;
     /** Waiting */
     waiting: string;
-    /** Waiting for analysis */
+    /** Waiting for Rapfi analysis */
     waitingForAnalysis: string;
     /** Waiting for opponent */
     waitingForOpponent: string;
@@ -4723,7 +4863,7 @@ interface I18n {
     winRate: string;
     /** Wins */
     wins: string;
-    /** and wish you great games on lichess.org. */
+    /** and wish you great games on Omok.dev. */
     wishYouGreatGames: string;
     /** Withdraw */
     withdraw: string;
@@ -4743,7 +4883,7 @@ interface I18n {
     xHostsY: I18nFormat;
     /** %1$s invited you to "%2$s". */
     xInvitedYouToY: I18nFormat;
-    /** %1$s is a free (%2$s), libre, no-ads, open source chess server. */
+    /** %1$s is a free (%2$s), libre, no-ads, open source omok server. */
     xIsAFreeYLibreOpenSourceChessServer: I18nFormat;
     /** %1$s joined team %2$s */
     xJoinedTeamY: I18nFormat;
@@ -4771,7 +4911,7 @@ interface I18n {
     yesterday: string;
     /** You are better than %1$s of %2$s players. */
     youAreBetterThanPercentOfPerfTypePlayers: I18nFormat;
-    /** You are leaving Lichess */
+    /** You are leaving Omok.dev */
     youAreLeavingLichess: string;
     /** You are not in the team %s */
     youAreNotInTeam: I18nFormat;
@@ -4799,9 +4939,9 @@ interface I18n {
     youHaveJoinedTeamX: I18nFormat;
     /** You need an account to do that */
     youNeedAnAccountToDoThat: string;
-    /** You play the black pieces */
+    /** You play Black. */
     youPlayTheBlackPieces: string;
-    /** You play the white pieces */
+    /** You play White. */
     youPlayTheWhitePieces: string;
     /** Your opponent offers a draw */
     yourOpponentOffersADraw: string;
