@@ -21,9 +21,9 @@ final class TopNav(helpers: Helpers):
           )
         ),
         div(role := "group")(
-          a(href := s"${langHref("/ko")}?any#hook")(trans.site.createLobbyGame()),
-          a(href := s"${langHref("/ko")}?any#friend")(trans.site.challengeAFriend()),
-          a(href := s"${langHref("/ko")}?any#ai")(trans.site.playAgainstComputer()),
+          a(href := "/ko?any#hook")(trans.site.createLobbyGame()),
+          a(href := "/ko?any#friend")(trans.site.challengeAFriend()),
+          a(href := "/ko?any#ai")(trans.site.playAgainstComputer()),
           a(href := "/dev/omok/opening-guide")("Opening guide")
         )
       )
