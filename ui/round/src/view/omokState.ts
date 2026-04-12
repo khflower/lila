@@ -1,5 +1,5 @@
 import { finished as gameFinished } from 'lib/game';
-import { hl, type VNode } from 'lib/view';
+import { bind, hl, type VNode } from 'lib/view';
 
 import type { OmokRoundMove } from '../interfaces';
 import type RoundController from '../ctrl';
@@ -13,9 +13,15 @@ export interface OmokStatusSummary {
   terminal: boolean;
 }
 
+const boardFiles = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const taraguchiMoveRegex = /^(\d+)\.\s+(Black|White)\s+placed\s+/i;
+const siteText = (key: string, fallback: string): string =>
+  ((i18n.site as unknown as Record<string, string | undefined>)[key] as string | undefined) || fallback;
+
 const capitalize = (value: string): string => value.slice(0, 1).toUpperCase() + value.slice(1);
 const humanize = (value: string): string => value.replace(/[-_]+/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 const isTurnColor = (turn: string): turn is Color => turn === 'white' || turn === 'black';
+const fileLabel = (col: number): string => boardFiles[col] || String(col + 1);
 
 export const formatTurn = (turn: string): string =>
   turn === 'white' || turn === 'black' ? capitalize(turn) : turn || 'Unknown';
@@ -25,13 +31,13 @@ export const formatRuleSet = (ruleSet?: string): string =>
 
 export const formatLastMove = (move?: OmokRoundMove): string => {
   if (move?.key) return move.key;
-  if (move) return `row ${move.row}, col ${move.col}`;
+  if (move) return `${fileLabel(move.col)}${move.row + 1}`;
   return 'None';
 };
 
 const renderField = (label: string, value: string, emphatic = false): VNode =>
   hl(
-    'span.round__app__board__omok-state__field',
+    'div.round__app__board__omok-state__field',
     {
       class: {
         'is-emphasis': emphatic,
@@ -42,6 +48,246 @@ const renderField = (label: string, value: string, emphatic = false): VNode =>
       hl('strong.round__app__board__omok-state__value', value),
     ],
   );
+
+const getTaraguchiMoveOwners = (
+  history: string[],
+): {
+  black: number[];
+  white: number[];
+} => {
+  const black: number[] = [];
+  const white: number[] = [];
+
+  history.forEach(entry => {
+    const match = entry.match(taraguchiMoveRegex);
+    if (!match) return;
+    const moveNo = Number.parseInt(match[1] || '', 10);
+    if (!Number.isFinite(moveNo) || moveNo < 1 || moveNo > 6) return;
+    if ((match[2] || '').toLowerCase() === 'black') black.push(moveNo);
+    else white.push(moveNo);
+  });
+
+  return { black, white };
+};
+
+const renderTaraguchiSummary = (history: string[]): VNode => {
+  const owners = getTaraguchiMoveOwners(history);
+  const renderRow = (label: string, moves: number[]): VNode =>
+    hl(
+      'div.round__app__board__omok-state__opening-row',
+      `${label} : ${moves.length ? moves.join(' ') : '-'}`,
+    );
+
+  return hl('div.round__app__board__omok-state__opening-summary', [
+    hl('strong.round__app__board__omok-state__history-title', siteText('omokOpeningOrder', 'Opening order')),
+    renderRow('Black', owners.black),
+    renderRow('White', owners.white),
+  ]);
+};
+
+const renderTaraguchiHistory = (ctrl: RoundController): VNode | undefined => {
+  const history = ctrl.data.omok?.position.opening?.history || [];
+  if (!history.length) return;
+
+  return hl('div.round__app__board__omok-state__history-wrap', [
+    renderTaraguchiSummary(history),
+    hl('div.round__app__board__omok-state__history', [
+      hl('strong.round__app__board__omok-state__history-title', siteText('omokOpeningLog', 'Opening log')),
+      hl(
+        'ol.round__app__board__omok-state__history-list',
+        history.map(item => hl('li.round__app__board__omok-state__history-item', item)),
+      ),
+    ]),
+  ]);
+};
+
+const formatSearchMs = (value: number): string =>
+  value >= 1000 && value % 1000 === 0 ? `${Math.round(value / 1000)}s` : `${value}ms`;
+
+const renderNumberSetting = (
+  id: string,
+  label: string,
+  value: number,
+  min: number,
+  max: number,
+  step: number,
+  onChange: (value: number) => void,
+  help?: string,
+): VNode =>
+  hl('label.round__app__board__omok-state__setting', { attrs: { for: id } }, [
+    hl('span.round__app__board__omok-state__setting-label', label),
+    hl('input.round__app__board__omok-state__setting-input', {
+      attrs: {
+        id,
+        type: 'number',
+        min,
+        max,
+        step,
+        value: String(value),
+      },
+      on: {
+        change: (e: Event) => onChange(Number((e.target as HTMLInputElement).value) || 0),
+      },
+    }),
+    help ? hl('span.round__app__board__omok-state__setting-help', help) : undefined,
+  ]);
+
+const renderSelectSetting = (
+  id: string,
+  label: string,
+  value: string,
+  options: { value: string; label: string }[],
+  onChange: (value: string) => void,
+  help?: string,
+): VNode =>
+  hl('label.round__app__board__omok-state__setting', { attrs: { for: id } }, [
+    hl('span.round__app__board__omok-state__setting-label', label),
+    hl(
+      'select.round__app__board__omok-state__setting-input',
+      {
+        attrs: { id },
+        hook: bind('change', e => onChange((e.target as HTMLSelectElement).value)),
+      },
+      options.map(option => hl('option', { attrs: { value: option.value, selected: option.value === value } }, option.label)),
+    ),
+    help ? hl('span.round__app__board__omok-state__setting-help', help) : undefined,
+  ]);
+
+const renderRapfi = (ctrl: RoundController): VNode | undefined => {
+  const omok = ctrl.data.omok;
+  if (!omok) return;
+  const config = omok.ai;
+  const status = ctrl.omokRapfiStatus();
+  const aiSide =
+    config?.aiColor === 'white' || config?.aiColor === 'black'
+      ? formatTurn(String(config.aiColor))
+      : ctrl.data.opponent.ai
+        ? formatTurn(ctrl.data.opponent.color)
+        : undefined;
+  const summary = status?.error
+    ? status.error
+    : ctrl.omokAnalysisLoading
+      ? ctrl.omokAnalysisMode === 'ai'
+        ? siteText('omokAnalysisAiThinking', 'AI thinking...')
+        : siteText('omokAnalysisThinking', 'Thinking...')
+      : ctrl.omokAnalysis?.bestMove
+        ? `${ctrl.omokAnalysis.bestMove.key}${ctrl.omokAnalysis.score ? ` / ${ctrl.omokAnalysis.score}` : ''}`
+        : status?.ready
+          ? siteText('omokAnalysisReady', 'Ready')
+          : siteText('omokAnalysisIdle', 'Idle');
+
+  return hl('div.round__app__board__omok-state__rapfi', [
+    renderField('Engine', summary, !!ctrl.omokAnalysis?.bestMove),
+    renderField(siteText('omokRapfiSettingsLabel', 'Rapfi settings'), ctrl.omokRapfiSettingsSummary()),
+    config ? renderField('Rapfi AI', aiSide ? `${aiSide} AI` : 'AI game') : undefined,
+    ctrl.omokAnalysis && ctrl.omokAnalysis.lines.length
+      ? hl(
+          'div.round__app__board__omok-state__analysis-lines',
+          ctrl.omokAnalysis.lines
+            .filter(line => line.moves.length)
+            .slice(0, 3)
+            .map((line, index) =>
+              hl('div.round__app__board__omok-state__analysis-line', [
+                hl('strong', `#${index + 1}`),
+                hl('span', line.moves.map(move => move.key).join(' ')),
+                line.score ? hl('em', line.score) : undefined,
+                typeof line.winrate === 'number' ? hl('em', `${Math.round(line.winrate)}%`) : undefined,
+                line.depth ? hl('em', `d${line.depth}`) : undefined,
+                line.nodes ? hl('em', `n${line.nodes}`) : undefined,
+              ]),
+            ),
+        )
+      : undefined,
+    ctrl.omokRapfiShowSettings()
+      ? hl('div.round__app__board__omok-state__settings', [
+          renderSelectSetting(
+            'omok-rapfi-rule-set',
+            siteText('omokRapfiRuleLabel', 'Thinking rule'),
+            ctrl.omokRapfiRuleSet(),
+            [
+              { value: 'renju', label: siteText('omokRapfiRuleRenju', 'Renju') },
+              { value: 'game', label: siteText('omokRapfiRuleGame', 'Follow current game') },
+              { value: 'freestyle', label: siteText('omokRapfiRuleFreestyle', 'Freestyle') },
+            ],
+            ctrl.setOmokRapfiRuleSet,
+            siteText('omokRapfiRuleHelp', 'Default is Renju-based thinking.'),
+          ),
+          renderNumberSetting(
+            'omok-rapfi-search-ms',
+            siteText('omokRapfiThinkTime', 'Think time'),
+            ctrl.omokRapfiSearchMs(),
+            250,
+            30000,
+            250,
+            ctrl.setOmokRapfiSearchMs,
+            siteText('omokRapfiThinkTimeHelp', `Conservative default ${formatSearchMs(ctrl.omokRapfiSearchMs())}, capped at 30s.`),
+          ),
+          renderNumberSetting(
+            'omok-rapfi-hash-size',
+            siteText('omokRapfiHashSize', 'Hash size (MB)'),
+            ctrl.omokRapfiHashSizeMb(),
+            16,
+            1024,
+            16,
+            ctrl.setOmokRapfiHashSizeMb,
+            siteText('omokRapfiHashSizeHelp', 'Higher uses more memory.'),
+          ),
+          renderNumberSetting(
+            'omok-rapfi-threads',
+            siteText('threads', 'Threads'),
+            ctrl.omokRapfiThreads(),
+            1,
+            16,
+            1,
+            ctrl.setOmokRapfiThreads,
+            siteText('omokRapfiThreadsHelp', 'Browser Rapfi uses local CPU threads only.'),
+          ),
+          renderNumberSetting(
+            'omok-rapfi-depth',
+            siteText('omokRapfiDepth', 'Depth limit'),
+            ctrl.omokRapfiDepth(),
+            0,
+            64,
+            1,
+            ctrl.setOmokRapfiDepth,
+            siteText('omokRapfiDepthHelp', '0 means uncapped depth.'),
+          ),
+          renderNumberSetting(
+            'omok-rapfi-nodes',
+            siteText('omokRapfiNodes', 'Node limit'),
+            ctrl.omokRapfiNodes(),
+            0,
+            1000000000,
+            1000,
+            ctrl.setOmokRapfiNodes,
+            siteText('omokRapfiNodesHelp', '0 means uncapped nodes.'),
+          ),
+        ])
+      : undefined,
+    hl('div.round__app__board__omok-state__actions', [
+      hl(
+        'button.button-empty',
+        {
+          attrs: { type: 'button' },
+          hook: bind('click', () => ctrl.toggleOmokAnalysis()),
+        },
+        ctrl.omokAnalysisEnabled
+          ? siteText('omokAnalysisHide', 'Hide analysis')
+          : siteText('omokAnalysisShow', 'Analyse with Rapfi'),
+      ),
+      hl(
+        'button.button-empty',
+        {
+          attrs: { type: 'button' },
+          hook: bind('click', () => ctrl.toggleOmokRapfiSettings()),
+        },
+        ctrl.omokRapfiShowSettings()
+          ? siteText('omokRapfiSettingsHide', 'Hide settings')
+          : siteText('omokRapfiSettingsShow', 'Engine settings'),
+      ),
+    ]),
+  ]);
+};
 
 const formatTerminalState = (ctrl: RoundController): string | undefined => {
   const omok = ctrl.data.omok;
@@ -76,14 +322,23 @@ export const getOmokStatusSummary = (ctrl: RoundController): OmokStatusSummary |
     };
   }
 
-  const turn = String(position.turn || '');
+  const turn = String(position.opening?.activeSeat || position.turn || '');
   const turnLabel = formatTurn(turn);
   const turnDetail = isTurnColor(turn) ? `${turnLabel} to play` : undefined;
+
+  if (!ctrl.data.player.spectator && ctrl.omokPlacementPending) {
+    return {
+      text: 'Placing stone...',
+      detail: 'Waiting for board update',
+      tone: 'neutral',
+      terminal: false,
+    };
+  }
 
   if (!ctrl.data.player.spectator && isTurnColor(turn) && turn === ctrl.data.player.color) {
     return {
       text: 'Your turn',
-      detail: [turnDetail, moveDetail].filter(Boolean).join(' · ') || undefined,
+      detail: [turnDetail, moveDetail].filter(Boolean).join(' / ') || undefined,
       tone: 'active',
       terminal: false,
     };
@@ -105,22 +360,47 @@ export const renderOmokState = (ctrl: RoundController): VNode | undefined => {
   const statusSummary = getOmokStatusSummary(ctrl);
   if (!statusSummary) return;
   const lastMove = formatLastMove(position.lastMove);
+  const isTaraguchi = position.ruleSet === 'taraguchi10';
+  const applyTaraguchiPanelStyle = (elm: Element | undefined): void => {
+    if (!(elm instanceof HTMLElement)) return;
+    [
+      'position',
+      'left',
+      'right',
+      'top',
+      'bottom',
+      'width',
+      'max-height',
+      'overflow',
+      'padding',
+      'border-radius',
+      'background',
+      'box-shadow',
+      'z-index',
+    ].forEach(prop => elm.style.removeProperty(prop));
+  };
+  const stateNodeData: any = {
+    class: {
+      'is-active': statusSummary.tone === 'active',
+      'is-terminal': statusSummary.terminal,
+      'is-draw': statusSummary.tone === 'draw',
+      'is-taraguchi': isTaraguchi,
+    },
+    attrs: {
+      role: 'status',
+      'aria-live': 'polite',
+    },
+    hook: {
+      insert: (vnode: any) => applyTaraguchiPanelStyle(vnode.elm),
+      update: (_old: any, vnode: any) => applyTaraguchiPanelStyle(vnode.elm),
+    },
+  };
 
   return hl(
     'div.round__app__board__omok-state',
-    {
-      class: {
-        'is-active': statusSummary.tone === 'active',
-        'is-terminal': statusSummary.terminal,
-        'is-draw': statusSummary.tone === 'draw',
-      },
-      attrs: {
-        role: 'status',
-        'aria-live': 'polite',
-      },
-    },
+    stateNodeData,
     [
-      hl('span.round__app__board__omok-state__title', 'Omok'),
+      hl('span.round__app__board__omok-state__title', siteText('omokBrandName', 'Omok.dev')),
       hl(
         'span.round__app__board__omok-state__summary',
         {
@@ -135,11 +415,17 @@ export const renderOmokState = (ctrl: RoundController): VNode | undefined => {
           statusSummary.detail ? hl('span.round__app__board__omok-state__summary-detail', statusSummary.detail) : undefined,
         ],
       ),
-      renderField(statusSummary.terminal ? 'Result' : 'State', statusSummary.text, true),
-      statusSummary.terminal ? undefined : renderField('Turn', formatTurn(String(position.turn || ''))),
+      renderField(
+        statusSummary.terminal ? siteText('omokResult', 'Result') : siteText('omokState', 'State'),
+        statusSummary.text,
+        true,
+      ),
+      statusSummary.terminal ? undefined : renderField('Turn', formatTurn(String(position.opening?.activeSeat || position.turn || ''))),
       renderField('Ply', String(position.ply)),
-      renderField('Last move', lastMove, lastMove !== 'None'),
-      renderField('Rule set', formatRuleSet(position.ruleSet || omok.ruleset)),
+      renderField(siteText('omokLastMove', 'Last move'), lastMove, lastMove !== 'None'),
+      renderField(siteText('omokRuleSetLabel', 'Rule set'), formatRuleSet(position.ruleSet || omok.ruleset)),
+      isTaraguchi ? renderTaraguchiHistory(ctrl) : undefined,
+      renderRapfi(ctrl),
     ],
   );
 };

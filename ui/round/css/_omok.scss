@@ -565,10 +565,60 @@
 }
 
 .round__app__board__omok-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   pointer-events: auto;
 }
 
+.round__app__board__omok-state__settings {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.85rem;
+}
+
+.round__app__board__omok-state__setting {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.round__app__board__omok-state__setting-label {
+  font-weight: 600;
+}
+
+.round__app__board__omok-state__setting-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(92, 68, 37, 0.18);
+  border-radius: 0.55rem;
+  padding: 0.45rem 0.55rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: #2f2414;
+}
+
+.round__app__board__omok-state.is-taraguchi .round__app__board__omok-state__setting-input {
+  border-color: rgba(246, 235, 216, 0.22);
+  background: rgba(31, 21, 10, 0.94);
+  color: #f6ebd8;
+}
+
+.round__app__board__omok-state__setting-help {
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: rgba(92, 68, 37, 0.72);
+}
+
+.round__app__board__omok-state.is-taraguchi .round__app__board__omok-state__setting-help {
+  color: rgba(246, 235, 216, 0.72);
+}
+
 @include mq-is-col1 {
+  .round__app__board__omok-state__settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .round__app__board__omok-state {
     margin-top: 0.75rem;
   }

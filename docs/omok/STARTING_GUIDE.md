@@ -14,6 +14,13 @@ With the steps below you can:
 - optionally run `lila-ws` on `http://localhost:9664` for realtime Omok play
 - open `/ko` and verify the Omok lobby and round flow
 
+This guide also reflects the current Omok fork state:
+
+- `/ko` modal-close fixes are expected to work with real clicks
+- `/omok/solo` is the unified solo-board entry point
+- Omok AI rounds expose local Rapfi engine settings in the round UI
+- browser Rapfi defaults are conservative, Renju-based, and capped at 30 seconds think time
+
 ## Prerequisites
 
 Minimum recommended toolchain:
@@ -173,6 +180,11 @@ Once both services are up:
    - `Renju`
    - `Freestyle`
 5. Start an AI game and verify the round page loads
+6. Open the Omok round-side Rapfi settings panel and confirm:
+   - the settings toggle renders
+   - default think time is at or below `30000ms`
+   - default thinking rule is `Renju`
+   - changing think time / hash size / threads persists after a reload
 
 For realtime-specific checks, open two isolated browser sessions and test:
 
@@ -215,6 +227,24 @@ The lobby client re-renders `.lobby__table` after boot. Do not rely on a server-
 You probably changed source but did not rebuild the relevant UI bundle.
 
 For the public tunnel path, also consider stale page-shell asset busting. A rebuilt bundle plus correct manifest can still look broken to users until the app serves a fresh `?v=` asset version.
+
+### Omok round page loads but live Rapfi streaming still looks static
+
+The current round UI is wired to accept partial Rapfi analysis updates, but the browser Rapfi worker path still needs to emit intermediate analysis info for truly live streaming.
+
+In live verification so far, the worker has reliably returned final move output and engine capability info, but not the depth/eval/winrate stream the UI would need for continuous repainting.
+
+So if the settings panel is present but the analysis view only updates at the end, treat that as a worker/protocol limitation first, not immediately as a round-view rendering bug.
+
+### Commercial use or redistribution
+
+If you are shipping this Omok fork commercially, do a license review before bundling or redistributing Rapfi assets, Renju tooling, opening data, or other imported Omok resources.
+
+Useful internal references:
+
+- `docs/omok/reports/09_rapfi_feasibility.md`
+- `docs/omok/reports/10_renlib_vcf_feasibility.md`
+- `docs/omok/reports/11_lightweight_omok_oss.md`
 
 ### Public tunnel config leaked into local config
 

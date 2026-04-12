@@ -22,7 +22,14 @@ import { Replay } from 'lib/prefs';
 import { pubsub } from 'lib/pubsub';
 import { wsIsOpen } from 'lib/socket';
 import { type SocketSendOpts } from 'lib/socket';
-import { storage, once, storedBooleanProp, type LichessBooleanStorage } from 'lib/storage';
+import {
+  storage,
+  once,
+  storedBooleanProp,
+  storedIntProp,
+  storedStringProp,
+  type LichessBooleanStorage,
+} from 'lib/storage';
 import type { NodeCrazy } from 'lib/tree/types';
 import { toggleZenMode } from 'lib/view/zen';
 import * as wakeLock from 'lib/wakeLock';
@@ -53,9 +60,9 @@ import { isOmokTerminal } from './omok';
 import {
   OmokRapfiEngine,
   omokPositionKey,
-  omokRapfiDefaults,
   pickTaraguchiAiAction,
   type OmokRapfiAnalysis,
+  type OmokRapfiLimits,
 } from './omokRapfi';
 import Server from './server';
 import { make as makeSocket, type RoundSocket } from './socket';
@@ -99,8 +106,8 @@ const ensureTaraguchiOpening = (data: RoundData): void => {
   const turn = position.turn === 'white' || position.turn === 'black' ? position.turn : data.game.player;
   position.opening = {
     activeSeat: turn,
-    canSwap: position.ply >= 1 && position.ply <= 5,
-    canStartCandidates: position.ply === 4,
+    canSwap: false,
+    canStartCandidates: false,
     candidateMode: false,
     candidateSelection: false,
     forceSimpleFifth: false,
@@ -151,13 +158,23 @@ export default class RoundController implements MoveRootCtrl {
   server: Server;
   nvui?: NvuiPlugin;
   vibration: Prop<boolean> = storedBooleanProp('vibration', false);
+  omokRapfiShowSettings: Toggle = toggle(false);
+  omokRapfiRuleSet: Prop<string> = storedStringProp('omok.rapfi.rule-set', 'renju');
+  omokRapfiSearchMs: Prop<number> = storedIntProp('omok.rapfi.search-ms', 5000);
+  omokRapfiThreads: Prop<number> = storedIntProp('omok.rapfi.threads', 1);
+  omokRapfiHashSizeMb: Prop<number> = storedIntProp('omok.rapfi.hash-size', 32);
+  omokRapfiDepth: Prop<number> = storedIntProp('omok.rapfi.depth', 0);
+  omokRapfiNodes: Prop<number> = storedIntProp('omok.rapfi.nodes', 0);
   omokRapfi?: OmokRapfiEngine;
   omokAnalysis?: OmokRapfiAnalysis;
   omokAnalysisLoading = false;
   omokAnalysisEnabled = false;
+  omokAnalysisMode?: 'analysis' | 'ai';
   omokAnalysisError?: string;
   omokAiPendingKey?: string;
   omokAnalysisKey?: string;
+  omokAnalysisFrame?: number;
+  omokAnalysisPending?: OmokRapfiAnalysis;
   omokUiCopyObserver?: MutationObserver;
   omokUiCopyRefreshPending = false;
 
@@ -171,6 +188,7 @@ export default class RoundController implements MoveRootCtrl {
 
     const d = (this.data = opts.data);
     this.omokAnalysisEnabled = !!d.omok?.ai?.analysisEnabled;
+    this.seedOmokRapfiSettings(d);
 
     this.ply = util.lastPly(d);
     this.goneBerserk[d.player.color] = d.player.berserk;
@@ -389,6 +407,56 @@ export default class RoundController implements MoveRootCtrl {
   omokAnalysisAvailable = (): boolean => !!this.data.omok;
 
   omokRapfiStatus = (): ReturnType<OmokRapfiEngine['status']> | undefined => this.omokRapfi?.status();
+
+  omokRapfiSettingsSummary = (): string => {
+    const limits = this.omokRapfiLimits();
+    const rule = limits.ruleSet === 'freestyle' ? 'Freestyle' : limits.ruleSet === 'renju' ? 'Renju' : 'Game rules';
+    return [
+      rule,
+      `${Math.round((limits.moveTimeMs || 5000) / 1000)}s`,
+      `${limits.hashSizeMb || 32}MB`,
+      `t${limits.threads}`,
+      limits.depth ? `d${limits.depth}` : undefined,
+      limits.nodes ? `n${limits.nodes}` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' / ');
+  };
+
+  toggleOmokRapfiSettings = (value?: boolean): void => {
+    this.omokRapfiShowSettings(value ?? !this.omokRapfiShowSettings());
+    this.redraw();
+  };
+
+  setOmokRapfiRuleSet = (value: string): void => {
+    this.omokRapfiRuleSet(['renju', 'freestyle', 'game'].includes(value) ? value : 'renju');
+    this.restartOmokRapfi();
+  };
+
+  setOmokRapfiSearchMs = (value: number): void => {
+    this.omokRapfiSearchMs(this.normalizeOmokRapfiSearchMs(value));
+    this.restartOmokRapfi();
+  };
+
+  setOmokRapfiThreads = (value: number): void => {
+    this.omokRapfiThreads(this.normalizeOmokRapfiThreads(value));
+    this.restartOmokRapfi();
+  };
+
+  setOmokRapfiHashSizeMb = (value: number): void => {
+    this.omokRapfiHashSizeMb(this.normalizeOmokRapfiHashSizeMb(value));
+    this.restartOmokRapfi();
+  };
+
+  setOmokRapfiDepth = (value: number): void => {
+    this.omokRapfiDepth(this.normalizeOmokRapfiDepth(value));
+    this.restartOmokRapfi();
+  };
+
+  setOmokRapfiNodes = (value: number): void => {
+    this.omokRapfiNodes(this.normalizeOmokRapfiNodes(value));
+    this.restartOmokRapfi();
+  };
 
   omokAiColor = (): Color | undefined => {
     const aiColor = this.data.omok?.ai?.aiColor;
@@ -711,6 +779,13 @@ export default class RoundController implements MoveRootCtrl {
 
     d.game.turns = position.ply;
     d.game.player = turnColor;
+    if (this.clock && d.clock) {
+      this.clock.setClock({
+        white: d.clock.white,
+        black: d.clock.black,
+        ticking: this.tickingClockColor(),
+      });
+    }
     this.setOmokPlacementPending(false);
     this.setTitle();
 
@@ -870,7 +945,7 @@ export default class RoundController implements MoveRootCtrl {
 
   private readonly tickingClockColor = (): Color | undefined =>
     game.playable(this.data) && (game.playedTurns(this.data) > 1 || this.data.clock?.running)
-      ? this.data.game.player
+      ? this.currentTurnColor()
       : undefined;
 
   private readonly setQuietMode = () => {
@@ -1019,20 +1094,94 @@ export default class RoundController implements MoveRootCtrl {
     if (this.opts.onChange) setTimeout(() => this.opts.onChange(this.data), 150);
   };
 
+  private readonly seedOmokRapfiSettings = (data: RoundData): void => {
+    const ai = data.omok?.ai;
+    if (!ai) return;
+    if (storage.get('omok.rapfi.threads') === null && ai.threads > 0) this.omokRapfiThreads(this.normalizeOmokRapfiThreads(ai.threads));
+    if (storage.get('omok.rapfi.search-ms') === null && ai.moveTimeMs)
+      this.omokRapfiSearchMs(this.normalizeOmokRapfiSearchMs(ai.moveTimeMs));
+    if (storage.get('omok.rapfi.depth') === null && ai.depth) this.omokRapfiDepth(this.normalizeOmokRapfiDepth(ai.depth));
+    if (storage.get('omok.rapfi.nodes') === null && ai.nodes) this.omokRapfiNodes(this.normalizeOmokRapfiNodes(ai.nodes));
+    if (storage.get('omok.rapfi.hash-size') === null && ai.hashSizeMb)
+      this.omokRapfiHashSizeMb(this.normalizeOmokRapfiHashSizeMb(ai.hashSizeMb));
+    if (storage.get('omok.rapfi.rule-set') === null && ai.ruleSet)
+      this.omokRapfiRuleSet(['renju', 'freestyle', 'game'].includes(ai.ruleSet) ? ai.ruleSet : 'renju');
+  };
+
+  private readonly normalizeOmokRapfiSearchMs = (value: number): number => Math.max(250, Math.min(30000, Math.round(value || 5000)));
+
+  private readonly normalizeOmokRapfiThreads = (value: number): number =>
+    Math.max(1, Math.min(16, Math.round(value || 1)));
+
+  private readonly normalizeOmokRapfiHashSizeMb = (value: number): number =>
+    Math.max(16, Math.min(1024, Math.round(value || 32)));
+
+  private readonly normalizeOmokRapfiDepth = (value: number): number => Math.max(0, Math.min(64, Math.round(value || 0)));
+
+  private readonly normalizeOmokRapfiNodes = (value: number): number =>
+    Math.max(0, Math.min(1000000000, Math.round(value || 0)));
+
+  private readonly omokRapfiConfigKey = (): string =>
+    [
+      this.omokRapfiRuleSet(),
+      this.normalizeOmokRapfiSearchMs(this.omokRapfiSearchMs()),
+      this.normalizeOmokRapfiThreads(this.omokRapfiThreads()),
+      this.normalizeOmokRapfiHashSizeMb(this.omokRapfiHashSizeMb()),
+      this.normalizeOmokRapfiDepth(this.omokRapfiDepth()),
+      this.normalizeOmokRapfiNodes(this.omokRapfiNodes()),
+    ].join('|');
+
+  omokRapfiLimits = (): OmokRapfiLimits => ({
+    threads: this.normalizeOmokRapfiThreads(this.omokRapfiThreads()),
+    moveTimeMs: this.normalizeOmokRapfiSearchMs(this.omokRapfiSearchMs()),
+    hashSizeMb: this.normalizeOmokRapfiHashSizeMb(this.omokRapfiHashSizeMb()),
+    depth: this.normalizeOmokRapfiDepth(this.omokRapfiDepth()) || undefined,
+    nodes: this.normalizeOmokRapfiNodes(this.omokRapfiNodes()) || undefined,
+    ruleSet: this.omokRapfiRuleSet() === 'game' ? this.data.omok?.position.ruleSet : this.omokRapfiRuleSet(),
+  });
+
+  private readonly scheduleOmokAnalysisUpdate = (key: string, mode: 'analysis' | 'ai', analysis: OmokRapfiAnalysis): void => {
+    this.omokAnalysisPending = analysis;
+    if (this.omokAnalysisFrame) return;
+    this.omokAnalysisFrame = requestAnimationFrame(() => {
+      this.omokAnalysisFrame = undefined;
+      if (this.omokAnalysisKey !== key || this.omokAnalysisMode !== mode) return;
+      if (mode === 'analysis' && !this.omokAnalysisEnabled) return;
+      this.omokAnalysis = this.omokAnalysisPending;
+      this.redraw();
+    });
+  };
+
+  private readonly restartOmokRapfi = (): void => {
+    this.omokAnalysisError = undefined;
+    this.omokAnalysisKey = undefined;
+    this.omokAnalysisLoading = false;
+    this.omokAnalysisPending = undefined;
+    if (this.omokAnalysisFrame) {
+      cancelAnimationFrame(this.omokAnalysisFrame);
+      this.omokAnalysisFrame = undefined;
+    }
+    this.omokRapfi?.stop();
+    this.refreshOmokRapfi();
+    this.redraw();
+  };
+
   toggleOmokAnalysis = (value?: boolean): void => {
     this.omokAnalysisEnabled = value ?? !this.omokAnalysisEnabled;
     if (!this.omokAnalysisEnabled) {
-      this.omokAnalysisLoading = false;
-      this.omokAnalysisKey = undefined;
-      this.omokAnalysis = undefined;
-      this.omokRapfi?.stop();
-    } else this.refreshOmokRapfi();
+      if (this.omokAnalysisMode !== 'ai') {
+        this.omokAnalysisLoading = false;
+        this.omokAnalysisKey = undefined;
+        this.omokAnalysis = undefined;
+        this.omokRapfi?.stop();
+      }
+    } else if (!this.isOmokAiTurn()) this.refreshOmokRapfi();
     this.redraw();
   };
 
   private readonly ensureOmokRapfi = async (): Promise<OmokRapfiEngine> => {
     this.omokRapfi ??= new OmokRapfiEngine();
-    await this.omokRapfi.init(this.data.omok?.ai?.threads);
+    await this.omokRapfi.init(this.omokRapfiLimits().threads);
     return this.omokRapfi;
   };
 
@@ -1087,14 +1236,18 @@ export default class RoundController implements MoveRootCtrl {
       this.recordOmokRapfiDebug('run-ai-skip', { hasPosition: !!position });
       return;
     }
-    const key = `ai:${this.data.game.id}:${omokPositionKey(position)}`;
+    const limits = this.omokRapfiLimits();
+    const key = `ai:${this.data.game.id}:${omokPositionKey(position)}:${this.omokRapfiConfigKey()}`;
     if (this.omokAiPendingKey === key) {
       this.recordOmokRapfiDebug('run-ai-dup', { key });
       return;
     }
     this.omokAiPendingKey = key;
+    this.omokAnalysisKey = key;
+    this.omokAnalysisMode = 'ai';
+    this.omokAnalysisLoading = true;
     this.omokAnalysisError = undefined;
-    this.recordOmokRapfiDebug('run-ai-start', { key });
+    this.recordOmokRapfiDebug('run-ai-start', { key, limits });
     this.redraw();
     try {
       const openingAction = await pickTaraguchiAiAction(position);
@@ -1132,8 +1285,11 @@ export default class RoundController implements MoveRootCtrl {
               },
             }
           : position;
-      this.recordOmokRapfiDebug('run-ai-engine-ready', { key, status: engine.status() });
-      const bestMove = await engine.bestMove(enginePosition, omokRapfiDefaults(this.data.omok?.ai));
+      this.recordOmokRapfiDebug('run-ai-engine-ready', { key, status: engine.status(), limits });
+      const bestMove = await engine.bestMove(enginePosition, limits, analysis => {
+        if (this.omokAiPendingKey !== key) return;
+        this.scheduleOmokAnalysisUpdate(key, 'ai', analysis);
+      });
       if (this.omokAiPendingKey !== key) {
         this.recordOmokRapfiDebug('run-ai-stale', { key, bestMove });
         return;
@@ -1163,6 +1319,7 @@ export default class RoundController implements MoveRootCtrl {
       });
     } finally {
       if (this.omokAiPendingKey === key) this.omokAiPendingKey = undefined;
+      if (this.omokAnalysisKey === key) this.omokAnalysisLoading = false;
       this.recordOmokRapfiDebug('run-ai-finally', { key });
       this.redraw();
     }
@@ -1171,21 +1328,26 @@ export default class RoundController implements MoveRootCtrl {
   private readonly runOmokAnalysis = async (): Promise<void> => {
     const position = this.data.omok?.position;
     if (!position || !this.omokAnalysisEnabled || this.isOmokAiTurn()) return;
-    const key = `analysis:${this.data.game.id}:${omokPositionKey(position)}`;
-    if (this.omokAnalysisLoading || this.omokAnalysisKey === key) return;
+    const limits = this.omokRapfiLimits();
+    const key = `analysis:${this.data.game.id}:${omokPositionKey(position)}:${this.omokRapfiConfigKey()}`;
+    if (this.omokAnalysisLoading && this.omokAnalysisKey === key && this.omokAnalysisMode === 'analysis') return;
+    this.omokAnalysisKey = key;
+    this.omokAnalysisMode = 'analysis';
     this.omokAnalysisLoading = true;
     this.omokAnalysisError = undefined;
     this.redraw();
     try {
       const engine = await this.ensureOmokRapfi();
-      const analysis = await engine.analyse(position, omokRapfiDefaults(this.data.omok?.ai), 2);
-      if (!this.omokAnalysisEnabled) return;
+      const analysis = await engine.analyse(position, limits, 2, partial => {
+        if (this.omokAnalysisKey !== key || !this.omokAnalysisEnabled) return;
+        this.scheduleOmokAnalysisUpdate(key, 'analysis', partial);
+      });
+      if (!this.omokAnalysisEnabled || this.omokAnalysisKey !== key) return;
       this.omokAnalysis = analysis;
-      this.omokAnalysisKey = key;
     } catch (e) {
       this.omokAnalysisError = e instanceof Error ? e.message : 'Rapfi analysis failed.';
     } finally {
-      this.omokAnalysisLoading = false;
+      if (this.omokAnalysisKey === key) this.omokAnalysisLoading = false;
       this.redraw();
     }
   };

@@ -47,6 +47,21 @@ export interface OmokRoundMove {
 
 export type OmokRoundStatus = 'ongoing' | 'win' | 'draw' | (string & {});
 
+export interface OmokOpening {
+  activeSeat: Color | string;
+  canSwap: boolean;
+  canStartCandidates: boolean;
+  candidateMode: boolean;
+  candidateSelection: boolean;
+  forceSimpleFifth: boolean;
+  candidateCount: number;
+  candidateTarget: number;
+  candidates?: OmokRoundMove[];
+  history?: string[];
+  rangeRadius?: number;
+  instruction: string;
+}
+
 export interface OmokRoundPosition {
   boardSize: number;
   boardRows: string[];
@@ -55,6 +70,20 @@ export interface OmokRoundPosition {
   ply: number;
   lastMove?: OmokRoundMove;
   moves?: OmokRoundMove[];
+  opening?: OmokOpening;
+}
+
+export interface OmokAiConfigData {
+  provider: string;
+  mode: string;
+  aiColor?: Color | string;
+  threads: number;
+  moveTimeMs?: number;
+  depth?: number;
+  nodes?: number;
+  hashSizeMb?: number;
+  ruleSet?: string;
+  analysisEnabled: boolean;
 }
 
 export interface OmokRoundData {
@@ -64,6 +93,7 @@ export interface OmokRoundData {
   winner?: Color | string;
   ruleset?: string;
   boardSize?: number;
+  ai?: OmokAiConfigData;
 }
 
 export interface EventsWithPayload {
@@ -89,6 +119,8 @@ export type EventsWithoutPayload =
   | 'bye2'
   | 'resign-force'
   | 'draw-claim'
+  | 'omok-swap'
+  | 'omok-candidates'
   | 'resign'
   | 'abort';
 

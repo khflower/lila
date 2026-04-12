@@ -65,7 +65,36 @@ That guide covers:
 - app startup on `localhost:9663`
 - optional `lila-ws` startup on `localhost:9664`
 - `/ko` verification steps
+- hook-clock and spectator-discoverability checks
 - common Omok-specific startup traps
+
+Current Omok-specific highlights in this fork:
+
+- `/ko` lobby modal close regressions are fixed for real user clicks again
+- mobile Omok menu links now target `/ko` correctly
+- `/omok/solo` and `/omok/solo2` now share one unified solo-board flow
+- Omok round pages include a browser Rapfi settings panel with persisted local defaults
+- Rapfi defaults stay conservative by default, capped to 30 seconds think time and Renju-based rule selection
+
+## Omok engine and commercial-use caution
+
+This fork includes Omok work that depends on third-party engine and Renju-tooling research, including Rapfi-based browser assets and related Renju workflow references.
+
+If you plan to use this fork commercially, redistribute binaries/assets, or ship a hosted product based on this Omok stack, do **not** assume everything is automatically safe for commercial use just because it is present in this repository.
+
+At minimum, review and confirm for your own use case:
+
+- the upstream Rapfi license and any redistribution obligations
+- any Renju or Renju-editing tool/data provenance you reuse alongside this fork
+- any extra engine models, wasm bundles, opening data, or imported assets you package or modify
+
+Useful repo notes:
+
+- `docs/omok/reports/09_rapfi_feasibility.md`
+- `docs/omok/reports/10_renlib_vcf_feasibility.md`
+- `docs/omok/reports/11_lightweight_omok_oss.md`
+
+Short version: for commercial use, do your own license review before shipping.
 
 ## HTTP API
 

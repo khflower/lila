@@ -9,7 +9,11 @@ export interface OmokRapfiLimits {
   moveTimeMs?: number;
   depth?: number;
   nodes?: number;
+  hashSizeMb?: number;
+  ruleSet?: string;
 }
+
+export type OmokRapfiUpdateHandler = (analysis: OmokRapfiAnalysis) => void;
 
 export interface OmokRapfiAnalysisLine {
   moves: OmokRoundMove[];
@@ -396,6 +400,18 @@ const normalizeLimits = (config?: Partial<OmokAiConfigData> | OmokRapfiLimits): 
   moveTimeMs: config?.moveTimeMs && config.moveTimeMs > 0 ? config.moveTimeMs : undefined,
   depth: config?.depth && config.depth > 0 ? config.depth : undefined,
   nodes: config?.nodes && config.nodes > 0 ? config.nodes : undefined,
+  hashSizeMb:
+    config?.hashSizeMb && config.hashSizeMb > 0 ? Math.max(16, Math.min(1024, Math.round(config.hashSizeMb))) : undefined,
+  ruleSet: config?.ruleSet,
+});
+
+const cloneAnalysis = (analysis: OmokRapfiAnalysis): OmokRapfiAnalysis => ({
+  ...analysis,
+  raw: analysis.raw ? [...analysis.raw] : undefined,
+  lines: analysis.lines.map(line => ({
+    ...line,
+    moves: [...line.moves],
+  })),
 });
 
 const positionKey = (position: OmokRoundPosition): string => {
@@ -427,6 +443,7 @@ export class OmokRapfiEngine {
   private error?: string;
   private activePv = 1;
   private currentAnalysis?: OmokRapfiAnalysis;
+  private updateHandler?: { token: number; onUpdate?: OmokRapfiUpdateHandler };
 
   status(): OmokRapfiStatus {
     return {
@@ -476,16 +493,25 @@ export class OmokRapfiEngine {
     return this.bootPromise;
   }
 
-  async bestMove(position: OmokRoundPosition, limits: OmokRapfiLimits): Promise<OmokRoundMove | 'swap'> {
+  async bestMove(
+    position: OmokRoundPosition,
+    limits: OmokRapfiLimits,
+    onUpdate?: OmokRapfiUpdateHandler,
+  ): Promise<OmokRoundMove | 'swap'> {
     await this.init(limits.threads);
-    const analysis = await this.run(position, limits, 1);
+    const analysis = await this.run(position, limits, 1, onUpdate);
     if (analysis.bestMove) return analysis.bestMove;
     throw new Error(this.error || 'Rapfi did not return a best move.');
   }
 
-  async analyse(position: OmokRoundPosition, limits: OmokRapfiLimits, multiPv = 2): Promise<OmokRapfiAnalysis> {
+  async analyse(
+    position: OmokRoundPosition,
+    limits: OmokRapfiLimits,
+    multiPv = 2,
+    onUpdate?: OmokRapfiUpdateHandler,
+  ): Promise<OmokRapfiAnalysis> {
     await this.init(limits.threads);
-    return this.run(position, limits, multiPv);
+    return this.run(position, limits, multiPv, onUpdate);
   }
 
   stop(): void {
@@ -503,18 +529,25 @@ export class OmokRapfiEngine {
     this.error = undefined;
   }
 
-  private async run(position: OmokRoundPosition, rawLimits: OmokRapfiLimits, multiPv: number): Promise<OmokRapfiAnalysis> {
+  private async run(
+    position: OmokRoundPosition,
+    rawLimits: OmokRapfiLimits,
+    multiPv: number,
+    onUpdate?: OmokRapfiUpdateHandler,
+  ): Promise<OmokRapfiAnalysis> {
     const limits = normalizeLimits(rawLimits);
     this.boardSize = position.boardSize || boardSizeDefault;
     this.analysisToken += 1;
     const token = this.analysisToken;
     this.currentAnalysis = { lines: [], raw: [] };
+    this.updateHandler = { token, onUpdate };
     this.activePv = 1;
     this.computing = true;
 
     this.send(`START ${this.boardSize}`);
-    this.send(`INFO RULE ${mapRule(position.ruleSet)}`);
+    this.send(`INFO RULE ${mapRule(limits.ruleSet || position.ruleSet)}`);
     this.send(`INFO THREAD_NUM ${limits.threads}`);
+    if (limits.hashSizeMb) this.send(`INFO HASH_SIZE ${limits.hashSizeMb}`);
     this.send(`INFO TIMEOUT_TURN ${limits.moveTimeMs || 800}`);
     this.send(`INFO TIMEOUT_MATCH ${(limits.moveTimeMs || 800) * 20}`);
     this.send(`INFO TIME_LEFT ${(limits.moveTimeMs || 800) * 20}`);
@@ -562,6 +595,7 @@ export class OmokRapfiEngine {
       }, timeoutMs);
       const cleanup = () => {
         clearTimeout(timer);
+        if (this.updateHandler?.token === token) this.updateHandler = undefined;
         window.removeEventListener(this.eventName(token), listener as EventListener);
       };
       window.addEventListener(this.eventName(token), listener as EventListener);
@@ -635,6 +669,20 @@ export class OmokRapfiEngine {
         break;
     }
 
+    if (
+      this.updateHandler?.token === token &&
+      this.updateHandler.onUpdate &&
+      (event.type === 'pv' ||
+        event.type === 'depth' ||
+        event.type === 'nodes' ||
+        event.type === 'time' ||
+        event.type === 'eval' ||
+        event.type === 'winrate' ||
+        event.type === 'bestline')
+    ) {
+      this.updateHandler.onUpdate(cloneAnalysis(analysis));
+    }
+
     window.dispatchEvent(new CustomEvent(this.eventName(token), { detail: event }));
   }
 
@@ -687,9 +735,11 @@ export class OmokRapfiEngine {
 export const omokRapfiDefaults = (config?: OmokAiConfigData): OmokRapfiLimits =>
   normalizeLimits({
     threads: config?.threads || (isMobile() ? 1 : 2),
-    moveTimeMs: config?.moveTimeMs || 800,
+    moveTimeMs: Math.min(config?.moveTimeMs || 5000, 30000),
     depth: config?.depth,
     nodes: config?.nodes,
+    hashSizeMb: config?.hashSizeMb || 32,
+    ruleSet: config?.ruleSet || 'renju',
   });
 
 export const omokPositionKey: (position: OmokRoundPosition) => string = positionKey;
