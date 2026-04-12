@@ -69,12 +69,6 @@ export default class SetupController {
       ai: this.makeSetupStore('ai'),
     };
 
-    new MutationObserver(() => {
-      const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
-      if (!dialog) return;
-      dialog.closest('.snab-modal-mask')?.classList.remove('none');
-      if (!dialog.open) dialog.setAttribute('open', '');
-    }).observe(document.body, { childList: true, subtree: true });
   }
 
   // Namespace the store by username for user specific modal settings
@@ -227,30 +221,11 @@ export default class SetupController {
     this.fenError = false;
     this.lastValidFen = '';
     this.friendUser = friendUser || '';
-    this.closeModal = () => {
-      const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
-      if (dialog?.open) dialog.close('cancel');
-      else dialog?.closest('.snab-modal-mask')?.remove();
-      this.gameType = null;
-      this.root.redraw();
-    };
+    this.closeModal = undefined;
     this.variantMenuOpen(false);
     this.forced = forceOptions;
     this.loadPropsFromStore(forceOptions);
-    let openAttempts = 0;
-    const ensureDialogOpen = () => {
-      const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
-      if (!dialog) {
-        if (openAttempts++ < 10) setTimeout(ensureDialogOpen, 50);
-        return;
-      }
-      dialog.closest('.snab-modal-mask')?.classList.remove('none');
-      if (!dialog.open) {
-        if (typeof dialog.showModal === 'function') dialog.showModal();
-        else dialog.show();
-      }
-    };
-    setTimeout(ensureDialogOpen, 0);
+    this.root.redraw();
   };
 
   closeModal?: () => void; // managed by view/setup/modal.ts
