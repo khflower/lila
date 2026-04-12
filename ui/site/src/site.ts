@@ -32,4 +32,10 @@ site.sound = sound;
 (window as any).lichess = api;
 loadPolyfills();
 addWindowHandlers();
+new MutationObserver(() => {
+  const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
+  if (!dialog) return;
+  dialog.closest('.snab-modal-mask')?.classList.remove('none');
+  if (!dialog.open) dialog.setAttribute('open', '');
+}).observe(document.body, { childList: true, subtree: true });
 site.load.then(boot);

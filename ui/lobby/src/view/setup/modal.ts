@@ -24,7 +24,7 @@ export default function setupModal(ctrl: LobbyController): VNode[] | null {
   const disabled = !setupCtrl.valid() || setupCtrl.loading;
   return [
     snabDialog({
-      attrs: { dialog: { 'aria-labelledBy': 'lobby-setup-modal-title', 'aria-modal': 'true' } },
+      attrs: { dialog: { 'aria-labelledBy': 'lobby-setup-modal-title', 'aria-modal': 'true', open: 'open' } },
       class: 'game-setup',
       css: [{ hashed: 'lobby.setup' }],
       onClose: () => {
@@ -49,10 +49,6 @@ export default function setupModal(ctrl: LobbyController): VNode[] | null {
           setupCtrl.loading && spinnerVdom(),
         ]),
       ],
-      onInsert: dlg => {
-        setupCtrl.closeModal = dlg.close;
-        dlg.show();
-      },
     }),
   ].filter(v => v !== null);
 }

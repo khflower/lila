@@ -14,7 +14,8 @@ import { alert } from 'lib/view';
 import * as xhr from 'lib/xhr';
 
 import type LobbyController from './ctrl';
-import type { ForceSetupOptions, GameMode, GameType, PoolMember, SetupStore } from './interfaces';
+import * as hookRepo from './hookRepo';
+import type { ForceSetupOptions, GameMode, GameType, OmokRuleSet, PoolMember, SetupStore } from './interfaces';
 import { keyToId, variants } from './options';
 
 const getPerf = (variant: VariantKey, tc: TimeControl): Perf =>
@@ -33,11 +34,17 @@ export default class SetupController {
 
   // Store props
   variant: Prop<VariantKey>;
+  omokRuleSet: Prop<OmokRuleSet>;
   fen: Prop<string>;
   gameMode: Prop<GameMode>;
   ratingMin: Prop<number>;
   ratingMax: Prop<number>;
   aiLevel: Prop<number>;
+  omokAiThreads: Prop<number>;
+  omokAiMoveTimeMs: Prop<number>;
+  omokAiDepth: Prop<number>;
+  omokAiNodes: Prop<number>;
+  omokAiAnalysisEnabled: Prop<boolean>;
 
   variantMenuOpen = toggle(false);
 
@@ -52,6 +59,13 @@ export default class SetupController {
       friend: this.makeSetupStore('friend'),
       ai: this.makeSetupStore('ai'),
     };
+
+    new MutationObserver(() => {
+      const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
+      if (!dialog) return;
+      dialog.closest('.snab-modal-mask')?.classList.remove('none');
+      if (!dialog.open) dialog.setAttribute('open', '');
+    }).observe(document.body, { childList: true, subtree: true });
   }
 
   // Namespace the store by username for user specific modal settings
@@ -61,6 +75,7 @@ export default class SetupController {
   makeSetupStore = (gameType: GameType) =>
     storedJsonProp<SetupStore>(this.storeKey(gameType), () => ({
       variant: 'standard',
+      omokRuleSet: gameType === 'ai' ? 'renju' : 'taraguchi10',
       fen: '',
       timeMode: gameType === 'hook' ? 'realTime' : 'unlimited',
       time: 5,
@@ -70,12 +85,22 @@ export default class SetupController {
       ratingMin: -500,
       ratingMax: 500,
       aiLevel: 1,
+      omokAiThreads: 1,
+      omokAiMoveTimeMs: 800,
+      omokAiDepth: 0,
+      omokAiNodes: 0,
+      omokAiAnalysisEnabled: true,
     }));
 
   private readonly loadPropsFromStore = (forceOptions?: ForceSetupOptions) => {
     const storeProps = this.store[this.gameType!]();
     // Load props from the store, but override any store values with values found in forceOptions
     this.variant = propWithEffect(forceOptions?.variant || storeProps.variant, this.onDropdownChange);
+    const preferredOmokRuleSet =
+      this.gameType === 'ai'
+        ? storeProps.omokRuleSet || 'renju'
+        : storeProps.omokRuleSet || 'taraguchi10';
+    this.omokRuleSet = this.propWithApply(preferredOmokRuleSet);
     this.fen = this.propWithApply(forceOptions?.fen || storeProps.fen);
     const canChangeTimeMode = !!this.root.me || this.gameType !== 'hook';
     this.timeControl = timeControlFromStoredValues(
@@ -91,6 +116,11 @@ export default class SetupController {
     this.ratingMin = this.propWithApply(storeProps.ratingMin);
     this.ratingMax = this.propWithApply(storeProps.ratingMax);
     this.aiLevel = this.propWithApply(storeProps.aiLevel);
+    this.omokAiThreads = this.propWithApply(storeProps.omokAiThreads || 1);
+    this.omokAiMoveTimeMs = this.propWithApply(storeProps.omokAiMoveTimeMs || 800);
+    this.omokAiDepth = this.propWithApply(storeProps.omokAiDepth || 0);
+    this.omokAiNodes = this.propWithApply(storeProps.omokAiNodes || 0);
+    this.omokAiAnalysisEnabled = this.propWithApply(storeProps.omokAiAnalysisEnabled ?? true);
     this.color(forceOptions?.color || 'random');
 
     this.enforcePropRules();
@@ -121,6 +151,7 @@ export default class SetupController {
     this.gameType &&
     this.store[this.gameType]({
       variant: this.variant(),
+      omokRuleSet: this.omokRuleSet(),
       fen: this.fen(),
       timeMode: this.timeControl.mode(),
       time: this.timeControl.time(),
@@ -130,6 +161,11 @@ export default class SetupController {
       ratingMin: this.ratingMin(),
       ratingMax: this.ratingMax(),
       aiLevel: this.aiLevel(),
+      omokAiThreads: this.omokAiThreads(),
+      omokAiMoveTimeMs: this.omokAiMoveTimeMs(),
+      omokAiDepth: this.omokAiDepth(),
+      omokAiNodes: this.omokAiNodes(),
+      omokAiAnalysisEnabled: this.omokAiAnalysisEnabled(),
       ...override,
     });
 
@@ -179,9 +215,30 @@ export default class SetupController {
     this.fenError = false;
     this.lastValidFen = '';
     this.friendUser = friendUser || '';
+    this.closeModal = () => {
+      const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
+      if (dialog?.open) dialog.close('cancel');
+      else dialog?.closest('.snab-modal-mask')?.remove();
+      this.gameType = null;
+      this.root.redraw();
+    };
     this.variantMenuOpen(false);
     this.forced = forceOptions;
     this.loadPropsFromStore(forceOptions);
+    let openAttempts = 0;
+    const ensureDialogOpen = () => {
+      const dialog = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="lobby-setup-modal-title"]');
+      if (!dialog) {
+        if (openAttempts++ < 10) setTimeout(ensureDialogOpen, 50);
+        return;
+      }
+      dialog.closest('.snab-modal-mask')?.classList.remove('none');
+      if (!dialog.open) {
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else dialog.show();
+      }
+    };
+    setTimeout(ensureDialogOpen, 0);
   };
 
   closeModal?: () => void; // managed by view/setup/modal.ts
@@ -248,6 +305,10 @@ export default class SetupController {
   propsToFormData = (color: ColorChoice) =>
     xhr.form({
       variant: keyToId(this.variant(), variants).toString(),
+      omokRuleSet:
+        this.gameType === 'hook' || this.gameType === 'ai' || this.gameType === 'friend'
+          ? this.omokRuleSet()
+          : undefined,
       fen: this.variant() === 'fromPosition' ? this.fen() : undefined,
       timeMode: keyToId(this.timeControl.mode(), timeModes).toString(),
       time: this.timeControl.time().toString(),
@@ -261,6 +322,11 @@ export default class SetupController {
       ratingRange_range_min: this.ratingMin().toString(),
       ratingRange_range_max: this.ratingMax().toString(),
       level: this.aiLevel().toString(),
+      omokThreads: this.gameType === 'ai' ? this.omokAiThreads().toString() : undefined,
+      omokMoveTimeMs: this.gameType === 'ai' ? this.omokAiMoveTimeMs().toString() : undefined,
+      omokDepth: this.gameType === 'ai' && this.omokAiDepth() > 0 ? this.omokAiDepth().toString() : undefined,
+      omokNodes: this.gameType === 'ai' && this.omokAiNodes() > 0 ? this.omokAiNodes().toString() : undefined,
+      omokAnalysisEnabled: this.gameType === 'ai' ? (this.omokAiAnalysisEnabled() ? 'true' : 'false') : undefined,
       color,
     });
 
@@ -342,8 +408,34 @@ export default class SetupController {
     } else if (redirected) {
       location.href = url;
     } else {
+      if (this.gameType === 'hook') {
+        try {
+          const payload = await response.json();
+          const hook = payload?.hook?.id
+            ? {
+                sri: site.sri,
+                clock: payload.hook.clock ?? `${this.timeControl.time()}+${this.timeControl.increment()}`,
+                t: payload.hook.t ?? Math.round(this.timeControl.time() * 60 + this.timeControl.increment() * 40),
+                s: payload.hook.s ?? 0,
+                i: payload.hook.i ?? (this.timeControl.increment() > 0 ? 1 : 0),
+                variant: payload.hook.variant ?? this.variant(),
+                perf: payload.hook.perf ?? this.selectedPerf(),
+                u: payload.hook.u ?? this.root.me?.username,
+                rating: payload.hook.rating ?? this.myRating(),
+                prov: payload.hook.prov ?? (this.isProvisional() ? true : undefined),
+                ra: payload.hook.ra ?? (this.gameMode() === 'rated' ? 1 : undefined),
+                ...payload.hook,
+              }
+            : null;
+          if (hook?.id) {
+            hookRepo.add(this.root, hook as any);
+            this.root.flushHooks(true);
+          }
+        } catch {}
+      }
       this.loading = false;
       this.closeModal?.();
+      this.root.redraw();
     }
   };
 }

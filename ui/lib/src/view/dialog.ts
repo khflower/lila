@@ -119,12 +119,21 @@ export function snabDialog(o: SnabDialogOpts): VNode {
               : ''),
           {
             attrs: o.attrs?.view,
-            hook: onInsert(async view => {
-              const [html] = await ass;
-              if (!o.vnodes && html) view.innerHTML = html;
+            hook: onInsert(view => {
               const dlg = new DialogWrapper(dialog, view, o, true);
-              if (o.onInsert) o.onInsert(dlg);
-              else dlg.show();
+              const show = () => {
+                if (o.onInsert) o.onInsert(dlg);
+                else dlg.show();
+              };
+              if (o.vnodes) {
+                void ass;
+                show();
+                return;
+              }
+              void ass.then(([html]) => {
+                if (html) view.innerHTML = html;
+                show();
+              });
             }),
           },
           o.vnodes,
@@ -215,13 +224,17 @@ class DialogWrapper implements Dialog {
   }
 
   show = async (): Promise<Dialog> => {
-    (await pubsub.after('polyfill.dialog'))?.(this.dialog);
+    const registerDialog =
+      typeof window.HTMLDialogElement === 'undefined' ? await pubsub.after('polyfill.dialog') : undefined;
+    registerDialog?.(this.dialog);
 
     if (this.o.modal) this.view.scrollTop = 0;
     if (this.isSnab) {
       if (this.dialog.parentElement === this.dialog.closest('.snab-modal-mask'))
         this.dialog.parentElement?.classList.remove('none');
-      this.dialog.show();
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      if (this.o.modal) this.dialog.showModal();
+      else this.dialog.show();
     } else if (this.o.modal) this.dialog.showModal();
     else this.dialog.show();
     this.autoFocus();
