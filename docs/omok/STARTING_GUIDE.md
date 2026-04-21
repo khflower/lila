@@ -79,6 +79,44 @@ Notes:
 - On Windows, WSL2 + Ubuntu is the easiest way to run the Scala app and `lila-ws` reliably.
 - If you only want to prove the app boots, you can start without `lila-ws` by disabling socket domains.
 
+## One-command starter for this Windows + WSL setup
+
+If you are using the same Windows + WSL style dev setup as this Omok workspace, there is now a starter script so bring-up does not depend on remembering the same manual recovery steps every time.
+
+From the repo root:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\omok-dev.ps1 -Action start -Mode local
+```
+
+For public quick-tunnel exposure instead of local-only proxy:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\omok-dev.ps1 -Action start -Mode cloudflare
+```
+
+Useful helpers:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\omok-dev.ps1 -Action status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\omok-dev.ps1 -Action stop
+```
+
+What the starter does:
+
+- ensures Docker support containers are up via `docker-compose.omok-dev.yml`
+- ensures the repo-local quick proxy is listening on `127.0.0.1:9777`
+- rewrites the live WSL app config in `/root/work/lila/conf/application.conf`
+- rewrites the live `lila-ws` CSRF allowlist in `/root/work/lila-ws/src/main/resources/application.conf`
+- restarts `lila` on `9663` and `lila-ws` on `9664`
+- in Cloudflare mode, starts a quick tunnel and automatically allows the new tunnel hostname so `/ko` does not half-boot with broken realtime lobby propagation
+
+Notes:
+
+- This script is intentionally aimed at the current local runtime layout, not arbitrary production hosts.
+- Cloudflare mode expects `cloudflared.exe` at `..\tools\cloudflared.exe` relative to this repo, unless you pass `-CloudflaredPath` explicitly.
+- The repo-local quick proxy entrypoint is `tools/quick-proxy/server.js`.
+
 ## 1. Clone and install dependencies
 
 ```bash
