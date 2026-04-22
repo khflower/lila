@@ -1,0 +1,67 @@
+﻿diff --git a/src/main/scala/actor/RoundClientActor.scala b/src/main/scala/actor/RoundClientActor.scala
+index 6ed59ca..117b76d 100644
+--- a/src/main/scala/actor/RoundClientActor.scala
++++ b/src/main/scala/actor/RoundClientActor.scala
+@@ -127,6 +127,13 @@ object RoundClientActor:
+               lilaIn.round(LilaIn.RoundPlayerDo(fid, payload))
+             Behaviors.same
+ 
++          case ClientOut.RoundPlace(pos, ackId) =>
++            fullId.foreach: fid =>
++              clientIn(ClientIn.RoundPingFrameNoFlush)
++              clientIn(ClientIn.Ack(ackId))
++              lilaIn.round(LilaIn.RoundPlace(fid, pos))
++            Behaviors.same
++
+           case ClientOut.RoundFlag(color) =>
+             lilaIn.round(LilaIn.RoundFlag(gameId, color, state.player.map(_.id)))
+             Behaviors.same
+diff --git a/src/main/scala/ipc/ClientOut.scala b/src/main/scala/ipc/ClientOut.scala
+index d5c3440..02097b7 100644
+--- a/src/main/scala/ipc/ClientOut.scala
++++ b/src/main/scala/ipc/ClientOut.scala
+@@ -94,6 +94,7 @@ object ClientOut:
+   case class RoundPlayerForward(payload: JsValue) extends ClientOutRound
+   case class RoundMove(uci: Uci, blur: Boolean, lag: ClientMoveMetrics, ackId: Option[Int])
+       extends ClientOutRound
++  case class RoundPlace(pos: String, ackId: Option[Int]) extends ClientOutRound
+   case class RoundHold(mean: Int, sd: Int) extends ClientOutRound
+   case class RoundBerserk(ackId: Option[Int]) extends ClientOutRound
+   case class RoundSelfReport(name: String) extends ClientOutRound
+@@ -199,6 +200,12 @@ object ClientOut:
+                   blur = d.int("b") contains 1
+                   ackId = d.int("a")
+                 yield RoundMove(drop, blur, parseMetrics(d), ackId)
++              case "place" =>
++                for
++                  d <- o.obj("d")
++                  pos <- d.str("pos")
++                  ackId = d.int("a")
++                yield RoundPlace(pos, ackId)
+               case "hold" =>
+                 for
+                   d <- o.obj("d")
+@@ -212,7 +219,7 @@ object ClientOut:
+               case "voiceChatPing" => Some(VoiceChatPing)
+               case "blindfold-yes" | "blindfold-no" | "moretime" | "rematch-yes" | "rematch-no" |
+                   "takeback-yes" | "takeback-no" | "draw-yes" | "draw-no" | "draw-claim" | "resign" |
+-                  "resign-force" | "draw-force" | "abort" | "outoftime" =>
++                  "resign-force" | "draw-force" | "abort" | "outoftime" | "omok-swap" | "omok-candidates" =>
+                 Some(RoundPlayerForward(o))
+               // chat
+               case "talk" => o.str("d").map { ChatSay.apply }
+diff --git a/src/main/scala/ipc/LilaIn.scala b/src/main/scala/ipc/LilaIn.scala
+index 5775b13..8a48e82 100644
+--- a/src/main/scala/ipc/LilaIn.scala
++++ b/src/main/scala/ipc/LilaIn.scala
+@@ -102,6 +102,10 @@ object LilaIn:
+       s"r/move $fullId ${uci.uci} ${boolean(blur)} ${centis(lag.clientLag)} ${centis(lag.clientMoveTime)} ${centis(lag.frameLag)}"
+     override def critical = true
+ 
++  case class RoundPlace(fullId: Game.FullId, pos: String) extends Round:
++    def write = s"r/place $fullId $pos"
++    override def critical = true
++
+   case class RoundBerserk(gameId: Game.Id, userId: User.Id) extends Round:
+     def write = s"r/berserk $gameId $userId"
+ 
